@@ -77,6 +77,18 @@ class ActionRuntime:
         self.audit_trail = audit_trail
         self.mode = mode
 
+    @classmethod
+    def from_policy(cls, policy_path: str | Path, mode: str = "enforce") -> ActionRuntime:
+        """Create a default ActionRuntime configured with a local policy file."""
+        caps = CapabilitySystem()
+        caps.load_policy(policy_path)
+        return cls(
+            capability_system=caps,
+            approval_engine=ApprovalEngine(),
+            audit_trail=AuditLogger(),
+            mode=mode,
+        )
+
     def execute(self, event: ActionEvent) -> ExecutionVerdict:
         """Safely evaluate and govern an ActionEvent, returning a deterministic ExecutionVerdict."""
         start_time = time.time()

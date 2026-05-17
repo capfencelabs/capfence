@@ -1,8 +1,10 @@
 # CapFence
 
-<p align="center">
-  <strong>Deterministic trusted execution runtime for autonomous AI systems.</strong>
-</p>
+> **Trusted execution runtime for high-risk AI operations.**
+
+AI agents are non-deterministic. Real-world execution must not be.
+
+---
 
 <p align="center">
   <a href="https://pypi.org/project/capfence/"><img src="https://img.shields.io/pypi/v/capfence?color=blue" alt="PyPI version"></a>
@@ -11,183 +13,145 @@
   <img src="https://img.shields.io/badge/tests-passing-brightgreen" alt="Tests: passing">
 </p>
 
-CapFence sits between autonomous AI agents and high-risk tools. It evaluates every operational action against deterministic policy before execution, then enforces it: allowing it, blocking it, or requiring immediate pre-authorized approval.
+CapFence sits between autonomous AI agents and downstream systems (APIs, databases, filesystems, and payment gateways). It evaluates agent actions against declarative, capability-based policies—allowing, blocking, or queuing actions for approval.
 
-It operates closer to **IAM, CloudTrail, transaction gateways, and admission controllers** than prompt-injection guards or LLM moderation platforms.
+It operates as a **policy enforcement layer and verifiable audit log**, bringing the control of IAM and transaction gateways to AI workflows.
 
 ```text
-Agent -> CapFence Runtime -> High-Risk System
-              |
-              +-- [Allow] -> Execution
-              +-- [Deny]  -> Fail-Closed Block
-              +-- [Require Approval] -> Expiring / Session Pre-Authorizations
-```
-
-<p align="center">
-  <img src="docs/assets/demo.gif" alt="CapFence terminal demo" width="720">
-</p>
-
-CapFence is engineered for production environments where agents execute real operations (shell commands, database writes, financial transactions, API edits) and every action must be:
-- **Attributable**: Known actor context.
-- **Auditable**: Tamper-evident, hash-chained logs.
-- **Replayable**: Incident simulation against historical traces.
-- **Fail-Safe**: Complete isolation and default-deny policies.
-
----
-
-## Why CapFence Exists
-
-Autonomous AI systems call tools that modify cloud infrastructure, execute terminal commands, read sensitive database rows, and move money.
-
-**Prompt instructions are not execution boundaries.** A prompt can be bypassed, ignored, or manipulated. 
-
-CapFence adds a deterministic, out-of-band execution boundary that guarantees:
-- **No LLM in the Gate Path**: Zero added non-determinism, zero high-latency model checks.
-- **Fail-Closed Execution**: If policy verification, database check, or audit logging fails, the action is blocked.
-- **Asymmetric Signature Chaining**: Local audit trails are cryptographically linked and signed using Ed25519 keys, preventing manual database tampering.
-- **WAL Persistence Isolation**: Dynamic, thread-safe persistence using a pluggable DB Engine interface.
-
----
-
-## Install
-
-```bash
-pip install capfence
+Agent SDK ──> CapFence Runtime ──> Target System
+                   │
+                   ├── [Allow]    ──> Safe Execution
+                   ├── [Deny]     ──> Blocked
+                   └── [Approval] ──> Temporary / Expiring Grant
 ```
 
 ---
 
-## 60-Second Example
+## Why CapFence
 
-### 1. Write a Declarative Policy (`policies/ops.yaml`)
+When autonomous agents call tools that modify cloud infrastructure, query databases, or execute payments, **prompts are not security boundaries.** A prompt can be bypassed, manipulated, or drift under model updates.
 
-Define strict capabilities mapped to `resource.action.scope` with wildcard matching:
+CapFence introduces an independent enforcement boundary:
+* **Decoupled Access Control:** Policy logic is isolated from the LLM and evaluated locally using a fast capability engine.
+* **Fail-Closed by Default:** If policy validation or audit logging fails, the action is blocked.
+* **Tamper-Evident Audit Trails:** Every decision is committed to a hash-chained, verifiable audit trail to prevent retroactive log alterations.
+
+---
+
+## 10-Second Example
+
+### 1. Define Capability Policies (`policies/ops.yaml`)
+Establish strict, resource-action-scope access limits. Unmatched capabilities default to deny.
 
 ```yaml
-deny:
-  # Block destructive command patterns on the workspace resource
-  - capability: filesystem.delete.workspace
-    contains: "rm -rf"
-
-require_approval:
-  # Enforce pre-authorizations for high-value financial transfers
-  - capability: payment.execute.high_value
-    amount_gt: 1000
+policy_name: Production Security Policy
+version: 2.0.0
 
 allow:
-  # Standard low-risk reads are allowed
-  - capability: filesystem.read.workspace
+  - filesystem.read.workspace
 
-  # Payments under threshold require no manual approval
-  - capability: payment.execute.high_value
-    amount_lte: 1000
+require_approval:
+  - payment.transfer.*
+  - deployment.execute.production
+
+deny:
+  - filesystem.delete.workspace
+  - shell.execute.*
 ```
 
-### 2. Enforce Safely at the SDK Boundary
+### 2. Enforce at the Runtime Boundary
+Initialize CapFence and evaluate actions before execution:
 
 ```python
-from capfence import ActionEvent, ActionRuntime, CapabilitySystem, ApprovalEngine, ImmutableAuditTrail
+from capfence import ActionRuntime, ActionEvent
 
-# 1. Initialize deterministic, low-latency primitives
-caps = CapabilitySystem()
-caps.load_policy("policies/ops.yaml")
+# 1. Initialize the runtime directly from a policy file
+runtime = ActionRuntime.from_policy("policies/ops.yaml")
 
-runtime = ActionRuntime(
-    capability_system=caps,
-    approval_engine=ApprovalEngine(),
-    audit_trail=ImmutableAuditTrail(),
-)
-
-# 2. Construct the governed action event
+# 2. Represent the action as a governed event
 event = ActionEvent.create(
     actor="deployment-agent",
-    action="delete",
-    resource="filesystem.workspace",
-    environment="production",
-    risk="high",
-    command="rm -rf /var/lib/postgresql"  # Triggers deny rule
+    action="execute",
+    resource="deployment",
+    environment="production"
 )
 
-# 3. Deterministic policy enforcement
+# 3. Enforce the decision
 verdict = runtime.execute(event)
 
 if not verdict.authorized:
     raise PermissionError(f"Action blocked by CapFence: {verdict.reason}")
-
-# Proceed to execute safe tool command...
 ```
 
 ---
 
-## Core Production Features
+## Policy Simulation & Incident Replay
 
-### Ⅰ. Pluggable persistence ([BaseDBEngine](capfence/core/db.py))
-CapFence isolates persistence operations using an abstract DB layer. Scale easily from a local, thread-safe, WAL-enabled SQLite engine to high-throughput, distributed **PostgreSQL** or **Redis** pools for multi-pod Kubernetes scaling.
+The `ReplayEngine` allows you to dry-run policy changes and reconstruct past execution traces.
 
-### Ⅱ. Dynamic Pre-Authorizations ([ApprovalEngine](capfence/core/approvals.py))
-Enforce human-in-the-loop validation without blocking agent execution. Support expiring temporary approvals (e.g. valid for 10 minutes) and session-locked capabilities directly in production.
+```python
+from capfence import ReplayEngine
 
-### Ⅲ. Immutable Asymmetric Logs ([ImmutableAuditTrail](capfence/core/audit.py))
-Log audit trails in an append-only, tamper-evident hash chain. When the `cryptography` library is available, every row is cryptographically signed using asymmetric Ed25519 keypairs, making manual database edits instantly detectable.
+# Replay historical traces against a new candidate policy to validate safety
+engine = ReplayEngine()
+summary = engine.simulate_policy(
+    trace_path="traces/incident_log.jsonl",
+    policy_path="policies/ops_v2.yaml"
+)
+
+print(f"Total Replayed: {summary.total_events} | Blocked: {summary.blocked}")
+```
+
+* **Incident Reconstruction:** Re-evaluate exactly what would have occurred under a historical event trace.
+* **Policy Validation:** Prevent regressions by testing candidate policy changes against real transaction logs before deployment.
 
 ---
 
-## CLI Workflows
+## Command Line Interface
 
-### Scan for Ungated Agent Tools
-Analyze your codebase in CI to ensure no tool classes are exposed without a CapFence gate interface:
-```bash
-capfence check ./src --fail-on-ungated
-```
+CapFence integrates directly into standard CI/CD and operations workflows.
 
-### Manually Grant Expiring Capability Pre-Authorizations
-Ops administrators can manually provision expiring credentials to an active agent directly via the CLI:
+### Grant Temporary Pre-Authorizations
+Grant temporary, expiring capabilities to an active agent:
 ```bash
-# Grant 10-minute temporary push capability for production hotfix
+# Grant 10-minute push access to a hotfix agent
 capfence grant --actor hotfix-agent --capability github.push.main --duration 600
 ```
 
-### Validate Local YAML Policies
-```bash
-capfence check-policy policies/ops.yaml
-```
-
-### Replay Event Traces for Incident Review or Compliance Audits
-Reconstruct historical actions offline and run simulations to trace policy changes against saved execution trails:
+### Dry-Run Trace Simulations
+Replay execution logs against a candidate policy:
 ```bash
 capfence simulate --trace-file traces/agent_trace.jsonl --compare
 ```
 
-### Verify Audit Database Chain Integrity
+### Verify Audit Log Integrity
+Verify that audit database entries have not been modified:
 ```bash
 capfence verify --audit-log audit.db
 ```
 
----
-
-## What CapFence Is Not
-
-CapFence enforces execution policy boundaries for autonomous systems. It does not replace:
-- **Process Sandboxing**: Always run agent code inside isolated runtimes (Docker, gVisor).
-- **Least-Privilege Credentials**: Keep your IAM policies and database access credentials locked down.
-- **Network Egress Isolation**: Keep agents isolated from unapproved public domains.
-- **Prompt-Injection Guardrails**: Standard prompt filters remain active layers. CapFence is the final, deterministic fail-closed gateway.
+### Codebase Scanning
+Scan Python projects to ensure all tools are gated by CapFence:
+```bash
+capfence check ./src --fail-on-ungated
+```
 
 ---
 
-## Project Status
+## Operational Scope
 
-CapFence is beta infrastructure for trusted autonomous execution.
-- Docs: [docs/](docs/)
-- PyPI: https://pypi.org/project/capfence/
-- Repository: https://github.com/capfencelabs/capfence
+CapFence enforces runtime policy boundaries. It does not replace:
+* **Process Sandboxing:** Always run agents inside isolated runtimes (Docker, gVisor).
+* **Least-Privilege Infrastructure:** Cloud IAM policies and database access credentials must remain strictly locked down.
+* **Network Isolation:** Restrict network egress to prevent unauthorized public connections.
 
 ---
 
-## License
+## Project Info
+* **Documentation:** Configuration details are in the [docs/](docs/) directory.
+* **PyPI:** https://pypi.org/project/capfence/
+* **Repository:** https://github.com/capfencelabs/capfence
 
-MIT License
+---
 
-<p align="center">
-  <sub>Built with care by <a href="https://github.com/capfencelabs">CapFence Labs</a></sub>
-</p>
+MIT License | Built by [CapFence Labs](https://github.com/capfencelabs)
