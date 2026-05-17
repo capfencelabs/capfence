@@ -31,8 +31,8 @@ def test_action_event_validations() -> None:
     with pytest.raises(ValueError, match="risk string must be one of"):
         ActionEvent(actor="agent", action="read", resource="fs", environment="prod", risk="super-high")
 
-    with pytest.raises(ValueError, match="risk score must be a float between 0.0 and 1.0"):
-        ActionEvent(actor="agent", action="read", resource="fs", environment="prod", risk=1.5)
+    with pytest.raises(ValueError, match="risk score must be a non-negative float"):
+        ActionEvent(actor="agent", action="read", resource="fs", environment="prod", risk=-0.5)
 
     with pytest.raises(ValueError, match="risk must be a string or a float"):
         ActionEvent(actor="agent", action="read", resource="fs", environment="prod", risk=[])  # type: ignore

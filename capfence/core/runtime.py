@@ -42,8 +42,8 @@ class ActionEvent:
             if self.risk.lower() not in {"low", "medium", "high", "critical"}:
                 raise ValueError("risk string must be one of: 'low', 'medium', 'high', 'critical'")
         elif isinstance(self.risk, (int, float)):
-            if not (0.0 <= float(self.risk) <= 1.0):
-                raise ValueError("risk score must be a float between 0.0 and 1.0")
+            if float(self.risk) < 0.0:
+                raise ValueError("risk score must be a non-negative float")
         else:
             raise ValueError("risk must be a string or a float")
 
