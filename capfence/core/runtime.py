@@ -26,6 +26,39 @@ class ActionEvent:
     risk: str | float        # Risk level (low, medium, high, critical) or risk score
     metadata: dict[str, Any] = field(default_factory=dict)
 
+    def __post_init__(self) -> None:
+        # Validate non-empty fields
+        if not self.actor or not isinstance(self.actor, str):
+            raise ValueError("actor must be a non-empty string")
+        if not self.action or not isinstance(self.action, str):
+            raise ValueError("action must be a non-empty string")
+        if not self.resource or not isinstance(self.resource, str):
+            raise ValueError("resource must be a non-empty string")
+        if not self.environment or not isinstance(self.environment, str):
+            raise ValueError("environment must be a non-empty string")
+
+        # Enforce strict risk domain
+        if isinstance(self.risk, str):
+            if self.risk.lower() not in {"low", "medium", "high", "critical"}:
+                raise ValueError("risk string must be one of: 'low', 'medium', 'high', 'critical'")
+        elif isinstance(self.risk, (int, float)):
+            if not (0.0 <= float(self.risk) <= 1.0):
+                raise ValueError("risk score must be a float between 0.0 and 1.0")
+        else:
+            raise ValueError("risk must be a string or a float")
+
+        # Validate metadata JSON-serializability for absolute replay stability
+        if not isinstance(self.metadata, dict):
+            raise ValueError("metadata must be a dictionary")
+        for k, v in self.metadata.items():
+            if not isinstance(k, str):
+                raise ValueError("metadata keys must be strings")
+        try:
+            import json
+            json.dumps(self.metadata)
+        except (TypeError, OverflowError) as e:
+            raise ValueError(f"metadata must be completely JSON-serializable for replay stability: {e}")
+
     @classmethod
     def create(
         cls,

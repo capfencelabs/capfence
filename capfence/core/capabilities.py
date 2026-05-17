@@ -26,6 +26,14 @@ class Capability:
     @classmethod
     def parse(cls, cap_str: str) -> Capability:
         """Parse a capability string (e.g. 'github.push.main') into a Capability object."""
+        if not cap_str or not isinstance(cap_str, str):
+            raise ValueError("Capability string must be a non-empty string")
+        
+        # Alphanumeric, dot, underscore, hyphen, and wildcard only
+        import re
+        if not re.match(r"^[a-zA-Z0-9_\-\.\*]+$", cap_str):
+            raise ValueError(f"Capability string contains invalid characters: '{cap_str}'")
+
         parts = cap_str.split(".", 2)
         if len(parts) == 1:
             return cls(resource=parts[0], action="*", scope="*")

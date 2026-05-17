@@ -56,6 +56,48 @@ class ReplayEngine:
         else:
             self.runtime = runtime
 
+    def _build_sandbox_runtime(self, runtime: ActionRuntime) -> ActionRuntime:
+        """Create a completely isolated, sandboxed ActionRuntime in memory,
+        cloning capability rules and active approvals from the source runtime to prevent live state contamination."""
+        sandbox_caps = CapabilitySystem()
+        # Clone capabilities
+        sandbox_caps.allowed = list(runtime.capability_system.allowed)
+        sandbox_caps.require_approval = list(runtime.capability_system.require_approval)
+        sandbox_caps.denied = list(runtime.capability_system.denied)
+
+        # Build in-memory isolated approval engine
+        sandbox_approval = ApprovalEngine(db_path=":memory:")
+        
+        # Clone active approved grants and approvals from source runtime if they are SQLite-backed
+        try:
+            # Copy approved grants
+            grants = runtime.approval_engine._db.query("SELECT * FROM approved_grants")
+            for g in grants:
+                sandbox_approval._db.execute(
+                    "INSERT INTO approved_grants (id, actor, capability, environment, granted_by, created_at, expires_at, session_id, metadata) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    (g["id"], g["actor"], g["capability"], g["environment"], g["granted_by"], g["created_at"], g["expires_at"], g["session_id"], g["metadata"])
+                )
+            
+            # Copy approvals
+            approvals = runtime.approval_engine._db.query("SELECT * FROM approvals")
+            for a in approvals:
+                sandbox_approval._db.execute(
+                    "INSERT INTO approvals (id, agent_id, tool_name, capability, payload, reason, status, created_at, expires_at, resolved_at, resolved_by) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    (a["id"], a["agent_id"], a["tool_name"], a["capability"], a["payload"], a["reason"], a["status"], a["created_at"], a["expires_at"], a.get("resolved_at"), a.get("resolved_by"))
+                )
+        except Exception:
+            # Fallback if query fails or is empty
+            pass
+
+        return ActionRuntime(
+            capability_system=sandbox_caps,
+            approval_engine=sandbox_approval,
+            audit_trail=ImmutableAuditTrail(db_path=":memory:"),
+            mode=runtime.mode,
+        )
+
     def load_trace(self, trace_path: str | Path) -> list[dict[str, Any]]:
         """Load execution events from a JSON or JSONL trace file."""
         path = Path(trace_path)
@@ -90,12 +132,15 @@ class ReplayEngine:
         raw_events = self.load_trace(trace_path)
         summary = ReplaySummary()
 
+        # Build fully isolated sandbox runtime to prevent live state contamination
+        sandbox_runtime = self._build_sandbox_runtime(self.runtime)
+
         for raw in raw_events:
             event = self._parse_event(raw)
             original_decision = raw.get("decision") or raw.get("original_decision")
 
-            # Run deterministic evaluation without mutating actual databases (or using in-memory trail)
-            verdict = self.runtime.execute(event)
+            # Run deterministic evaluation in the sandboxed, in-memory runtime
+            verdict = sandbox_runtime.execute(event)
 
             differs = False
             if original_decision:
