@@ -82,7 +82,6 @@ class Gate:
         self,
         state_store: AgentStateStore | None = None,
         taxonomy_path: str | None = None,
-        cloud_client: Any | None = None,
         audit_logger: AuditLogger | None = None,
         scorer: BaseScorer | None = None,
         mode: str = GATE_MODE_ENFORCE,
@@ -93,7 +92,6 @@ class Gate:
             raise ConfigurationError(f"Invalid gate mode '{mode}'. Use 'enforce' or 'observe'.")
         self._store = state_store or AgentStateStore()
         self._taxonomy_path = taxonomy_path
-        self._cloud = cloud_client
         self._audit = audit_logger or AuditLogger()
         self._scorer = scorer or load_scorer(state_store=self._store)
         self._mode = mode
@@ -185,14 +183,7 @@ class Gate:
         taxonomy_entry["name"] = risk_category
         risk_score = score_payload(payload, risk_keywords, self._scorer, taxonomy_entry, agent_id=agent_id)
 
-        if self._cloud is not None and hasattr(self._cloud, "get_threshold"):
-            try:
-                threshold = self._cloud.get_threshold(K=K, V=V, delta=delta)
-            except Exception:
-                logger.warning("Cloud threshold fetch failed, falling back to local delta=%.3f", delta)
-                threshold = compute_threshold(delta)
-        else:
-            threshold = compute_threshold(delta)
+        threshold = compute_threshold(delta)
 
         raw_passed = risk_score <= threshold
         bypass_reason = self._bypass_reason(agent_id)
@@ -373,17 +364,7 @@ class Gate:
                 metadata={**result.metadata, "audit_error": type(e).__name__},
             )
 
-        if self._cloud is not None and hasattr(self._cloud, "evaluate"):
-            try:
-                self._cloud.evaluate(
-                    agent_id=agent_id,
-                    task_context=task_context,
-                    risk_category=risk_category,
-                    payload=payload,
-                    local_result=result.__dict__,
-                )
-            except Exception:
-                logger.debug("Cloud telemetry fire-and-forget failed for agent_id=%s", agent_id)
+        # Telemetry removed to guarantee offline execution boundaries.
 
         return result
 

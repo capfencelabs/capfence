@@ -1,8 +1,7 @@
-"""Concurrency smoke tests for Gate.bypass and FlowTracer."""
+"""Concurrency smoke tests for Gate.bypass."""
 import threading
 
 from capfence.core.gate import Gate
-from capfence.flow.tracer import FlowTracer, TrustLevel
 
 
 RISKY_PAYLOAD = {
@@ -41,63 +40,3 @@ def test_bypass_stack_concurrent_agents():
     assert not errors, f"bypass corruption under concurrency: {errors}"
     # After all threads exit, no bypasses should remain active
     assert gate._bypass_stack == {}
-
-
-def test_flow_tracer_concurrent_writes():
-    """Concurrent record_output calls should not corrupt internal state."""
-    tracer = FlowTracer()
-    errors: list[str] = []
-
-    def writer(agent_id: str, count: int) -> None:
-        try:
-            for i in range(count):
-                tracer.record_output(agent_id, {"i": i}, TrustLevel.INTERNAL)
-        except Exception as e:
-            errors.append(f"{agent_id}: {type(e).__name__}: {e}")
-
-    threads = [
-        threading.Thread(target=writer, args=(f"agent-{i}", 100))
-        for i in range(4)
-    ]
-    for t in threads:
-        t.start()
-    for t in threads:
-        t.join()
-
-    assert not errors, f"FlowTracer corruption under concurrency: {errors}"
-    summary = tracer.flow_summary()
-    assert summary["total_flows"] == 400
-    assert len(summary["agents"]) == 4
-
-
-def test_flow_tracer_concurrent_annotate_and_record():
-    """Reads (annotate) interleaved with writes (record_output) should not crash."""
-    tracer = FlowTracer()
-    errors: list[str] = []
-
-    def writer() -> None:
-        try:
-            for i in range(200):
-                tracer.record_output("scraper", {"i": i}, TrustLevel.UNTRUSTED)
-        except Exception as e:
-            errors.append(f"writer: {e}")
-
-    def reader() -> None:
-        try:
-            for _ in range(200):
-                tracer.annotate(
-                    receiving_agent="payment-agent",
-                    source_agents=["scraper"],
-                    declared_trust=TrustLevel.SYSTEM,
-                )
-        except Exception as e:
-            errors.append(f"reader: {e}")
-
-    t1 = threading.Thread(target=writer)
-    t2 = threading.Thread(target=reader)
-    t1.start()
-    t2.start()
-    t1.join()
-    t2.join()
-
-    assert not errors, f"FlowTracer read/write race: {errors}"

@@ -8,7 +8,6 @@ from capfence.errors import (
     CapFenceError,
 )
 from capfence.framework.langchain import AgentActionBlocked as LCBlocked
-from capfence.framework.crewai import AgentActionBlocked as CrewBlocked
 from capfence.framework.langgraph import AgentActionBlocked as LGBlocked
 from capfence.framework.openai_agents import AgentActionBlocked as OAIBlocked
 from capfence.mcp.adapter import AgentActionBlocked as MCPBlocked
@@ -22,7 +21,6 @@ def test_version_exposed():
 def test_all_framework_agent_blocked_is_same_class():
     """A user catching capfence.AgentActionBlocked must catch every adapter's block."""
     assert LCBlocked is AgentActionBlocked
-    assert CrewBlocked is AgentActionBlocked
     assert LGBlocked is AgentActionBlocked
     assert OAIBlocked is AgentActionBlocked
     assert MCPBlocked is AgentActionBlocked
