@@ -82,3 +82,4 @@ Thumbs.db
 site/
 capfence-demo/capfence-assessment-report.html
 capfence-demo/audit.db
+capfence-demo/approvals.db
