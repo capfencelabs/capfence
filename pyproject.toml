@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "capfence"
-version = "0.7.0"
+version = "0.7.1"
 description = "Runtime governance for AI agents — deterministic fail-closed enforcement. Wraps any agent tool and blocks dangerous calls before execution. Zero LLM calls, zero cloud dependencies, works offline."
 readme = "README.md"
 license = { text = "MIT" }

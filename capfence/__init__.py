@@ -6,7 +6,7 @@ and immutable cryptographic audit logging for high-risk operations.
 
 from __future__ import annotations
 
-__version__ = "0.7.0"
+__version__ = "0.7.1"
 
 # First-class Premium Redesign Primitives
 from capfence.core.runtime import ActionEvent, ActionRuntime, ExecutionVerdict
