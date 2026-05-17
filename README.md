@@ -1,6 +1,6 @@
 # CapFence
 
-> **Trusted execution runtime for high-risk AI operations.**
+> **Execution authorization infrastructure for autonomous systems.**
 
 AI agents are non-deterministic. Real-world execution must not be.
 
@@ -13,9 +13,9 @@ AI agents are non-deterministic. Real-world execution must not be.
   <img src="https://img.shields.io/badge/tests-passing-brightgreen" alt="Tests: passing">
 </p>
 
-CapFence sits between autonomous AI agents and downstream systems (APIs, databases, filesystems, and payment gateways). It evaluates agent actions against declarative, capability-based policies—allowing, blocking, or queuing actions for approval.
+CapFence sits between autonomous systems and privileged execution targets (APIs, databases, filesystems, and gateways). It evaluates agent actions against declarative, capability-based policies—allowing, blocking, or queuing actions for approval.
 
-It operates as a **policy enforcement layer and verifiable audit log**, bringing the control of IAM and transaction gateways to AI workflows.
+It operates as a **policy enforcement layer and verifiable audit log**, bringing the control of IAM and transaction gateways to autonomous agent runtimes.
 
 ```text
 Agent SDK ──> CapFence Runtime ──> Target System
