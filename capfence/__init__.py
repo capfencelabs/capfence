@@ -1,11 +1,22 @@
-"""CAPFENCE — Runtime governance for AI agents.
+"""CAPFENCE — Trusted execution infrastructure for autonomous AI systems.
 
-MIT licensed. Works offline. Rule-based gating with pluggable scoring.
+Deterministic fail-safe governance, approvals, capability policies,
+and immutable cryptographic audit logging for high-risk operations.
 """
+
+from __future__ import annotations
 
 __version__ = "0.7.0"
 
-from capfence.core.gate import Gate
+# First-class Premium Redesign Primitives
+from capfence.core.runtime import ActionEvent, ActionRuntime, ExecutionVerdict
+from capfence.core.capabilities import Capability, CapabilitySystem, CapabilityRegistry
+from capfence.core.approvals import ApprovedGrant, ApprovalEngine, ApprovalManager
+from capfence.core.audit import ImmutableAuditTrail, AuditLogger
+from capfence.core.replay import ReplayEngine, ReplaySummary, ReplayEventResult
+
+# Legacy SDK Primitives and Adapters
+from capfence.core.gate import Gate, GATE_MODE_ENFORCE, GATE_MODE_OBSERVE
 from capfence.types import GateResult
 from capfence.errors import (
     CapFenceError,
@@ -20,7 +31,6 @@ from capfence.core.fsm import FSMOutcome, FailClosedFSM
 from capfence.core.state import AgentStateStore
 from capfence.core.taxonomy import TaxonomyLoader, stripe_mapper
 from capfence.core.hash import compute_payload_hash
-from capfence.core.audit import AuditLogger
 from capfence.core.chain import verify_chain, verify_chain_from_rows, ChainEntry
 from capfence.core.keys import generate_keypair, load_keypair, ensure_keypair, sign_entry, verify_entry
 from capfence.core.scorer import BaseScorer, KeywordScorer, RegexASTScorer, AdaptiveScorer, load_scorer
@@ -43,10 +53,25 @@ from capfence.mcp.gateway import MCPGatewayServer
 from capfence.mcp.adapter import CapFenceMCPSession
 from capfence.telemetry.client import TelemetryClient
 from capfence.flow.tracer import FlowTracer, FlowEdge, TrustLevel
-from capfence.core.gate import GATE_MODE_ENFORCE, GATE_MODE_OBSERVE
 
 __all__ = [
     "__version__",
+    # Core Primitives
+    "ActionEvent",
+    "ActionRuntime",
+    "ExecutionVerdict",
+    "Capability",
+    "CapabilitySystem",
+    "CapabilityRegistry",
+    "ApprovedGrant",
+    "ApprovalEngine",
+    "ApprovalManager",
+    "ImmutableAuditTrail",
+    "AuditLogger",
+    "ReplayEngine",
+    "ReplaySummary",
+    "ReplayEventResult",
+    # Legacy Primitives
     "Gate",
     "GateResult",
     "CapFenceError",
@@ -62,7 +87,6 @@ __all__ = [
     "TaxonomyLoader",
     "stripe_mapper",
     "compute_payload_hash",
-    "AuditLogger",
     "verify_chain",
     "verify_chain_from_rows",
     "ChainEntry",

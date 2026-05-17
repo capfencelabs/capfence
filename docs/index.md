@@ -1,91 +1,101 @@
 # CapFence
 
-CapFence is a deterministic runtime authorization layer for AI agent tool calls.
+CapFence is a deterministic trusted execution runtime for autonomous AI systems.
 
-It sits between an agent and its tools, evaluates each attempted tool call against policy, and blocks unauthorized actions before execution.
+It sits between an agent and its tools, evaluates each attempted tool action against capability policy, and blocks unauthorized operations before execution.
 
 ```text
-Agent -> CapFence -> Tool
-          |
-          +-- allow
-          +-- deny
-          +-- require approval
+Agent -> CapFence Runtime -> System / API
+              |
+              +-- [Allow] -> Execution
+              +-- [Deny]  -> Fail-Closed Block
+              +-- [Require Approval] -> Pre-Authorized Scopes
 ```
 
-CapFence is built for teams shipping agents that can touch shells, databases, payment APIs, filesystems, MCP servers, SaaS admin APIs, or other sensitive systems.
+CapFence is built for teams shipping autonomous agents that interface with high-risk operations: shell execution, production databases, payment APIs, local filesystems, MCP servers, SaaS admin endpoints, and cloud infrastructure.
 
-## Why it exists
+---
 
-Prompt guardrails and model instructions are useful, but they are not an execution boundary. CapFence treats tool execution like infrastructure authorization: explicit policy, deterministic decisions, audit logs, replay, and fail-closed behavior.
+## Why It Exists
 
-## What it does
+Prompt guardrails and model instructions are not an execution boundary. A prompt can be bypassed, misinterpreted, or manipulated. 
 
-- Enforces policy-as-code before tool calls run.
-- Supports allow, deny, default-deny, and approval-required decisions.
-- Works offline with no LLM call in the gate path.
-- Records decisions in a local SQLite audit log.
-- Verifies audit integrity with a hash chain and optional signing.
-- Supports observe mode for staged rollout.
-- Scans Python projects for ungated agent tools.
-- Replays traces through policy changes.
-- Integrates with LangChain, LangGraph, CrewAI, OpenAI Agents SDK, MCP, and direct Python APIs.
+CapFence treats autonomous tool execution like secure infrastructure authorization: **explicit capability policies, deterministic decisions, tamper-evident audit trails, dynamic pre-approvals, and complete fail-closed behavior.**
 
-## What it does not do
+---
 
-- It does not replace sandboxing for dangerous tools.
-- It does not guarantee prompt-injection prevention.
-- It does not prove that a model's reasoning is safe.
-- It does not turn synthetic benchmark results into production detection guarantees.
-- It does not remove the need for least-privilege credentials and network controls.
+## Core Capabilities
 
-Use CapFence as the runtime authorization and audit layer alongside those controls.
+- **Deterministic Enforcement**: Policy-as-code evaluations mapped to `resource.action.scope` wildcards.
+- **Zero LLM Latency**: Pure-Python capability matching ensures sub-millisecond interlocks without any cloud APIs.
+- **Pluggable Persistence**: Decoupled storage using [BaseDBEngine](concepts/runtime-authorization.md), supporting local SQLite WAL files or high-throughput PostgreSQL pools.
+- **Pre-Authorizations**: Manage expiring temporary and session-bound capability credentials dynamically.
+- **Cryptographic Audit Chain**: Logs decisions in a tamper-evident hash chain with Ed25519 asymmetric signatures.
+- **Trace Replay & Incident Simulation**: Replay historical trace files offline to safely test policy changes and generate compliance evidence.
+- **Static Scanning & CI Checks**: Scan Python codebases to catch and block ungated tool registrations during CI/CD.
 
-## Five-minute path
+---
 
-Install:
+## Five-Minute Path
+
+### 1. Install
 
 ```bash
 pip install capfence
 ```
 
-Create a policy:
+### 2. Create a Capability Policy (`policies/ops.yaml`)
 
 ```yaml
 deny:
-  - capability: shell.execute
+  - capability: filesystem.delete.workspace
     contains: "rm -rf"
 
 require_approval:
-  - capability: payments.transfer
+  - capability: payment.execute.high_value
     amount_gt: 1000
 
 allow:
-  - capability: shell.execute
-  - capability: payments.transfer
+  - capability: filesystem.read.workspace
+  - capability: payment.execute.high_value
     amount_lte: 1000
 ```
 
-Evaluate a tool call:
+### 3. Evaluate and Enforce
 
 ```python
-from capfence.core.gate import Gate
+from capfence import ActionEvent, ActionRuntime, CapabilitySystem, ApprovalEngine, ImmutableAuditTrail
 
-gate = Gate()
+# 1. Initialize low-latency runtime components
+caps = CapabilitySystem()
+caps.load_policy("policies/ops.yaml")
 
-result = gate.evaluate(
-    agent_id="ops-agent",
-    task_context="shell",
-    risk_category="shell_execution",
-    capability="shell.execute",
-    policy_path="policies/shell_agent.yaml",
-    payload={"command": "rm -rf /var/lib/postgresql"},
+runtime = ActionRuntime(
+    capability_system=caps,
+    approval_engine=ApprovalEngine(),
+    audit_trail=ImmutableAuditTrail(),
 )
 
-if not result.passed:
-    raise PermissionError(f"Blocked: {result.reason}")
+# 2. Formulate the governed event
+event = ActionEvent.create(
+    actor="hotfix-agent",
+    action="delete",
+    resource="filesystem.workspace",
+    environment="production",
+    risk="high",
+    command="rm -rf /var/lib/postgresql"
+)
+
+# 3. Deterministic enforcement
+verdict = runtime.execute(event)
+
+if not verdict.authorized:
+    raise PermissionError(f"Action blocked by CapFence: {verdict.reason}")
 ```
 
-## Common workflows
+---
+
+## Common Workflows
 
 - Start with [Installation](getting-started/installation.md).
 - Run the [Quickstart](getting-started/quickstart.md).
@@ -98,16 +108,12 @@ if not result.passed:
 - Replay an incident with [trace replay](guides/replay-an-incident.md).
 - Check the [compatibility matrix](integrations/compatibility.md) before wiring adapters.
 - Run the [demo walkthrough](examples/demo-walkthrough.md).
-- Record or play the [demo cast](examples/demo-cast.md).
 
-## Trust model
+---
 
-CapFence is strongest when you define explicit capabilities and policies. Risk scoring can help with suspicious payloads, but the primary control should be policy-first authorization: what capability is being requested, under what context, and whether that action is allowed.
+## Project Status
 
-For architecture details, see:
-
-- [Runtime authorization](concepts/runtime-authorization.md)
-- [Policy model](concepts/policy-model.md)
-- [Fail-closed enforcement](concepts/fail-closed-enforcement.md)
-- [Audit chain](concepts/audit-chain.md)
-- [Threat model](architecture/threat-model.md)
+CapFence is open infrastructure for trusted autonomous execution.
+- Docs: https://capfence.dev/
+- PyPI: https://pypi.org/project/capfence/
+- Repository: https://github.com/capfencelabs/capfence

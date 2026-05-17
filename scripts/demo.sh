@@ -35,10 +35,12 @@ printf "\n[STEP] Run a live Gate decision (block + allow)\n"
 "$python_cmd" - <<'PY'
 from capfence.core.audit import AuditLogger
 from capfence.core.gate import Gate
+from capfence import ActionEvent, ActionRuntime, CapabilitySystem, ApprovalEngine, ImmutableAuditTrail
 
 audit_path = "capfence-demo/audit.db"
 policy_path = "policies/production_shell_policy.yaml"
 
+# 1. Backward-compatible Gate evaluation
 gate = Gate(audit_logger=AuditLogger(db_path=audit_path))
 
 blocked = gate.evaluate(
@@ -60,7 +62,29 @@ allowed = gate.evaluate(
     payload={"command": "ls -la /tmp"},
 )
 print(f"[GATE] passed={allowed.passed} reason={allowed.reason}")
+
+# 2. Modern deterministic ActionRuntime evaluation
+caps = CapabilitySystem()
+caps.load_policy(policy_path)
+runtime = ActionRuntime(
+    capability_system=caps,
+    approval_engine=ApprovalEngine(db_path="capfence-demo/approvals.db"),
+    audit_trail=ImmutableAuditTrail(db_path=audit_path),
+)
+event = ActionEvent.create(
+    actor="demo-agent",
+    action="execute",
+    resource="shell",
+    environment="production",
+    risk="high",
+    command="rm -rf /tmp/cache"
+)
+verdict = runtime.execute(event)
+print(f"[RUNTIME] authorized={verdict.authorized} decision={verdict.decision} reason={verdict.reason}")
 PY
+
+printf "\n[STEP] Grant expiring capability pre-authorization via CLI\n"
+"$python_cmd" -m capfence.cli grant --actor demo-agent --capability shell.execute.production --duration 300 --db-path capfence-demo/approvals.db
 
 printf "\n[STEP] Simulate trace replay\n"
 "$python_cmd" -m capfence.cli simulate --trace-file "tests/corpus/benign_traces.jsonl" --taxonomy general

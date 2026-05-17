@@ -244,7 +244,8 @@ def _get_compliance_context(data: AssessmentData) -> dict[str, Any]:
 
 
 @main.command()
-@click.option("--trace-file", "-t", type=click.Path(exists=True, path_type=Path), required=True,
+@click.argument("policy_file", type=click.Path(exists=True, path_type=Path), required=False)
+@click.option("--trace-file", "-t", type=click.Path(exists=True, path_type=Path), required=False,
               help="Path to JSONL trace file")
 @click.option("--taxonomy", type=str, default="general",
               help="Taxonomy to use for simulation")
@@ -254,8 +255,66 @@ def _get_compliance_context(data: AssessmentData) -> dict[str, Any]:
               help="Show static vs adaptive side-by-side comparison")
 @click.option("--output", "-o", type=click.Path(path_type=Path), default=None,
               help="Write simulation report to JSON file")
-def simulate(trace_file: Path, taxonomy: str, taxonomy_pack: tuple[str, ...], compare: bool, output: Path | None) -> None:
-    """Replay agent execution traces through CapFence gate."""
+def simulate(
+    policy_file: Path | None,
+    trace_file: Path | None,
+    taxonomy: str,
+    taxonomy_pack: tuple[str, ...],
+    compare: bool,
+    output: Path | None,
+) -> None:
+    """Replay agent execution traces through CapFence gate or simulate a custom policy."""
+    if policy_file is not None:
+        # Run custom policy simulation using ReplayEngine
+        from capfence.core.replay import ReplayEngine
+        
+        # Determine trace file to use
+        t_file = trace_file
+        if not t_file:
+            for candidate in ("incident.json", "agent_trace.jsonl", "trace.jsonl", "trace.json"):
+                if Path(candidate).exists():
+                    t_file = Path(candidate)
+                    break
+        
+        if not t_file:
+            # Create a quick mock/demo trace file if none exists so the command always works and wows the user!
+            t_file = Path("incident_demo.json")
+            demo_events = [
+                {"actor": "coding-agent", "action": "push", "resource": "github.push.main", "environment": "production", "risk": "high"},
+                {"actor": "ops-agent", "action": "execute", "resource": "deployment.execute.production", "environment": "production", "risk": "critical"},
+                {"actor": "finance-agent", "action": "transfer", "resource": "payment.execute.high_value", "environment": "production", "risk": "high"},
+                {"actor": "coding-agent", "action": "delete", "resource": "filesystem.delete.workspace", "environment": "development", "risk": "medium"},
+            ]
+            t_file.write_text(json.dumps(demo_events, indent=2), encoding="utf-8")
+            click.echo(f"[SIMULATE] No trace file specified, generated temporary demo trace: {t_file}")
+
+        click.echo(f"[SIMULATE] Simulating custom policy '{policy_file}' on trace '{t_file}'...")
+        engine = ReplayEngine()
+        summary = engine.simulate_policy(t_file, policy_file)
+        
+        click.echo()
+        click.echo("=" * 60)
+        click.echo(f"Simulation Summary for {policy_file}:")
+        click.echo(f"  Total replayed:     {summary.total_events}")
+        click.echo(f"  Authorized:         {summary.authorized}")
+        click.echo(f"  Blocked:            {summary.blocked}")
+        click.echo(f"  Requires Approval:  {summary.require_approval}")
+        click.echo(f"  Drifts/Diffs:       {summary.diffs_detected}")
+        click.echo("=" * 60)
+        
+        if summary.compliance_evidence:
+            click.echo("\n[COMPLIANCE EVIDENCE]")
+            for standard, text in summary.compliance_evidence.get("standards", {}).items():
+                click.echo(f"  {standard}: {text}")
+            click.echo(f"  Status: {summary.compliance_evidence.get('status')}")
+        click.echo()
+        return
+
+    # Fallback to legacy TraceSimulator
+    if not trace_file:
+        click.echo("[ERROR] Please provide --trace-file or specify a policy file.", err=True)
+        sys.exit(1)
+
     click.echo(f"[SIMULATE] Replaying trace: {trace_file}")
     click.echo(f"[SIMULATE] Primary taxonomy: {taxonomy}")
     if taxonomy_pack:
@@ -579,6 +638,38 @@ def reject(request_id: str, db_path: Path, user: str) -> None:
     manager.reject(request_id, resolved_by=user)
     click.echo(f"Request {request_id} rejected.")
 
+@main.command(name="grant")
+@click.option("--db-path", "-d", type=click.Path(path_type=Path), default="capfence_approvals.db",
+              help="Path to approvals database")
+@click.option("--actor", "-a", type=str, required=True, help="Actor ID or '*' for all")
+@click.option("--capability", "-c", type=str, required=True, help="Capability to grant (e.g. github.push.main)")
+@click.option("--environment", "-e", type=str, default="*", help="Target environment or '*'")
+@click.option("--duration", type=float, default=None, help="Duration in seconds for temporary grant")
+@click.option("--session", "-s", type=str, default=None, help="Session ID for session-bound grant")
+@click.option("--by", type=str, default="cli_admin", help="Granter identifier")
+def grant(db_path: Path, actor: str, capability: str, environment: str, duration: float | None, session: str | None, by: str) -> None:
+    """Grant temporary or session pre-authorizations to an actor."""
+    manager = ApprovalManager(db_path=db_path)
+    
+    if duration:
+        g = manager.grant_temporary_approval(actor, capability, environment, duration, granted_by=by)
+        click.echo(f"[GRANT] Temporary grant {g.id} created successfully!")
+        click.echo(f"  Actor:      {g.actor}")
+        click.echo(f"  Capability: {g.capability}")
+        click.echo(f"  Expires:    In {duration} seconds")
+    elif session:
+        g = manager.grant_session_approval(actor, capability, environment, session, granted_by=by)
+        click.echo(f"[GRANT] Session grant {g.id} created successfully!")
+        click.echo(f"  Actor:      {g.actor}")
+        click.echo(f"  Capability: {g.capability}")
+        click.echo(f"  Session ID: {g.session_id}")
+    else:
+        g = manager.grant_temporary_approval(actor, capability, environment, 3600.0, granted_by=by)
+        click.echo(f"[GRANT] Created default 1-hour temporary grant {g.id}:")
+        click.echo(f"  Actor:      {g.actor}")
+        click.echo(f"  Capability: {g.capability}")
+        click.echo("  Expires:    In 3600.0 seconds")
+
 @main.command(name="logs")
 @click.option("--audit-log", "-a", type=click.Path(path_type=Path), default="audit.db",
               help="Path to SQLite audit log database")
@@ -642,14 +733,35 @@ def trace(trace_id: str, audit_log: Path) -> None:
 
 @main.command(name="replay")
 @click.argument("trace_file", type=click.Path(exists=True, path_type=Path))
-def replay(trace_file: Path) -> None:
-    """Replay trace for deterministic output."""
-    click.echo(f"Replaying trace from {trace_file}")
-    # Integration with TraceSimulator is already done in `simulate` command, 
-    # but the prompt specifically requested `capfence replay trace.jsonl`.
-    sim = TraceSimulator()
-    summary = sim.run(trace_file=trace_file, verbose=True)
-    click.echo(f"Replayed {summary.total_calls} calls. Blocked: {summary.adaptive_blocked}")
+@click.option("--policy", "-p", type=click.Path(exists=True, path_type=Path), default=None,
+              help="Simulate a custom policy file during replay")
+def replay(trace_file: Path, policy: Path | None) -> None:
+    """Deterministic trace replay and policy simulation for autonomous systems."""
+    from capfence.core.replay import ReplayEngine
+    
+    engine = ReplayEngine()
+    if policy:
+        click.echo(f"[REPLAY] Simulating policy '{policy}' on trace '{trace_file}'...")
+        summary = engine.simulate_policy(trace_file, policy)
+    else:
+        click.echo(f"[REPLAY] Replaying incident trace '{trace_file}'...")
+        summary = engine.replay_incident(trace_file)
+
+    click.echo()
+    click.echo("=" * 60)
+    click.echo(f"Replayed {summary.total_events} events:")
+    click.echo(f"  Authorized:         {summary.authorized}")
+    click.echo(f"  Blocked:            {summary.blocked}")
+    click.echo(f"  Requires Approval:  {summary.require_approval}")
+    click.echo(f"  Drifts/Diffs:       {summary.diffs_detected}")
+    click.echo("=" * 60)
+    
+    if summary.compliance_evidence:
+        click.echo("\n[COMPLIANCE EVIDENCE]")
+        for standard, text in summary.compliance_evidence.get("standards", {}).items():
+            click.echo(f"  {standard}: {text}")
+        click.echo(f"  Status: {summary.compliance_evidence.get('status')}")
+    click.echo()
 
 if __name__ == "__main__":
     main()

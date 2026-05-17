@@ -99,6 +99,18 @@ class Gate:
         self._mode = mode
         self._policy_loader = policy_loader or PolicyLoader()
         self._approval_manager = approval_manager or ApprovalManager()
+        
+        # Core Redesign Primitives Integration
+        from capfence.core.capabilities import CapabilitySystem
+        from capfence.core.runtime import ActionRuntime
+        self._capability_system = CapabilitySystem()
+        self._runtime = ActionRuntime(
+            capability_system=self._capability_system,
+            approval_engine=self._approval_manager,
+            audit_trail=self._audit,
+            mode=self._mode,
+        )
+
         # Per-agent bypass stack: agent_id → list[reason]
         self._bypass_stack: dict[str, list[str]] = {}
         # Protects _bypass_stack from concurrent agents sharing one Gate.
@@ -321,7 +333,31 @@ class Gate:
         )
 
         try:
-            self._audit.record(agent_id, task_context, risk_category, result, payload_hash=payload_hash)
+            # Map legacy Gate parameters to first-class ActionEvent & ExecutionVerdict
+            from capfence.core.runtime import ActionEvent, ExecutionVerdict
+            event = ActionEvent.create(
+                actor=agent_id,
+                action=task_context,
+                resource=capability or risk_category or "system",
+                environment=(policy_context.get("environment") if policy_context else "development") or "development",
+                risk=risk_score,
+                payload=payload,
+                require_approval=requires_approval_flag,
+            )
+            verdict = ExecutionVerdict(
+                authorized=passed,
+                decision="allow" if passed else ("require_approval" if requires_approval_flag else "deny"),
+                reason=reason,
+                event=event,
+                timestamp=time.time(),
+                approval_id=locals().get("req", None) and req.id,
+                metadata=metadata,
+            )
+            # Commit using premium record_event if supported, otherwise fallback to legacy record
+            if hasattr(self._audit, "record_event"):
+                self._audit.record_event(verdict)
+            else:
+                self._audit.record(agent_id, task_context, risk_category, result, payload_hash=payload_hash)
         except Exception as e:
             # Audit failure is a tamper signal — do not silently swallow
             logger.warning("Audit log failure for agent_id=%s: %s", agent_id, type(e).__name__)

@@ -311,6 +311,51 @@ capfence eu-ai-act ./src --taxonomy financial --system-name "FintechAgent" -o ev
 
 ---
 
+## `capfence grant`
+
+Grant temporary or session pre-authorizations to an autonomous agent.
+
+### Synopsis
+
+```
+capfence grant [OPTIONS]
+```
+
+### Description
+
+Provisions temporary time-bound or session-bound capability pre-authorizations to an actor, saving the grant state to the SQLite database (defaults to approvals.db). This enables operations webhooks, Slack bots, or automation pipelines to grant temporary privileges to agents.
+
+### Options
+
+| Flag | Description |
+|---|---|
+| `--actor TEXT` | Target actor identifier (required) |
+| `--capability TEXT` | Scoped capability string in resource.action.scope format (required) |
+| `--environment TEXT` | Target environment target (e.g. production, development, or wildcard '*') (default: '*') |
+| `--duration FLOAT` | Duration in seconds for a temporary grant (default: 3600.0) |
+| `--session TEXT` | Session ID for a session-locked grant |
+| `--by TEXT` | Identifier of the operational authority issuing the grant (default: ops_admin) |
+| `--approvals-db PATH` | Path to SQLite approvals database (default: approvals.db) |
+
+### Examples
+
+```bash
+# Grant a 1-hour temporary authorization for ops-agent to delete production workspaces
+capfence grant --actor ops-agent --capability filesystem.delete.workspace --duration 3600 --environment production
+
+# Grant a session-locked push permission to hotfix-agent
+capfence grant --actor hotfix-agent --capability github.push.main --session session-7789 --by github_actions
+```
+
+### Exit Codes
+
+| Code | Meaning |
+|---|---|
+| 0 | Pre-authorization grant created and persisted successfully |
+| 1 | Invalid parameters or db write error |
+
+---
+
 ## Global Options
 
 All commands support:

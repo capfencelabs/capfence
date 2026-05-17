@@ -1,15 +1,135 @@
-"""Capability Taxonomy System.
+"""Capability System for autonomous AI systems.
 
-Defines reusable capabilities, groupings, and inheritance.
+Redesigned around resource.action.scope.
 """
 
 from __future__ import annotations
 
+import logging
+from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
+import yaml  # type: ignore
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True)
+class Capability:
+    """Represents a capability in resource.action.scope format."""
+
+    resource: str
+    action: str
+    scope: str
+
+    @classmethod
+    def parse(cls, cap_str: str) -> Capability:
+        """Parse a capability string (e.g. 'github.push.main') into a Capability object."""
+        parts = cap_str.split(".", 2)
+        if len(parts) == 1:
+            return cls(resource=parts[0], action="*", scope="*")
+        elif len(parts) == 2:
+            return cls(resource=parts[0], action=parts[1], scope="*")
+        else:
+            return cls(resource=parts[0], action=parts[1], scope=parts[2])
+
+    def __str__(self) -> str:
+        return f"{self.resource}.{self.action}.{self.scope}"
+
+    def matches(self, required: Capability) -> bool:
+        """Check if this granted capability matches/covers the required capability.
+
+        Supports wildcards ('*') in any position.
+        """
+        def match_part(granted: str, req: str) -> bool:
+            return granted == "*" or granted == req
+
+        return (
+            match_part(self.resource, required.resource)
+            and match_part(self.action, required.action)
+            and match_part(self.scope, required.scope)
+        )
+
+
+class CapabilitySystem:
+    """Policy engine verifying actor capabilities against minimal declarative policies."""
+
+    def __init__(self) -> None:
+        self.allowed: list[Capability] = []
+        self.require_approval: list[Capability] = []
+        self.denied: list[Capability] = []
+
+    def load_policy(self, policy_data: dict[str, Any] | str | Path) -> None:
+        """Load a simple declarative capability-based policy."""
+        if isinstance(policy_data, (str, Path)):
+            path = Path(policy_data)
+            if not path.exists():
+                raise FileNotFoundError(f"Policy file not found: {path}")
+            with open(path, "r", encoding="utf-8") as f:
+                data = yaml.safe_load(f) or {}
+        else:
+            data = policy_data or {}
+
+        # Handle simple capability arrays under allow, require_approval, deny
+        for cap_str in data.get("allow", []):
+            if isinstance(cap_str, str):
+                self.allowed.append(Capability.parse(cap_str))
+            elif isinstance(cap_str, dict) and "capability" in cap_str:
+                self.allowed.append(Capability.parse(cap_str["capability"]))
+
+        for cap_str in data.get("require_approval", []):
+            if isinstance(cap_str, str):
+                self.require_approval.append(Capability.parse(cap_str))
+            elif isinstance(cap_str, dict) and "capability" in cap_str:
+                self.require_approval.append(Capability.parse(cap_str["capability"]))
+
+        for cap_str in data.get("deny", []):
+            if isinstance(cap_str, str):
+                self.denied.append(Capability.parse(cap_str))
+            elif isinstance(cap_str, dict) and "capability" in cap_str:
+                self.denied.append(Capability.parse(cap_str["capability"]))
+
+        # For backwards compatibility with standard legacy rules
+        for rule in data.get("rules", []):
+            if isinstance(rule, dict) and "capability" in rule:
+                cap = Capability.parse(rule["capability"])
+                act = rule.get("action", "allow")
+                if act == "deny" or act == "block":
+                    self.denied.append(cap)
+                elif act == "require_approval":
+                    self.require_approval.append(cap)
+                else:
+                    self.allowed.append(cap)
+
+    def evaluate_capability(self, required_cap_str: str) -> str:
+        """Evaluate if a capability is allowed, denied, or requires approval."""
+        required = Capability.parse(required_cap_str)
+
+        # Deny always takes precedence (fail-closed)
+        for cap in self.denied:
+            if cap.matches(required):
+                return "deny"
+
+        # Require approval takes second precedence
+        for cap in self.require_approval:
+            if cap.matches(required):
+                return "require_approval"
+
+        # Allow rules
+        for cap in self.allowed:
+            if cap.matches(required):
+                return "allow"
+
+        return "default_deny"
+
+
+# =====================================================================
+# Backward Compatibility Layer
+# =====================================================================
 
 class CapabilityRegistry:
-    """Registry for capability definitions."""
+    """Registry for legacy capability definitions to prevent breaking existing code."""
 
     def __init__(self) -> None:
         self._capabilities: dict[str, dict[str, Any]] = {}
@@ -27,11 +147,7 @@ class CapabilityRegistry:
         """Resolve a capability or group into a list of specific capabilities."""
         if capability in self._groups:
             return self._groups[capability]
-        
-        # Resolve inheritance
-        result = [capability]
-        # Currently a simple list, but could traverse children if needed.
-        return result
+        return [capability]
 
     def get_parent(self, capability: str) -> str | None:
         """Get the parent of a capability."""
@@ -44,25 +160,25 @@ class CapabilityRegistry:
         """Check if granted capability implies the required capability."""
         if granted_capability == required_capability:
             return True
-        
+
         if granted_capability.endswith(".*"):
             prefix = granted_capability[:-2]
             return required_capability.startswith(prefix)
 
-        # Check group membership
         if granted_capability in self._groups:
             if required_capability in self._groups[granted_capability]:
                 return True
-        
-        # Check hierarchy (if A is parent of B, does A imply B? Usually yes, or A.*)
-        # For simple check, we handle wildcards and explicit groups.
-        return False
+
+        # Fallback to new Capability matches logic
+        g = Capability.parse(granted_capability)
+        r = Capability.parse(required_capability)
+        return g.matches(r)
 
 
 # Global default registry
 default_registry = CapabilityRegistry()
 
-# Standard capabilities
+# Standard legacy capabilities
 default_registry.register("filesystem.read", "Read files from the filesystem")
 default_registry.register("filesystem.write", "Write files to the filesystem")
 default_registry.register("filesystem.delete", "Delete files from the filesystem")

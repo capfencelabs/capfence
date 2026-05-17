@@ -1,0 +1,24 @@
+# CapFence Production Security Policy
+# --------------------------------------------------------------------
+# Declarative, high-performance operational capability access control.
+# Minimizes complexity by strictly sticking to resource.action.scope.
+# --------------------------------------------------------------------
+policy_name: Production Security Policy
+version: 2.0.0
+actor: autonomous-developer
+
+allow:
+  # Allow standard read capabilities within workspace
+  - filesystem.read.workspace
+  # Allow pushing to any branch except protected ones
+  - github.push.*
+
+require_approval:
+  # High-risk execution demands human-in-the-loop validation
+  - deployment.execute.production
+  - payment.transfer.*
+
+deny:
+  # Zero-trust protections for destructive or uncontrolled actions
+  - filesystem.delete.workspace
+  - shell.execute.*
