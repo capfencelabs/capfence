@@ -121,7 +121,7 @@ capfence grant --actor hotfix-agent --capability github.push.main --duration 600
 ### Dry-Run Trace Simulations
 Replay execution logs against a candidate policy:
 ```bash
-capfence simulate --trace-file traces/agent_trace.jsonl --compare
+capfence replay traces/agent_trace.jsonl --policy policies/ops_v2.yaml
 ```
 
 ### Verify Audit Log Integrity
