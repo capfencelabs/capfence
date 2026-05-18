@@ -188,7 +188,7 @@ CapFence enforces runtime policy boundaries. It does not replace:
 ---
 
 ## Project Info
-* **Documentation:** Configuration details are in the [docs/](docs/) directory.
+* **Documentation:** https://capfencelabs.github.io/capfence/
 * **PyPI:** https://pypi.org/project/capfence/
 * **Repository:** https://github.com/capfencelabs/capfence
 
