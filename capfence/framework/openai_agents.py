@@ -1,30 +1,13 @@
 """OpenAI Agents SDK integration — CapFence tool wrapper.
 
 Wraps OpenAI Agents SDK tools with deterministic runtime enforcement.
-
-Usage:
-    from agents import Agent, Tool
-    from capfence.framework.openai_agents import CapFenceOpenAITool
-
-    safe_shell = CapFenceOpenAITool(
-        tool=ShellTool(),
-        agent_id="ops-agent-1",
-        risk_category="command_execution",
-        gate=Gate(),  # optional
-    )
-
-    agent = Agent(
-        name="OpsAgent",
-        tools=[safe_shell],
-    )
 """
 
 from __future__ import annotations
 
 from typing import Any, cast
 
-from capfence.core.gate import Gate
-from capfence.core.fsm import FailClosedFSM
+from capfence.core.runtime import ActionRuntime, ActionEvent
 from capfence.errors import AgentActionBlocked
 
 __all__ = ["CapFenceOpenAITool", "AgentActionBlocked"]
@@ -43,15 +26,28 @@ class CapFenceOpenAITool:
         risk_category: str | None = None,
         capability: str | None = None,
         policy_path: str | None = None,
-        gate: Gate | None = None,
+        gate: ActionRuntime | None = None,
     ) -> None:
         self._tool = tool
         self._agent_id = agent_id
         self._risk_category = risk_category
         self._capability = capability
         self._policy_path = policy_path
-        self._gate = gate or Gate()
-        self._fsm = FailClosedFSM()
+
+        if gate is None:
+            if policy_path:
+                self._gate = ActionRuntime.from_policy(policy_path)
+            else:
+                from capfence.core.capabilities import CapabilitySystem
+                from capfence.core.approvals import ApprovalEngine
+                from capfence.core.audit import AuditLogger
+                self._gate = ActionRuntime(
+                    capability_system=CapabilitySystem(),
+                    approval_engine=ApprovalEngine(db_path=":memory:"),
+                    audit_trail=AuditLogger(db_path=":memory:"),
+                )
+        else:
+            self._gate = gate
 
         # Mirror tool metadata
         self.name = getattr(tool, "name", "unknown_tool")
@@ -59,26 +55,32 @@ class CapFenceOpenAITool:
         self.params_json_schema = getattr(tool, "params_json_schema", {})
 
     async def on_invoke_tool(self, context: Any, input_json: str) -> str:
-        """Intercept tool invocation and evaluate through Gate."""
+        """Intercept tool invocation and evaluate through ActionRuntime."""
         import json
         try:
             arguments = json.loads(input_json)
         except json.JSONDecodeError:
             arguments = {"raw_input": input_json}
 
-        result = await self._gate.evaluate_async(
-            agent_id=self._agent_id,
-            task_context=self.name,
-            risk_category=self._risk_category,
+        capability = self._capability or f"{self.name}.execute"
+        parts = capability.split(".", 1)
+        resource = parts[0]
+        action = parts[1] if len(parts) > 1 else "execute"
+
+        event = ActionEvent.create(
+            actor=self._agent_id,
+            action=action,
+            resource=resource,
+            environment="production",
+            risk=self._risk_category or "medium",
             payload=arguments,
-            capability=self._capability,
-            policy_path=self._policy_path,
         )
-        outcome = self._fsm.transition(result)
-        if outcome.decision != "pass":
+
+        verdict = self._gate.execute(event)
+        if not verdict.authorized:
             raise AgentActionBlocked(
-                detail=f"Tool '{self.name}' blocked: {result.reason}",
-                gate_result=result,
+                detail=f"Tool '{self.name}' blocked: {verdict.reason}",
+                gate_result=verdict,
             )
 
         # Forward to underlying tool

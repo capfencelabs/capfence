@@ -4,9 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from capfence.core.gate import Gate
-from capfence.core.fsm import FailClosedFSM
-from capfence.types import GateResult
+from capfence import ActionRuntime, ExecutionVerdict, ActionEvent
 from capfence.framework.langgraph import CapFenceToolNode, AgentActionBlocked
 
 
@@ -29,11 +27,17 @@ class TestCapFenceToolNode:
         node = CapFenceToolNode(tools=tools, agent_id="agent-1")
         assert node._agent_id == "agent-1"
         assert "read_tool" in node._tools
-        assert isinstance(node._gate, Gate)
-        assert isinstance(node._fsm, FailClosedFSM)
+        assert isinstance(node._gate, ActionRuntime)
 
     def test_init_custom_gate(self):
-        gate = Gate()
+        from capfence.core.capabilities import CapabilitySystem
+        from capfence.core.approvals import ApprovalEngine
+        from capfence.core.audit import AuditLogger
+        gate = ActionRuntime(
+            capability_system=CapabilitySystem(),
+            approval_engine=ApprovalEngine(db_path=":memory:"),
+            audit_trail=AuditLogger(db_path=":memory:"),
+        )
         tools = [MockTool("read_tool")]
         node = CapFenceToolNode(tools=tools, agent_id="agent-1", gate=gate)
         assert node._gate is gate
@@ -114,12 +118,23 @@ class TestCapFenceToolNode:
         assert len(result["tool_results"]) == 1
         assert result["tool_results"][0]["tool_name"] == "read_tool"
 
-    def test_call_blocks_high_risk_tool(self):
+    def test_call_blocks_high_risk_tool(self, tmp_path):
+        policy_path = tmp_path / "policy.yaml"
+        policy_path.write_text(
+            """
+deny:
+  - capability: shell.execute
+    contains: "rm -rf"
+""",
+            encoding="utf-8",
+        )
+        gate = ActionRuntime.from_policy(policy_path)
         tools = [MockTool("shell")]
         node = CapFenceToolNode(
             tools=tools,
             agent_id="agent-1",
             risk_category_map={"shell": "execute"},
+            gate=gate,
         )
         state = {
             "messages": [
@@ -164,7 +179,19 @@ class TestCapFenceToolNode:
         assert result["tool_results"] == []
 
     def test_agent_action_blocked_exception(self):
-        result = GateResult(passed=False, reason="test")
+        event = ActionEvent.create(
+            actor="agent",
+            action="execute",
+            resource="shell",
+            environment="production",
+        )
+        result = ExecutionVerdict(
+            authorized=False,
+            decision="deny",
+            reason="test",
+            event=event,
+            timestamp=123.456,
+        )
         exc = AgentActionBlocked(detail="blocked", gate_result=result)
         assert exc.detail == "blocked"
         assert exc.gate_result is result

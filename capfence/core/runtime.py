@@ -37,10 +37,23 @@ class ActionEvent:
         if not self.environment or not isinstance(self.environment, str):
             raise ValueError("environment must be a non-empty string")
 
-        # Enforce strict risk domain
+        # Enforce strict risk domain and map legacy/heuristic categories
         if isinstance(self.risk, str):
-            if self.risk.lower() not in {"low", "medium", "high", "critical"}:
-                raise ValueError("risk string must be one of: 'low', 'medium', 'high', 'critical'")
+            risk_lower = self.risk.lower()
+            if risk_lower not in {"low", "medium", "high", "critical"}:
+                mapping = {
+                    "command_execution": "critical",
+                    "execute": "critical",
+                    "payment_initiation": "high",
+                    "delete": "high",
+                    "write": "medium",
+                    "read_only": "low",
+                    "read": "low",
+                }
+                if risk_lower in mapping:
+                    object.__setattr__(self, "risk", mapping[risk_lower])
+                else:
+                    raise ValueError("risk string must be one of: 'low', 'medium', 'high', 'critical'")
         elif isinstance(self.risk, (int, float)):
             if float(self.risk) < 0.0:
                 raise ValueError("risk score must be a non-negative float")
@@ -63,7 +76,8 @@ class ActionEvent:
         allowed_metadata_keys = {
             "session_id", "scope", "payload", "require_approval", "risk_category",
             "payload_hash", "threshold", "latency_ms", "decision", "reason",
-            "timestamp", "entry_hash", "signature", "policy_decision", "verdict", "id"
+            "timestamp", "entry_hash", "signature", "policy_decision", "verdict", "id",
+            "caller_depth"
         }
         for k, v in self.metadata.items():
             if k not in allowed_metadata_keys:
@@ -116,6 +130,13 @@ class ExecutionVerdict:
     approval_id: str | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
 
+    @property
+    def confidence(self) -> float:
+        if isinstance(self.event.risk, (int, float)):
+            return float(self.event.risk)
+        mapping = {"low": 0.2, "medium": 0.5, "high": 0.8, "critical": 1.0}
+        return mapping.get(str(self.event.risk).lower(), 1.0)
+
 
 class ActionRuntime:
     """Universal execution runtime for autonomous systems.
@@ -164,7 +185,11 @@ class ActionRuntime:
         required_cap_str = f"{event.resource}.{event.action}.{scope}"
 
         # 2. Check declarative capability policy
-        policy_verdict = self.capability_system.evaluate_capability(required_cap_str)
+        policy_verdict = self.capability_system.evaluate_capability(
+            required_cap_str,
+            context=event.metadata,
+            payload=event.metadata.get("payload"),
+        )
 
         authorized = False
         decision = "deny"

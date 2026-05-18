@@ -1,30 +1,15 @@
 """LangGraph integration — CapFence node wrapper.
 
 Wraps LangGraph tool nodes with deterministic runtime enforcement.
-
-Usage:
-    from langgraph.prebuilt import ToolNode
-    from capfence.framework.langgraph import CapFenceToolNode
-
-    safe_node = CapFenceToolNode(
-        tools=[shell_tool, payment_tool],
-        agent_id="ops-agent-1",
-        gate=Gate(),  # optional
-    )
-
-    # Use in a StateGraph
-    graph.add_node("tools", safe_node)
 """
 
 from __future__ import annotations
 
 from typing import Any
 
-from capfence.core.gate import Gate
-from capfence.core.fsm import FailClosedFSM
+from capfence.core.runtime import ActionRuntime, ActionEvent, ExecutionVerdict
 from capfence.errors import AgentActionBlocked
 from capfence.framework._risk import guess_risk_category
-from capfence.types import GateResult
 
 __all__ = ["CapFenceToolNode", "AgentActionBlocked"]
 
@@ -39,18 +24,31 @@ class CapFenceToolNode:
         self,
         tools: list[Any],
         agent_id: str,
-        gate: Gate | None = None,
+        gate: ActionRuntime | None = None,
         risk_category_map: dict[str, str] | None = None,
         capability_map: dict[str, str] | None = None,
         policy_path: str | None = None,
     ) -> None:
         self._tools = {t.name: t for t in tools}
         self._agent_id = agent_id
-        self._gate = gate or Gate()
-        self._fsm = FailClosedFSM()
         self._risk_category_map = risk_category_map or {}
         self._capability_map = capability_map or {}
         self._policy_path = policy_path
+
+        if gate is None:
+            if policy_path:
+                self._gate = ActionRuntime.from_policy(policy_path)
+            else:
+                from capfence.core.capabilities import CapabilitySystem
+                from capfence.core.approvals import ApprovalEngine
+                from capfence.core.audit import AuditLogger
+                self._gate = ActionRuntime(
+                    capability_system=CapabilitySystem(),
+                    approval_engine=ApprovalEngine(db_path=":memory:"),
+                    audit_trail=AuditLogger(db_path=":memory:"),
+                )
+        else:
+            self._gate = gate
 
     def _get_risk_category(self, tool_name: str) -> str | None:
         """Explicit map first, then fall back to the shared keyword heuristic."""
@@ -75,39 +73,51 @@ class CapFenceToolNode:
         call_id = call.get("id", "unknown")
         return tool_name, arguments, call_id
 
-    def _enforce(self, tool_name: str, arguments: dict[str, Any]) -> GateResult:
-        result = self._gate.evaluate(
-            agent_id=self._agent_id,
-            task_context=tool_name,
-            risk_category=self._get_risk_category(tool_name),
-            payload=arguments,
-            capability=self._capability_map.get(tool_name),
-            policy_path=self._policy_path,
-        )
-        outcome = self._fsm.transition(result)
-        if outcome.decision != "pass":
-            raise AgentActionBlocked(
-                detail=f"Tool '{tool_name}' blocked: {result.reason}",
-                gate_result=result,
-            )
-        return result
+    def _enforce(self, tool_name: str, arguments: dict[str, Any]) -> ExecutionVerdict:
+        capability = self._capability_map.get(tool_name) or f"{tool_name}.execute"
+        parts = capability.split(".", 1)
+        resource = parts[0]
+        action = parts[1] if len(parts) > 1 else "execute"
 
-    async def _enforce_async(self, tool_name: str, arguments: dict[str, Any]) -> GateResult:
-        result = await self._gate.evaluate_async(
-            agent_id=self._agent_id,
-            task_context=tool_name,
-            risk_category=self._get_risk_category(tool_name),
+        event = ActionEvent.create(
+            actor=self._agent_id,
+            action=action,
+            resource=resource,
+            environment="production",
+            risk=self._get_risk_category(tool_name) or "medium",
             payload=arguments,
-            capability=self._capability_map.get(tool_name),
-            policy_path=self._policy_path,
         )
-        outcome = self._fsm.transition(result)
-        if outcome.decision != "pass":
+
+        verdict = self._gate.execute(event)
+        if not verdict.authorized:
             raise AgentActionBlocked(
-                detail=f"Tool '{tool_name}' blocked: {result.reason}",
-                gate_result=result,
+                detail=f"Tool '{tool_name}' blocked: {verdict.reason}",
+                gate_result=verdict,
             )
-        return result
+        return verdict
+
+    async def _enforce_async(self, tool_name: str, arguments: dict[str, Any]) -> ExecutionVerdict:
+        capability = self._capability_map.get(tool_name) or f"{tool_name}.execute"
+        parts = capability.split(".", 1)
+        resource = parts[0]
+        action = parts[1] if len(parts) > 1 else "execute"
+
+        event = ActionEvent.create(
+            actor=self._agent_id,
+            action=action,
+            resource=resource,
+            environment="production",
+            risk=self._get_risk_category(tool_name) or "medium",
+            payload=arguments,
+        )
+
+        verdict = self._gate.execute(event)
+        if not verdict.authorized:
+            raise AgentActionBlocked(
+                detail=f"Tool '{tool_name}' blocked: {verdict.reason}",
+                gate_result=verdict,
+            )
+        return verdict
 
     def __call__(self, state: dict[str, Any]) -> dict[str, Any]:
         """Execute tool calls from state['messages'] with gating."""

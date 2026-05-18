@@ -27,12 +27,11 @@ The gateway is a transparent stdio proxy. It intercepts JSON-RPC messages, extra
 
 ```python
 from capfence.mcp.gateway import MCPGatewayServer
-from capfence.core.gate import Gate
+from capfence import ActionRuntime
 
 gateway = MCPGatewayServer(
     upstream_command=["python", "-m", "mcp_server_filesystem", "/data"],
-    gate=Gate(),
-    policy_path="policies/mcp_policy.yaml",
+    gate=ActionRuntime.from_policy("policies/mcp_policy.yaml"),
     agent_id="mcp-agent"
 )
 

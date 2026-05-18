@@ -6,7 +6,7 @@ and immutable audit logging for high-risk operations.
 
 from __future__ import annotations
 
-__version__ = "0.7.1"
+__version__ = "0.8.1"
 
 # Core Enforcement Primitives
 from capfence.core.runtime import ActionEvent, ActionRuntime, ExecutionVerdict
@@ -15,9 +15,6 @@ from capfence.core.approvals import ApprovedGrant, ApprovalEngine, ApprovalManag
 from capfence.core.audit import ImmutableAuditTrail, AuditLogger
 from capfence.core.replay import ReplayEngine, ReplaySummary, ReplayEventResult
 
-# Legacy SDK Primitives and Adapters
-from capfence.core.gate import Gate, GATE_MODE_ENFORCE, GATE_MODE_OBSERVE
-from capfence.types import GateResult
 from capfence.errors import (
     CapFenceError,
     AgentActionBlocked,
@@ -58,9 +55,6 @@ __all__ = [
     "ReplayEngine",
     "ReplaySummary",
     "ReplayEventResult",
-    # Legacy Primitives
-    "Gate",
-    "GateResult",
     "CapFenceError",
     "AgentActionBlocked",
     "ConfigurationError",
@@ -89,6 +83,4 @@ __all__ = [
     "CapFenceOpenAITool",
     "MCPGatewayServer",
     "CapFenceMCPSession",
-    "GATE_MODE_ENFORCE",
-    "GATE_MODE_OBSERVE",
 ]

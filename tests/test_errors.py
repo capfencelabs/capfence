@@ -39,23 +39,6 @@ def test_configuration_error_keeps_value_error_compat():
     assert isinstance(err, CapFenceError)
 
 
-def test_bad_gate_mode_raises_configuration_error():
-    from capfence.core.gate import Gate
-    with pytest.raises(ConfigurationError):
-        Gate(mode="stealth")
-    # Backward compat: also catchable as ValueError
-    with pytest.raises(ValueError):
-        Gate(mode="stealth")
-
-
-def test_empty_bypass_reason_raises_configuration_error():
-    from capfence.core.gate import Gate
-    gate = Gate()
-    with pytest.raises(ConfigurationError):
-        with gate.bypass("a1", reason=""):
-            pass
-
-
 def test_agent_blocked_carries_detail_and_result():
     exc = AgentActionBlocked(detail="payout too large")
     assert exc.detail == "payout too large"

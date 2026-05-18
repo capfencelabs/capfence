@@ -9,20 +9,18 @@ from __future__ import annotations
 
 from typing import Any
 
-from capfence.core.fsm import FailClosedFSM
-from capfence.core.gate import Gate
+from capfence.core.runtime import ActionRuntime, ActionEvent
 from capfence.errors import AgentActionBlocked
 
 
 class _GuardedToolMixin:
     """Provides `_build_payload`, `_check`, `_acheck` to single-tool adapters.
 
-    Subclasses must set: ``_gate``, ``_fsm``, ``_agent_id``,
+    Subclasses must set: ``_gate``, ``_agent_id``,
     ``_risk_category``, and ``name``.
     """
 
-    _gate: Gate
-    _fsm: FailClosedFSM
+    _gate: ActionRuntime
     _agent_id: str
     _risk_category: str | None
     _capability: str | None
@@ -36,27 +34,45 @@ class _GuardedToolMixin:
         return dict(tool_input)
 
     def _check(self, payload: dict[str, Any]) -> None:
-        result = self._gate.evaluate(
-            agent_id=self._agent_id,
-            task_context=self.name,
-            risk_category=self._risk_category,
+        capability = getattr(self, "_capability", None) or f"{self.name}.execute"
+        parts = capability.split(".", 1)
+        resource = parts[0]
+        action = parts[1] if len(parts) > 1 else "execute"
+
+        event = ActionEvent.create(
+            actor=self._agent_id,
+            action=action,
+            resource=resource,
+            environment="production",
+            risk=self._risk_category or "medium",
             payload=payload,
-            capability=getattr(self, "_capability", None),
-            policy_path=getattr(self, "_policy_path", None),
         )
-        outcome = self._fsm.transition(result)
-        if outcome.decision != "pass":
-            raise AgentActionBlocked(detail=outcome.detail, gate_result=result)
+
+        verdict = self._gate.execute(event)
+        if not verdict.authorized:
+            raise AgentActionBlocked(
+                detail=f"Blocked: {verdict.reason}",
+                gate_result=verdict
+            )
 
     async def _acheck(self, payload: dict[str, Any]) -> None:
-        result = await self._gate.evaluate_async(
-            agent_id=self._agent_id,
-            task_context=self.name,
-            risk_category=self._risk_category,
+        capability = getattr(self, "_capability", None) or f"{self.name}.execute"
+        parts = capability.split(".", 1)
+        resource = parts[0]
+        action = parts[1] if len(parts) > 1 else "execute"
+
+        event = ActionEvent.create(
+            actor=self._agent_id,
+            action=action,
+            resource=resource,
+            environment="production",
+            risk=self._risk_category or "medium",
             payload=payload,
-            capability=getattr(self, "_capability", None),
-            policy_path=getattr(self, "_policy_path", None),
         )
-        outcome = self._fsm.transition(result)
-        if outcome.decision != "pass":
-            raise AgentActionBlocked(detail=outcome.detail, gate_result=result)
+
+        verdict = self._gate.execute(event)
+        if not verdict.authorized:
+            raise AgentActionBlocked(
+                detail=f"Blocked: {verdict.reason}",
+                gate_result=verdict
+            )

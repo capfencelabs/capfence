@@ -11,7 +11,7 @@ import time
 from pathlib import Path
 from typing import Any, TYPE_CHECKING
 
-from capfence.types import GateResult
+
 from capfence.core.chain import compute_entry_hash, verify_chain_from_rows
 from capfence.core.keys import ensure_keypair, sign_entry
 from capfence.core.db import SQLiteDBEngine
@@ -117,70 +117,7 @@ class AuditLogger:
             )
             prev_hash = entry_hash
 
-    def record(
-        self,
-        agent_id: str,
-        task_context: str,
-        risk_category: str | None,
-        result: GateResult,
-        payload_hash: str | None = None,
-    ) -> None:
-        """Record standard gate execution decision (Legacy SDK support)."""
-        rows = self._db.query("SELECT entry_hash FROM audit_events ORDER BY id DESC LIMIT 1")
-        prev_hash = rows[0]["entry_hash"] if rows else ""
 
-        timestamp = round(time.time(), 6)
-        decision_str = "pass" if result.passed else "fail"
-        fields = {
-            "agent_id": agent_id,
-            "task_context": task_context,
-            "risk_category": risk_category,
-            "decision": decision_str,
-            "risk_score": result.risk_score,
-            "threshold": result.threshold,
-            "payload_hash": payload_hash,
-            "reason": result.reason,
-            "latency_ms": result.latency_ms,
-            "timestamp": timestamp,
-        }
-        entry_hash = compute_entry_hash(fields, prev_hash)
-
-        signature: str | None = None
-        if self._sign_entries and self._keypair:
-            sign_fields = {**fields, "prev_hash": prev_hash, "entry_hash": entry_hash}
-            signature = sign_entry(sign_fields, self._keypair[1])
-
-        self._db.execute(
-            """
-            INSERT INTO audit_events
-            (agent_id, task_context, risk_category, decision, risk_score, threshold, payload_hash, reason, latency_ms, timestamp, prev_hash, entry_hash, signature,
-             actor, action, resource, environment, capability, approval_state, policy_decision, execution_result)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                agent_id,
-                task_context,
-                risk_category,
-                decision_str,
-                result.risk_score,
-                result.threshold,
-                payload_hash,
-                result.reason,
-                result.latency_ms,
-                timestamp,
-                prev_hash,
-                entry_hash,
-                signature,
-                agent_id,
-                task_context,
-                risk_category,
-                "development",
-                f"{risk_category}.{task_context}.*",
-                "none",
-                decision_str,
-                "authorized" if result.passed else "blocked",
-            ),
-        )
 
     def record_event(self, verdict: ExecutionVerdict) -> None:
         """Record an Action Runtime ExecutionVerdict with detailed CloudTrail schema metrics."""

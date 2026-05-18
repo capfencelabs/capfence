@@ -1,82 +1,118 @@
 # Observe Mode Rollout
 
-Deploying CapFence in enforce mode immediately can surface policy gaps that block legitimate agent behavior. Observe mode lets you run CapFence in production — logging all decisions — without blocking anything. You tune your policy on real traffic, then flip to enforce.
+Deploying CapFence in strict block mode immediately can surface policy gaps that block legitimate agent behavior. To keep enforcement boring, calm, and predictable, CapFence enforces a strict fail-closed architecture at the code level, but allows you to run a safe rollout period by configuring declarative `warn` rules in your policy.
 
-## The rollout pattern
+Declarative warning rules log decisions to the audit database without blocking tool execution. You tune your policy on real traffic, then flip to strict enforcement.
 
-1. **Observe**: Log all decisions. Block nothing. Understand your traffic.
-2. **Tune**: Adjust policy rules based on what you see.
-3. **Enforce**: Switch to full enforcement with confidence.
+---
 
-## Step 1: Observe mode
+## The Rollout Pattern
 
-Create the gate in observe mode and pass it to the adapter:
+1. **Observe**: Map capabilities in your policy to the `warn` action. This logs all tool calls without blocking.
+2. **Tune**: Adjust policy rules based on what you see in the audit log.
+3. **Enforce**: Transition rule actions from `warn` to `deny` or `require_approval` with confidence.
+
+---
+
+## Step 1: Write an Observe Policy
+
+Instead of blocking tool use, define a policy that uses the `warn` action for suspicious or unverified capabilities:
+
+```yaml
+# policies/shell_rollout.yaml
+
+deny:
+  - capability: shell.execute
+    contains: "rm -rf" # Block catastrophic commands immediately
+
+require_approval: []
+
+warn:
+  - capability: shell.execute # Log all execution context without blocking
+  - capability: filesystem.write
+
+allow:
+  - capability: filesystem.read
+```
+
+## Step 2: Initialize ActionRuntime
+
+Pass the rollout policy to the adapters or use it directly via `ActionRuntime`:
 
 ```python
-from capfence import CapFenceTool
-from capfence.core.gate import Gate
+from capfence import CapFenceTool, ActionRuntime
+
+runtime = ActionRuntime.from_policy("policies/shell_rollout.yaml")
 
 safe_tool = CapFenceTool(
     tool=my_tool,
     agent_id="prod-agent",
     capability="shell.execute",
-    policy_path="policies/shell.yaml",
-    gate=Gate(mode="observe")
+    gate=runtime
 )
 ```
 
-Or on the gate directly:
+During this rollout:
+- Every tool call is evaluated against your policy.
+- Warning events match the `warn` block, which logs a full verdict record to your audit database (`audit.db`).
+- The agent continues to run without interruptions because `warn` verdicts are authorized.
 
-```python
-gate = Gate(
-    policy_path="policies/shell.yaml",
-    mode="observe"
-)
-```
+---
 
-In observe mode:
-- Every tool call is evaluated against policy.
-- Every decision is logged to the audit database.
-- No call is blocked, regardless of the decision.
+## Step 3: Review Observed Logs
 
-## Step 2: Review what would have been blocked
+Query the local audit database using the CLI to see what would have been blocked:
 
 ```bash
-capfence logs --audit-log audit.db --json
+capfence logs --audit-log audit.db
 ```
 
 Identify patterns:
-- Are any denials legitimate calls your agent needs? Adjust the policy.
-- Are any approvals actually safe to auto-allow? Move them to `allow`.
-- Are there dangerous patterns not yet covered by `deny` rules? Add them.
+- Are any warned actions legitimate calls your agent needs? Move them to the `allow` block.
+- Are there dangerous commands that should be strictly blocked? Prepare `deny` rules for them.
+- Are there transaction thresholds that require human sign-off? Plan your `require_approval` thresholds.
 
-## Step 3: Simulate policy changes
+---
 
-Export observed traffic and replay it against a revised policy:
+## Step 4: Simulate Policy Changes
+
+Before pushing policy updates to production, export your traffic and dry-run it against your new strict policy:
 
 ```bash
-capfence simulate --trace-file audit.jsonl --taxonomy policies/shell_v2.yaml --compare
+capfence simulate --trace-file audit.jsonl --policy policies/shell_production.yaml --compare
 ```
 
-This shows you how your updated policy would have handled all real traffic from the observe period — before you deploy it.
+This validates how your updated strict policy would have handled all real traffic from the observe period — before you deploy it.
 
-## Step 4: Switch to enforce mode
+---
 
-Use an enforcing gate:
+## Step 5: Switch to Enforce Mode
 
-```python
-safe_tool = CapFenceTool(
-    tool=my_tool,
-    agent_id="prod-agent",
-    capability="shell.execute",
-    policy_path="policies/shell_v2.yaml",
-    gate=Gate(mode="enforce")
-)
+Once you are confident in your rule coverage, switch the actions in your policy file to `deny` or `require_approval`:
+
+```yaml
+# policies/shell_production.yaml
+
+deny:
+  - capability: shell.execute
+    contains: "rm -rf"
+  - capability: shell.execute
+    contains: "curl"
+
+require_approval:
+  - capability: shell.execute
+    contains: "systemctl"
+
+allow:
+  - capability: shell.execute
+  - capability: filesystem.read
 ```
 
-Monitor the first hours of enforcement using the audit log for any unexpected denials.
+Since the policy is loaded at startup, updating the yaml file updates enforcement parameters safely and immediately.
 
-## Related guides
+---
 
-- [Replay an incident](replay-an-incident.md)
-- [CI/CD enforcement](ci-cd-enforcement.md)
+## Related Guides
+
+- [Protect shell tools](protect-shell-tools.md)
+- [Require human approval](require-human-approval.md)

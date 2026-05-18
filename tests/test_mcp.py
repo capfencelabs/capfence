@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-from capfence.core.gate import Gate
-from capfence.core.fsm import FailClosedFSM
-from capfence.types import GateResult
+from capfence import ActionRuntime, ExecutionVerdict, ActionEvent
 from capfence.mcp.gateway import MCPGatewayServer
 from capfence.mcp.adapter import CapFenceMCPSession, AgentActionBlocked
 
@@ -16,11 +14,17 @@ class TestMCPGatewayServer:
         gw = MCPGatewayServer(upstream_command=["echo", "test"])
         assert gw._agent_id == "mcp-gateway"
         assert gw._default_risk_category is None
-        assert isinstance(gw._gate, Gate)
-        assert isinstance(gw._fsm, FailClosedFSM)
+        assert isinstance(gw._gate, ActionRuntime)
 
     def test_init_custom(self):
-        gate = Gate()
+        from capfence.core.capabilities import CapabilitySystem
+        from capfence.core.approvals import ApprovalEngine
+        from capfence.core.audit import AuditLogger
+        gate = ActionRuntime(
+            capability_system=CapabilitySystem(),
+            approval_engine=ApprovalEngine(db_path=":memory:"),
+            audit_trail=AuditLogger(db_path=":memory:"),
+        )
         gw = MCPGatewayServer(
             upstream_command=["echo", "test"],
             gate=gate,
@@ -65,14 +69,21 @@ class TestMCPGatewayServer:
 
     def test_build_blocked_response(self):
         gw = MCPGatewayServer(upstream_command=["echo", "test"])
-        result = GateResult(
-            passed=False,
-            risk_score=0.8,
-            threshold=0.2,
-            risk_category="execute",
-            reason="drift_detected",
+        event = ActionEvent.create(
+            actor="agent",
+            action="execute",
+            resource="shell",
+            environment="production",
+            risk=0.8,
         )
-        response = gw._build_blocked_response({"id": 1}, result)
+        verdict = ExecutionVerdict(
+            authorized=False,
+            decision="deny",
+            reason="drift_detected",
+            event=event,
+            timestamp=123.456,
+        )
+        response = gw._build_blocked_response({"id": 1}, verdict)
         assert response["jsonrpc"] == "2.0"
         assert response["id"] == 1
         assert response["error"]["code"] == -32000
@@ -118,11 +129,17 @@ class TestCapFenceMCPSession:
         session = CapFenceMCPSession(underlying_session=None)
         assert session._agent_id == "mcp-agent"
         assert session._default_risk_category is None
-        assert isinstance(session._gate, Gate)
-        assert isinstance(session._fsm, FailClosedFSM)
+        assert isinstance(session._gate, ActionRuntime)
 
     def test_init_custom(self):
-        gate = Gate()
+        from capfence.core.capabilities import CapabilitySystem
+        from capfence.core.approvals import ApprovalEngine
+        from capfence.core.audit import AuditLogger
+        gate = ActionRuntime(
+            capability_system=CapabilitySystem(),
+            approval_engine=ApprovalEngine(db_path=":memory:"),
+            audit_trail=AuditLogger(db_path=":memory:"),
+        )
         session = CapFenceMCPSession(
             underlying_session=None,
             gate=gate,
@@ -157,7 +174,19 @@ class TestCapFenceMCPSession:
         assert CapFenceMCPSession._guess_category("unknown") is None
 
     def test_agent_action_blocked_exception(self):
-        result = GateResult(passed=False, reason="test")
+        event = ActionEvent.create(
+            actor="agent",
+            action="execute",
+            resource="shell",
+            environment="production",
+        )
+        result = ExecutionVerdict(
+            authorized=False,
+            decision="deny",
+            reason="test",
+            event=event,
+            timestamp=123.456,
+        )
         exc = AgentActionBlocked(detail="blocked", gate_result=result)
         assert exc.detail == "blocked"
         assert exc.gate_result is result

@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import pytest
 from click.testing import CliRunner
+from pathlib import Path
 
 from capfence.cli import main
-from capfence.core.gate import Gate
+from capfence import ActionRuntime, ActionEvent
 from capfence.core.policy import PolicyLoader
+from capfence.errors import PolicyLoadError
 
 
 def test_policy_conditions_contains_amount_lte_and_path_prefix(tmp_path):
@@ -31,62 +34,71 @@ allow:
         encoding="utf-8",
     )
 
-    gate = Gate()
+    runtime = ActionRuntime.from_policy(str(policy_path))
 
-    blocked_shell = gate.evaluate(
-        "agent",
-        "shell",
-        "read_only",
-        {"command": "rm -rf /tmp/cache"},
-        capability="shell.execute",
-        policy_path=str(policy_path),
+    # 1. Shell blocked
+    event_blocked_shell = ActionEvent.create(
+        actor="agent",
+        action="execute",
+        resource="shell",
+        environment="production",
+        payload={"command": "rm -rf /tmp/cache"},
     )
-    assert blocked_shell.passed is False
-    assert blocked_shell.reason == "policy_deny"
+    verdict_blocked_shell = runtime.execute(event_blocked_shell)
+    assert verdict_blocked_shell.authorized is False
+    assert verdict_blocked_shell.decision == "deny"
+    assert verdict_blocked_shell.reason == "policy_deny"
 
-    allowed_shell = gate.evaluate(
-        "agent",
-        "shell",
-        "read_only",
-        {"command": "ls /tmp"},
-        capability="shell.execute",
-        policy_path=str(policy_path),
+    # 2. Shell allowed
+    event_allowed_shell = ActionEvent.create(
+        actor="agent",
+        action="execute",
+        resource="shell",
+        environment="production",
+        payload={"command": "ls /tmp"},
     )
-    assert allowed_shell.passed is True
-    assert allowed_shell.reason == "policy_allow"
+    verdict_allowed_shell = runtime.execute(event_allowed_shell)
+    assert verdict_allowed_shell.authorized is True
+    assert verdict_allowed_shell.decision == "allow"
+    assert verdict_allowed_shell.reason == "policy_allow"
 
-    blocked_path = gate.evaluate(
-        "agent",
-        "write",
-        "write",
-        {"path": "/etc/hosts", "content": "x"},
-        capability="filesystem.write",
-        policy_path=str(policy_path),
+    # 3. Path prefix blocked
+    event_blocked_path = ActionEvent.create(
+        actor="agent",
+        action="write",
+        resource="filesystem",
+        environment="production",
+        payload={"path": "/etc/hosts", "content": "x"},
     )
-    assert blocked_path.passed is False
-    assert blocked_path.reason == "policy_deny"
+    verdict_blocked_path = runtime.execute(event_blocked_path)
+    assert verdict_blocked_path.authorized is False
+    assert verdict_blocked_path.decision == "deny"
+    assert verdict_blocked_path.reason == "policy_deny"
 
-    allowed_amount = gate.evaluate(
-        "agent",
-        "transfer",
-        "read_only",
-        {"amount": 500},
-        capability="payments.transfer",
-        policy_path=str(policy_path),
+    # 4. Amount allowed
+    event_allowed_amount = ActionEvent.create(
+        actor="agent",
+        action="transfer",
+        resource="payments",
+        environment="production",
+        payload={"amount": 500},
     )
-    assert allowed_amount.passed is True
-    assert allowed_amount.reason == "policy_allow"
+    verdict_allowed_amount = runtime.execute(event_allowed_amount)
+    assert verdict_allowed_amount.authorized is True
+    assert verdict_allowed_amount.decision == "allow"
+    assert verdict_allowed_amount.reason == "policy_allow"
 
-    approval_amount = gate.evaluate(
-        "agent",
-        "transfer",
-        "read_only",
-        {"amount": 1500},
-        capability="payments.transfer",
-        policy_path=str(policy_path),
+    # 5. Amount requires approval
+    event_approval_amount = ActionEvent.create(
+        actor="agent",
+        action="transfer",
+        resource="payments",
+        environment="production",
+        payload={"amount": 1500},
     )
-    assert approval_amount.passed is False
-    assert approval_amount.reason.startswith("approval_required:")
+    verdict_approval_amount = runtime.execute(event_approval_amount)
+    assert verdict_approval_amount.authorized is False
+    assert verdict_approval_amount.decision.startswith("require_approval")
 
 
 def test_policy_default_deny_when_no_rule_matches(tmp_path):
@@ -99,17 +111,19 @@ allow:
         encoding="utf-8",
     )
 
-    result = Gate().evaluate(
-        "agent",
-        "db",
-        "read_only",
-        {"query": "select 1"},
-        capability="database.write",
-        policy_path=str(policy_path),
+    runtime = ActionRuntime.from_policy(str(policy_path))
+    event = ActionEvent.create(
+        actor="agent",
+        action="write",
+        resource="database",
+        environment="production",
+        payload={"query": "select 1"},
     )
+    verdict = runtime.execute(event)
 
-    assert result.passed is False
-    assert result.reason == "policy_default_deny"
+    assert verdict.authorized is False
+    assert verdict.decision == "deny"
+    assert verdict.reason == "policy_default_deny"
 
 
 def test_policy_error_fails_closed(tmp_path):
@@ -122,17 +136,8 @@ allow:
         encoding="utf-8",
     )
 
-    result = Gate().evaluate(
-        "agent",
-        "shell",
-        "read_only",
-        {"command": "ls"},
-        capability="shell.execute",
-        policy_path=str(policy_path),
-    )
-
-    assert result.passed is False
-    assert result.reason == "policy_error_PolicyLoadError"
+    with pytest.raises(PolicyLoadError):
+        ActionRuntime.from_policy(str(policy_path))
 
 
 def test_policy_caller_depth_condition(tmp_path):
@@ -148,18 +153,20 @@ allow:
         encoding="utf-8",
     )
 
-    result = Gate().evaluate(
-        "agent",
-        "delegate",
-        "read_only",
-        {"target": "subagent"},
-        capability="agent.delegate",
-        policy_path=str(policy_path),
-        policy_context={"caller_depth": 3},
+    runtime = ActionRuntime.from_policy(str(policy_path))
+    event = ActionEvent.create(
+        actor="agent",
+        action="delegate",
+        resource="agent",
+        environment="production",
+        payload={"target": "subagent"},
+        caller_depth=3
     )
+    verdict = runtime.execute(event)
 
-    assert result.passed is False
-    assert result.reason == "policy_deny"
+    assert verdict.authorized is False
+    assert verdict.decision == "deny"
+    assert verdict.reason == "policy_deny"
 
 
 def test_policy_loader_rejects_unknown_condition(tmp_path):
@@ -222,25 +229,29 @@ rules:
         encoding="utf-8",
     )
 
-    gate = Gate()
-    blocked = gate.evaluate(
-        "agent",
-        "shell",
-        "read_only",
-        {"command": "rm -rf /tmp/cache"},
-        capability="shell.execute",
-        policy_path=str(policy_path),
+    runtime = ActionRuntime.from_policy(str(policy_path))
+    
+    event_blocked = ActionEvent.create(
+        actor="agent",
+        action="execute",
+        resource="shell",
+        environment="production",
+        payload={"command": "rm -rf /tmp/cache"},
     )
-    allowed = gate.evaluate(
-        "agent",
-        "shell",
-        "read_only",
-        {"command": "ls /tmp"},
-        capability="shell.execute",
-        policy_path=str(policy_path),
+    verdict_blocked = runtime.execute(event_blocked)
+    
+    event_allowed = ActionEvent.create(
+        actor="agent",
+        action="execute",
+        resource="shell",
+        environment="production",
+        payload={"command": "ls /tmp"},
     )
+    verdict_allowed = runtime.execute(event_allowed)
 
-    assert blocked.passed is False
-    assert blocked.reason == "policy_deny"
-    assert allowed.passed is True
-    assert allowed.reason == "policy_allow"
+    assert verdict_blocked.authorized is False
+    assert verdict_blocked.decision == "deny"
+    assert verdict_blocked.reason == "policy_deny"
+    assert verdict_allowed.authorized is True
+    assert verdict_allowed.decision == "allow"
+    assert verdict_allowed.reason == "policy_allow"

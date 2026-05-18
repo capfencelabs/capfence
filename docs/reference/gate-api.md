@@ -79,9 +79,10 @@ Represents the result returned by `runtime.execute()`.
 
 | Field | Type | Description |
 |---|---|---|
-| `decision` | `str` | Evaluation outcome (`"allow"`, `"deny"`, `"require_approval"`, or `"default_deny"`). |
-| `reason` | `str` | Structured explanation of the decision. |
 | `authorized` | `bool` | Convenience helper. `True` if `decision` is `"allow"`. |
-| `risk_score` | `float \| None` | Evaluated numeric risk value. |
-| `threshold` | `float \| None` | Active risk threshold boundary. |
-| `latency_ms` | `float \| None` | Evaluated execution runtime duration. |
+| `decision` | `str` | Evaluation outcome (`"allow"`, `"deny"`, or `"require_approval"`). |
+| `reason` | `str` | Structured explanation of the decision (e.g. `"policy_allow"`, `"policy_deny"`). |
+| `event` | `ActionEvent` | The original ActionEvent associated with this verdict. |
+| `timestamp` | `float` | Epoch execution timestamp. |
+| `approval_id` | `str \| None` | Associated approval ticket identifier, if applicable. |
+| `confidence` | `float` | Floating-point representation of the event risk level. |

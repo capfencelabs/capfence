@@ -2,17 +2,6 @@
 
 Acts as a transparent proxy between an MCP client and MCP server.
 Every tool/call request is evaluated by the Gate before forwarding.
-
-Usage:
-    from capfence.mcp.gateway import MCPGatewayServer
-    from capfence.core.gate import Gate
-
-    gateway = MCPGatewayServer(
-        upstream_command=["python", "-m", "mcp_server_filesystem", "/tmp"],
-        gate=Gate(),
-        agent_id="mcp-agent-1",
-    )
-    gateway.run()  # blocks, proxies stdio
 """
 
 from __future__ import annotations
@@ -24,9 +13,7 @@ import sys
 import threading
 from typing import Any, cast
 
-from capfence.core.gate import Gate
-from capfence.core.fsm import FailClosedFSM
-from capfence.types import GateResult
+from capfence.core.runtime import ActionRuntime, ActionEvent, ExecutionVerdict
 from capfence.errors import GatewayError
 
 logger = logging.getLogger(__name__)
@@ -38,27 +25,40 @@ class MCPGatewayServer:
     """Transparent stdio proxy for MCP with CapFence gating.
 
     Intercepts JSON-RPC messages for tool calls and runs the payload
-    through Gate.evaluate() before forwarding to the upstream server.
+    through ActionRuntime before forwarding to the upstream server.
     """
 
     def __init__(
         self,
         upstream_command: list[str],
-        gate: Gate | None = None,
+        gate: ActionRuntime | None = None,
         agent_id: str = "mcp-gateway",
         default_risk_category: str | None = None,
         policy_path: str | None = None,
         capability_map: dict[str, str] | None = None,
     ) -> None:
         self._upstream_command = upstream_command
-        self._gate = gate or Gate()
         self._agent_id = agent_id
         self._default_risk_category = default_risk_category
         self._policy_path = policy_path
         self._capability_map = capability_map or {}
-        self._fsm = FailClosedFSM()
         self._proc: subprocess.Popen[str] | None = None
         self._lock = threading.Lock()
+
+        if gate is None:
+            if policy_path:
+                self._gate = ActionRuntime.from_policy(policy_path)
+            else:
+                from capfence.core.capabilities import CapabilitySystem
+                from capfence.core.approvals import ApprovalEngine
+                from capfence.core.audit import AuditLogger
+                self._gate = ActionRuntime(
+                    capability_system=CapabilitySystem(),
+                    approval_engine=ApprovalEngine(db_path=":memory:"),
+                    audit_trail=AuditLogger(db_path=":memory:"),
+                )
+        else:
+            self._gate = gate
 
     def _start_upstream(self) -> subprocess.Popen[str]:
         """Launch the upstream MCP server process."""
@@ -73,40 +73,20 @@ class MCPGatewayServer:
         )
 
     def _read_message(self, stream: Any) -> dict[str, Any] | None:
-        """Read a single JSON-RPC message from stream (Content-Length protocol)."""
-        headers: dict[str, str] = {}
-        while True:
-            line = stream.readline()
-            if not line:
-                return None
-            line = line.strip()
-            if not line:
-                break
-            if ":" in line:
-                key, value = line.split(":", 1)
-                headers[key.strip().lower()] = value.strip()
-
-        try:
-            length = int(headers.get("content-length", 0))
-        except ValueError:
-            logger.warning("Invalid Content-Length header")
+        """Read a JSON-RPC message from a stream (blocking)."""
+        line = stream.readline()
+        if not line:
             return None
-        if length <= 0 or length > MAX_MESSAGE_SIZE:
-            logger.warning("Content-Length out of bounds: %d", length)
-            return None
-
-        body = stream.read(length)
         try:
-            return cast(dict[str, Any], json.loads(body))
+            return cast(dict[str, Any], json.loads(line))
         except json.JSONDecodeError:
-            logger.warning("Invalid JSON from upstream: %s", body[:200])
+            logger.error("Failed to decode JSON-RPC message: %s", line)
             return None
 
     def _write_message(self, stream: Any, message: dict[str, Any]) -> None:
-        """Write a JSON-RPC message to stream."""
-        body = json.dumps(message, separators=(",", ":"), ensure_ascii=False)
-        header = f"Content-Length: {len(body.encode('utf-8'))}\r\n\r\n"
-        stream.write(header + body)
+        """Write a JSON-RPC message to a stream (blocking)."""
+        line = json.dumps(message) + "\n"
+        stream.write(line)
         stream.flush()
 
     def _is_tool_call(self, message: dict[str, Any]) -> bool:
@@ -122,7 +102,7 @@ class MCPGatewayServer:
             "arguments": params.get("arguments", {}),
         }
 
-    def _build_blocked_response(self, request: dict[str, Any], result: GateResult) -> dict[str, Any]:
+    def _build_blocked_response(self, request: dict[str, Any], verdict: ExecutionVerdict) -> dict[str, Any]:
         """Build a JSON-RPC error response for a blocked tool call."""
         return {
             "jsonrpc": "2.0",
@@ -131,10 +111,9 @@ class MCPGatewayServer:
                 "code": -32000,
                 "message": "CapFence blocked this tool call",
                 "data": {
-                    "reason": result.reason,
-                    "risk_score": result.risk_score,
-                    "threshold": result.threshold,
-                    "risk_category": result.risk_category,
+                    "reason": verdict.reason,
+                    "risk_score": verdict.confidence,
+                    "decision": verdict.decision,
                 },
             },
         }
@@ -170,22 +149,26 @@ class MCPGatewayServer:
         if capability is None:
             capability = self._guess_capability(tool_name)
 
-        result = self._gate.evaluate(
-            agent_id=self._agent_id,
-            task_context=tool_name,
-            risk_category=risk_category,
-            payload=arguments,
-            capability=capability,
-            policy_path=self._policy_path,
+        parts = capability.split(".", 1)
+        resource = parts[0]
+        action = parts[1] if len(parts) > 1 else "execute"
+
+        event = ActionEvent.create(
+            actor=self._agent_id,
+            action=action,
+            resource=resource,
+            environment="production",
+            risk=risk_category or "medium",
+            payload=arguments or {},
         )
 
-        outcome = self._fsm.transition(result)
-        if outcome.decision != "pass":
+        verdict = self._gate.execute(event)
+        if not verdict.authorized:
             logger.warning(
-                "Blocked MCP tool call: %s (score=%.2f, threshold=%.2f)",
-                tool_name, result.risk_score or 0.0, result.threshold or 0.0,
+                "Blocked MCP tool call: %s (decision=%s, reason=%s)",
+                tool_name, verdict.decision, verdict.reason,
             )
-            return self._build_blocked_response(message, result)
+            return self._build_blocked_response(message, verdict)
 
         # Allowed: forward to upstream
         return self._forward_and_respond(message)

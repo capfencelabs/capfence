@@ -3,17 +3,6 @@
 Wraps an MCP client session so that every tool call is gated
 before execution. This is the in-process equivalent of the
 stdio proxy gateway.
-
-Usage:
-    from capfence.mcp.adapter import CapFenceMCPSession
-    from capfence.core.gate import Gate
-
-    session = CapFenceMCPSession(
-        underlying_session=mcp_client_session,
-        gate=Gate(),
-        agent_id="mcp-agent-1",
-    )
-    result = await session.call_tool("shell", {"command": "ls"})
 """
 
 from __future__ import annotations
@@ -21,8 +10,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from capfence.core.gate import Gate
-from capfence.core.fsm import FailClosedFSM
+from capfence.core.runtime import ActionRuntime, ActionEvent
 from capfence.errors import AgentActionBlocked
 from capfence.framework._risk import guess_risk_category
 
@@ -40,15 +28,25 @@ class CapFenceMCPSession:
     def __init__(
         self,
         underlying_session: Any,
-        gate: Gate | None = None,
+        gate: ActionRuntime | None = None,
         agent_id: str = "mcp-agent",
         default_risk_category: str | None = None,
     ) -> None:
         self._session = underlying_session
-        self._gate = gate or Gate()
         self._agent_id = agent_id
         self._default_risk_category = default_risk_category
-        self._fsm = FailClosedFSM()
+
+        if gate is None:
+            from capfence.core.capabilities import CapabilitySystem
+            from capfence.core.approvals import ApprovalEngine
+            from capfence.core.audit import AuditLogger
+            self._gate = ActionRuntime(
+                capability_system=CapabilitySystem(),
+                approval_engine=ApprovalEngine(db_path=":memory:"),
+                audit_trail=AuditLogger(db_path=":memory:"),
+            )
+        else:
+            self._gate = gate
 
     def __getattr__(self, name: str) -> Any:
         """Transparent passthrough for non-wrapped methods."""
@@ -57,21 +55,30 @@ class CapFenceMCPSession:
     async def call_tool(self, name: str, arguments: dict[str, Any] | None = None) -> Any:
         """Call a tool through the CapFence gate."""
         risk_category = self._default_risk_category or self._guess_category(name)
-        result = await self._gate.evaluate_async(
-            agent_id=self._agent_id,
-            task_context=name,
-            risk_category=risk_category,
+        
+        capability = f"{name}.execute"
+        parts = capability.split(".", 1)
+        resource = parts[0]
+        action = parts[1] if len(parts) > 1 else "execute"
+
+        event = ActionEvent.create(
+            actor=self._agent_id,
+            action=action,
+            resource=resource,
+            environment="production",
+            risk=risk_category or "medium",
             payload=arguments or {},
         )
-        outcome = self._fsm.transition(result)
-        if outcome.decision != "pass":
+
+        verdict = self._gate.execute(event)
+        if not verdict.authorized:
             logger.warning(
-                "Blocked MCP tool call: %s (score=%.2f, threshold=%.2f)",
-                name, result.risk_score or 0.0, result.threshold or 0.0,
+                "Blocked MCP tool call: %s (decision=%s, reason=%s)",
+                name, verdict.decision, verdict.reason,
             )
             raise AgentActionBlocked(
-                detail=f"Tool '{name}' blocked: {result.reason}",
-                gate_result=result,
+                detail=f"Tool '{name}' blocked: {verdict.reason}",
+                gate_result=verdict,
             )
         # Forward to underlying session
         return await self._session.call_tool(name, arguments)

@@ -44,7 +44,7 @@ event = ActionEvent.create(
     resource="shell",
     environment="production",
     risk="high",
-    command="rm -rf /"
+    payload={"command": "rm -rf /"}
 )
 
 # Deterministic execution authorization check

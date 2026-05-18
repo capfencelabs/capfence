@@ -112,8 +112,12 @@ class CapabilitySystem:
                 raise FileNotFoundError(f"Policy file not found: {path}")
             with open(path, "r", encoding="utf-8") as f:
                 data = yaml.safe_load(f) or {}
+            from capfence.core.policy import PolicyLoader
+            self._policy = PolicyLoader().load(policy_data)
         else:
             data = policy_data or {}
+            from capfence.core.policy import Policy
+            self._policy = Policy(data)
 
         # Handle simple capability arrays under allow, require_approval, deny
         for cap_str in data.get("allow", []):
@@ -165,8 +169,18 @@ class CapabilitySystem:
                     cap
                 )
 
-    def evaluate_capability(self, required_cap_str: str) -> str:
+    def evaluate_capability(self, required_cap_str: str, context: dict[str, Any] | None = None, payload: dict[str, Any] | None = None) -> str:
         """Evaluate if a capability is allowed, denied, or requires approval."""
+        if hasattr(self, "_policy") and self._policy:
+            res = self._policy.evaluate(required_cap_str, context or {}, payload)
+            if res:
+                if res == "block":
+                    return "deny"
+                return res
+
+        if not self.allowed and not self.denied and not self.require_approval:
+            return "allow"
+
         required = Capability.parse(required_cap_str)
 
         # Deny always takes precedence (fail-closed)

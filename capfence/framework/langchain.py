@@ -1,30 +1,13 @@
-"""LangChain integration — CapFenceTool wrapper.
+"""LangChain integration — CapFence tool wrapper and decorator.
 
-Wraps any LangChain BaseTool with deterministic runtime enforcement.
-
-Usage:
-    from langchain.tools import ShellTool
-    from capfence.framework.langchain import CapFenceTool
-
-    safe_shell = CapFenceTool(
-        tool=ShellTool(),
-        agent_id="ops-agent-1",
-        risk_category="command_execution",
-        gate=Gate(),  # optional: custom gate instance
-    )
-
-    # Use exactly like ShellTool
-    result = safe_shell.run("ls -la")
-
-A blocked call raises AgentActionBlocked — catch and handle in your agent loop.
+Wraps LangChain tool classes and functions with deterministic runtime enforcement.
 """
 
 from __future__ import annotations
 
 from typing import Any, Callable
 
-from capfence.core.gate import Gate
-from capfence.core.fsm import FailClosedFSM
+from capfence.core.runtime import ActionRuntime, ActionEvent
 from capfence.errors import AgentActionBlocked
 from capfence.framework._base import _GuardedToolMixin
 
@@ -44,15 +27,28 @@ class CapFenceTool(_GuardedToolMixin):
         risk_category: str | None = None,
         capability: str | None = None,
         policy_path: str | None = None,
-        gate: Gate | None = None,
+        gate: ActionRuntime | None = None,
     ) -> None:
         self._tool = tool
         self._agent_id = agent_id
         self._risk_category = risk_category
         self._capability = capability
         self._policy_path = policy_path
-        self._gate = gate or Gate()
-        self._fsm = FailClosedFSM()
+
+        if gate is None:
+            if policy_path:
+                self._gate = ActionRuntime.from_policy(policy_path)
+            else:
+                from capfence.core.capabilities import CapabilitySystem
+                from capfence.core.approvals import ApprovalEngine
+                from capfence.core.audit import AuditLogger
+                self._gate = ActionRuntime(
+                    capability_system=CapabilitySystem(),
+                    approval_engine=ApprovalEngine(db_path=":memory:"),
+                    audit_trail=AuditLogger(db_path=":memory:"),
+                )
+        else:
+            self._gate = gate
 
         # Mirror tool metadata
         self.name = getattr(tool, "name", "unknown_tool")
@@ -85,7 +81,7 @@ def capfence_guard(
     risk_category: str | None = None,
     capability: str | None = None,
     policy_path: str | None = None,
-    gate: Gate | None = None,
+    gate: ActionRuntime | None = None,
 ) -> Callable[..., Any]:
     """Decorator factory for function-based LangChain tools.
 
@@ -94,23 +90,45 @@ def capfence_guard(
         def disburse_funds(account: str, amount: float) -> str:
             ...
     """
-    _gate = gate or Gate()
-    _fsm = FailClosedFSM()
+    if gate is None:
+        if policy_path:
+            _gate = ActionRuntime.from_policy(policy_path)
+        else:
+            from capfence.core.capabilities import CapabilitySystem
+            from capfence.core.approvals import ApprovalEngine
+            from capfence.core.audit import AuditLogger
+            _gate = ActionRuntime(
+                capability_system=CapabilitySystem(),
+                approval_engine=ApprovalEngine(db_path=":memory:"),
+                audit_trail=AuditLogger(db_path=":memory:"),
+            )
+    else:
+        _gate = gate
 
     def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             payload = {"args": args, "kwargs": kwargs, "task_context": func.__name__}
-            result = _gate.evaluate(
-                agent_id=agent_id,
-                task_context=func.__name__,
-                risk_category=risk_category,
+            
+            capability_str = capability or f"{func.__name__}.execute"
+            parts = capability_str.split(".", 1)
+            resource = parts[0]
+            action = parts[1] if len(parts) > 1 else "execute"
+
+            event = ActionEvent.create(
+                actor=agent_id,
+                action=action,
+                resource=resource,
+                environment="production",
+                risk=risk_category or "medium",
                 payload=payload,
-                capability=capability,
-                policy_path=policy_path,
             )
-            outcome = _fsm.transition(result)
-            if outcome.decision != "pass":
-                raise AgentActionBlocked(detail=outcome.detail, gate_result=result)
+
+            verdict = _gate.execute(event)
+            if not verdict.authorized:
+                raise AgentActionBlocked(
+                    detail=f"Blocked: {verdict.reason}",
+                    gate_result=verdict
+                )
             return func(*args, **kwargs)
         wrapper.__name__ = func.__name__
         wrapper.__doc__ = func.__doc__

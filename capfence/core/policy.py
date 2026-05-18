@@ -71,16 +71,20 @@ class Rule:
     conditions: dict[str, Any] = field(default_factory=dict)
 
     def matches(self, capability: str, context: dict[str, Any], payload: dict[str, Any] | None = None) -> bool:
-        if self.capability == "*":
-            pass
-        elif self.capability != capability:
-            # Check wildcard match or prefix match if implemented
-            if self.capability.endswith(".*"):
-                prefix = self.capability[:-2]
-                if not capability.startswith(prefix):
-                    return False
-            else:
+        from capfence.core.capabilities import Capability
+        try:
+            self_cap = Capability.parse(self.capability)
+            req_cap = Capability.parse(capability)
+            if not self_cap.matches(req_cap):
                 return False
+        except Exception:
+            if self.capability != "*" and self.capability != capability:
+                if self.capability.endswith(".*"):
+                    prefix = self.capability[:-2]
+                    if not capability.startswith(prefix):
+                        return False
+                else:
+                    return False
 
         payload_dict = payload or {}
         payload_text = str(payload_dict).lower()
@@ -197,9 +201,11 @@ class Policy:
             if not isinstance(rules, list):
                 raise PolicyLoadError(f"Policy '{policy_id}' section '{section}' must be a list.")
             for idx, item in enumerate(rules):
+                if isinstance(item, str):
+                    continue
                 if not isinstance(item, dict):
                     raise PolicyLoadError(
-                        f"Policy '{policy_id}' rule '{section}[{idx}]' must be a mapping."
+                        f"Policy '{policy_id}' rule '{section}[{idx}]' must be a mapping or a string."
                     )
                 if not item.get("capability"):
                     raise PolicyLoadError(
@@ -267,19 +273,25 @@ class Policy:
 
         # Parse deny
         for item in self.raw_data.get("deny", []):
-            if isinstance(item, dict) and "capability" in item:
+            if isinstance(item, str):
+                self.rules.append(Rule(capability=item, action="deny"))
+            elif isinstance(item, dict) and "capability" in item:
                 conditions = {k: v for k, v in item.items() if k != "capability"}
                 self.rules.append(Rule(capability=item["capability"], action="deny", conditions=conditions))
         
         # Parse require_approval
         for item in self.raw_data.get("require_approval", []):
-            if isinstance(item, dict) and "capability" in item:
+            if isinstance(item, str):
+                self.rules.append(Rule(capability=item, action="require_approval"))
+            elif isinstance(item, dict) and "capability" in item:
                 conditions = {k: v for k, v in item.items() if k != "capability"}
                 self.rules.append(Rule(capability=item["capability"], action="require_approval", conditions=conditions))
 
         # Parse allow
         for item in self.raw_data.get("allow", []):
-            if isinstance(item, dict) and "capability" in item:
+            if isinstance(item, str):
+                self.rules.append(Rule(capability=item, action="allow"))
+            elif isinstance(item, dict) and "capability" in item:
                 conditions = {k: v for k, v in item.items() if k != "capability"}
                 self.rules.append(Rule(capability=item["capability"], action="allow", conditions=conditions))
 
