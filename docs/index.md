@@ -1,15 +1,49 @@
 # CapFence
 
-CapFence is a deterministic trusted execution runtime for autonomous AI systems.
+> **Execution authorization infrastructure for autonomous systems.**
 
-It sits between an agent and its tools, evaluates each attempted tool action against capability policy, and blocks unauthorized operations before execution.
+<p align="center">
+  <a href="https://pypi.org/project/capfence/"><img src="https://img.shields.io/pypi/v/capfence?color=blue" alt="PyPI version"></a>
+  <a href="https://pypi.org/project/capfence/"><img src="https://img.shields.io/pypi/pyversions/capfence" alt="Python versions"></a>
+  <a href="https://github.com/capfencelabs/capfence/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License: MIT"></a>
+</p>
+
+CapFence is a deterministic trusted execution runtime for autonomous AI systems. It sits between an agent and its tools, evaluates each attempted tool action against capability policy, and blocks unauthorized operations before execution.
 
 ```text
-Agent -> CapFence Runtime -> System / API
-              |
-              +-- [Allow] -> Execution
-              +-- [Deny]  -> Fail-Closed Block
-              +-- [Require Approval] -> Pre-Authorized Scopes
+               +----------------------------------+
+               |     Probabilistic Agent / LLM    |
+               +----------------------------------+
+                                |
+                   [Tool Call / Execution Request]
+                                v
+               +----------------------------------+
+               |       CapFence ActionEvent       |
+               | (actor, action, resource, risk)  |
+               +----------------------------------+
+                                |
+                                v
+               +----------------------------------+
+               |     ActionRuntime (Enforce)      |
+               +----------------------------------+
+                  /             |              \
+                 /              |               \
+   [Matches Deny]        [Matches Allow]     [Matches Require Approval]
+       /                        |                        \
+      v                         v                         v
++-----------+            +--------------+          +--------------+
+|   BLOCK   |            |  AUTHORIZE   |          | Check Signed |
+|           |            |              |          | Grants / DB  |
+|  (Fail-   |            | (Sub-ms low  |          +--------------+
+|  Closed)  |            |   latency)   |             /        \
++-----------+            +--------------+            v          v
+                                                   [Valid]   [No Grant]
+                                                     /            \
+                                                    v              v
+                                               +---------+    +----------+
+                                               | ALLOW & |    |  BLOCK & |
+                                               |  AUDIT  |    |  QUEUE   |
+                                               +---------+    +----------+
 ```
 
 CapFence is built for teams shipping autonomous agents that interface with high-risk operations: shell execution, production databases, payment APIs, local filesystems, MCP servers, SaaS admin endpoints, and cloud infrastructure.
