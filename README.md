@@ -40,22 +40,32 @@ CapFence introduces an independent enforcement boundary:
 
 ## Example Scenarios
 
+### Preventing unauthorized fund transfers
+A treasury agent attempts to transfer corporate funds beyond its approved daily threshold.
+
+CapFence intercepts the action before execution, requiring an expiring human-in-the-loop pre-authorization.
+
 ### Blocking destructive shell execution
-An autonomous ops agent attempts:
+An autonomous ops agent attempts to run:
 ```bash
 rm -rf /var/lib/postgresql
 ```
-CapFence intercepts the action before execution and blocks it using deterministic deny policies.
+CapFence intercepts the raw CLI command string before execution and blocks it using local deterministic deny policies.
 
-### Preventing unauthorized fund transfers
-A trading agent attempts to transfer funds beyond its approved threshold.
+### Sandboxing desktop agent MCP tools
+A local IDE agent hijacked by repository-level prompt injection attempts to read files outside the project workspace.
 
-CapFence requires an expiring pre-authorization before execution.
+CapFence gateway proxies the stdio JSON-RPC stream, blocking host traversals and returning standard protocol errors.
 
-### Replay during incident review
-A production incident occurs after a policy update.
+### Guarding database writes and schema changes
+An SQL-generating analytics agent attempts to drop tables or run unindexed bulk deletes.
 
-CapFence replays historical execution traces against the previous policy to reconstruct exactly which actions changed authorization behavior.
+CapFence parses the generated queries pre-execution, blocking DDL/DML operations before they hit the connection pool.
+
+### Enforcing multi-agent trust and lineage
+A compromised public-facing routing agent propagates a prompt-injected payload to a privileged billing agent.
+
+CapFence tracks the full node execution lineage, blocking execution if the transaction has been touched by an unverified node.
 
 ---
 

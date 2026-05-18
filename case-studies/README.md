@@ -1,42 +1,44 @@
 # CapFence Case Studies
 
-Welcome to the CapFence Case Studies directory. These documents provide extensive, production-grade blueprints illustrating how to enforce deterministic execution boundaries and cryptographic audit trails across five high-risk operational domains.
+Welcome to the CapFence Case Studies directory. These blueprints illustrate how to enforce deterministic execution boundaries and cryptographic audit trails across five high-risk operational domains.
 
 Each case study includes an executive threat analysis, a declarative YAML capability policy, a complete annotated Python implementation, and an operational security analysis.
 
 ---
 
-## 📂 Case Study Index
+## 📂 Example Scenarios
 
-### [1. Fintech & Automated Payments Gating](01_fintech_payments.md)
-* **Domain**: Financial Systems & Automated Transfers
-* **Threat**: Model hallucinations and prompt injections exfiltrating corporate funds.
-* **Solution**: Declarative amount-based threshold gating, automatic risk priority mapping, and database-backed human approval queue escalation.
+### [1. Preventing unauthorized fund transfers](01_fintech_payments.md)
+A trading or treasury agent attempts to transfer corporate funds beyond its approved daily threshold.
 
-### [2. Secure Shell & DevOps Execution](02_secure_shell_devops.md)
-* **Domain**: Cloud Infrastructure & System Operations
-* **Threat**: AI agents executing destructive terminal commands (`rm -rf`, raw socket curls) due to compromise or query drift.
-* **Solution**: Regular expression CLI payload interceptors, system-level capability blocklists, and immediate fail-closed execution rejection.
+CapFence intercepts the action before execution, requiring an expiring human-in-the-loop pre-authorization.
 
-### [3. Model Context Protocol (MCP) Boundary Security](03_mcp_boundary_security.md)
-* **Domain**: Local Desktop Agent Tooling (Claude Desktop, Cursor)
-* **Threat**: Malicious codebases exfiltrating SSH keys or modifying host filesystems via MCP tools.
-* **Solution**: Transparent stdio JSON-RPC proxy gateway mapping, workspace directory sandboxing, and standardized error injection.
+### [2. Blocking destructive shell execution](02_secure_shell_devops.md)
+An autonomous ops agent attempts to run a dangerous terminal command:
+```bash
+rm -rf /var/lib/postgresql
+```
+CapFence intercepts the raw CLI command string before execution and blocks it using local deterministic deny policies.
 
-### [4. Database Write & DDL Guardrails](04_database_ddl_guardrails.md)
-* **Domain**: Data Persistence & Warehousing
-* **Threat**: Non-deterministic SQL generators executing unstructured DDL drops or unindexed bulk deletes.
-* **Solution**: Pre-execution SQL AST keyword scanning, schema change blocklists, and administrator approval workflows.
+### [3. Sandboxing desktop agent MCP tools](03_mcp_boundary_security.md)
+A local IDE agent hijacked by repository-level prompt injection attempts to read files outside the project directory.
 
-### [5. Multi-Agent Collaboration & Trust Lineage](05_multi_agent_trust_lineage.md)
-* **Domain**: Autonomous Multi-Agent Networks (LangGraph / CrewAI)
-* **Threat**: Prompt injection propagating from public-facing agents to highly privileged backend tool agents.
-* **Solution**: In-transit execution tracing (`FlowTracer`), cross-boundary state validation, and identity-bound lineage authorization.
+CapFence gateway proxies the stdio JSON-RPC stream, blocking host traversals and returning standard protocol errors.
+
+### [4. Guarding database write and schema modifications](04_database_ddl_guardrails.md)
+An SQL-generating analytics agent attempts to drop tables or run unindexed bulk deletes.
+
+CapFence parses the generated queries pre-execution, blocking DDL/DML operations before they hit the connection pool.
+
+### [5. Enforcing multi-agent trust and lineage](05_multi_agent_trust_lineage.md)
+A compromised public-facing routing agent propagates a prompt-injected payload to a privileged billing agent.
+
+CapFence tracks the full node execution lineage, blocking execution if the transaction has been touched by an unverified node.
 
 ---
 
 ## 🛠️ Getting Started Locally
-You can run any of the case studies directly. Every application leverages CapFence's local-first architecture:
+You can run any of these case studies directly. Every application leverages CapFence's local-first architecture:
 * **Zero Network Latency**: Real-time policy evaluation in `<1ms`.
 * **Zero Cloud Dependencies**: Runs entirely offline in local Python runtimes.
 * **Cryptographic Trust**: Logs all decisions into a local, tamper-evident SHA-256 database.
