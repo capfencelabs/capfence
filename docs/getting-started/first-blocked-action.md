@@ -44,7 +44,7 @@ event2 = ActionEvent.create(
 )
 verdict2 = runtime.execute(event2)
 print(verdict2.authorized)   # False
-print(verdict2.reason)   # destructive_command_detected
+print(verdict2.reason)   # policy_deny
 ```
 
 ## What happens at the framework layer
@@ -67,7 +67,7 @@ safe_shell.run("rm -rf /var/lib/postgresql")
 ```
 
 ```
-AgentActionBlocked: capability=shell.execute decision=denied reason=destructive_command_detected
+AgentActionBlocked: Blocked: policy_deny
 ```
 
 ## Checking the audit log
@@ -80,8 +80,8 @@ capfence logs
 
 ```
 timestamp            agent_id      capability      decision  reason
-2024-01-15 10:23:01  demo-agent    shell.execute   allow     —
-2024-01-15 10:23:02  demo-agent    shell.execute   deny      destructive_command_detected
+2024-01-15 10:23:01  demo-agent    shell.execute   allow     policy_allow
+2024-01-15 10:23:02  demo-agent    shell.execute   deny      policy_deny
 ```
 
 ## Verifying log integrity
