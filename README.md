@@ -10,7 +10,7 @@ AI agents are non-deterministic. Real-world execution must not be.
   <a href="https://pypi.org/project/capfence/"><img src="https://img.shields.io/pypi/v/capfence?color=blue" alt="PyPI version"></a>
   <a href="https://pypi.org/project/capfence/"><img src="https://img.shields.io/pypi/pyversions/capfence" alt="Python versions"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License: MIT"></a>
-  <img src="https://img.shields.io/badge/tests-passing-brightgreen" alt="Tests: passing">
+  <a href="https://github.com/capfencelabs/capfence/actions/workflows/ci.yml"><img src="https://github.com/capfencelabs/capfence/actions/workflows/ci.yml/badge.svg" alt="CI Status"></a>
 </p>
 
 CapFence sits between autonomous systems and privileged execution targets (APIs, databases, filesystems, and gateways). It evaluates agent actions against declarative, capability-based policies—allowing, blocking, or queuing actions for approval.

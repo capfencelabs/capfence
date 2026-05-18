@@ -88,6 +88,12 @@ class Gate:
         policy_loader: PolicyLoader | None = None,
         approval_manager: ApprovalManager | None = None,
     ) -> None:
+        import warnings
+        warnings.warn(
+            "Gate is deprecated and will be removed in v1.0. Use ActionRuntime instead. See docs/migration.md.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         if mode not in (GATE_MODE_ENFORCE, GATE_MODE_OBSERVE):
             raise ConfigurationError(f"Invalid gate mode '{mode}'. Use 'enforce' or 'observe'.")
         self._store = state_store or AgentStateStore()

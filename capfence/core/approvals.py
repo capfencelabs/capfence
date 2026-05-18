@@ -50,9 +50,23 @@ class ApprovedGrant:
 
 
 class ApprovalManager:
-    """Approval Engine governing real-time interactive requests and pre-authorized capability grants."""
+    """Approval Engine governing real-time interactive requests and pre-authorized capability grants.
 
-    def __init__(self, db_path: str | Path = ":memory:") -> None:
+    Defaults to storing approval records inside `~/.capfence/approvals.db` to survive process restarts,
+    unless `CAPFENCE_DB_PATH` is specified in environment variables, or `":memory:"` is explicitly passed.
+    """
+
+    def __init__(self, db_path: str | Path | None = None) -> None:
+        import os
+        if db_path is None:
+            db_path = os.environ.get("CAPFENCE_DB_PATH")
+            if not db_path:
+                db_path = Path.home() / ".capfence" / "approvals.db"
+
+        if db_path != ":memory:":
+            db_path = Path(db_path)
+            db_path.parent.mkdir(parents=True, exist_ok=True)
+
         self._db = SQLiteDBEngine(db_path)
         self._init_schema()
 

@@ -15,6 +15,42 @@ import yaml  # type: ignore
 logger = logging.getLogger(__name__)
 
 
+TAXONOMY_TO_CAPABILITY: dict[str, str] = {
+    "balance_inquiry": "payment.balance.*",
+    "transaction_history": "payment.history.*",
+    "payment_initiation": "payment.transfer.*",
+    "withdrawal": "payment.withdraw.*",
+    "account_modification": "account.update.*",
+    "compliance_check": "compliance.verify.*",
+    "high_value_transfer": "payment.transfer.*",
+    "stripe_payment_initiation": "payment.transfer.*",
+    "stripe_refund": "payment.refund.*",
+    "stripe_payout": "payment.transfer.*",
+    "stripe_subscription": "payment.subscription.*",
+    "stripe_issuing_card": "card.issue.*",
+    "stripe_customer_mgmt": "account.update.*",
+    "stripe_dispute": "stripe.dispute.*",
+    "loan_origination": "loan.originate.*",
+    "loan_modification": "loan.modify.*",
+    "loan_disbursement": "loan.disburse.*",
+    "credit_decision": "credit.decide.*",
+    "account_closure": "account.close.*",
+    "kyc_create": "kyc.create.*",
+    "aml_flag": "compliance.aml_flag.*",
+    "sanctions_screening": "compliance.sanctions_screening.*",
+    "fx_conversion": "payment.fx_convert.*",
+    "recurring_payment_setup": "payment.recurring_setup.*",
+    "beneficiary_add": "account.beneficiary_add.*",
+    "report_generate": "report.generate.*",
+    "investment_order": "investment.order.*",
+    "portfolio_rebalance": "investment.rebalance.*",
+    "card_control": "card.control.*",
+    "open_banking_consent": "open_banking.consent.*",
+    "fee_override": "fee.override.*",
+    "document_sign": "document.sign.*",
+}
+
+
 @dataclass(frozen=True)
 class Capability:
     """Represents a capability in resource.action.scope format."""

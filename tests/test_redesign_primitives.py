@@ -72,7 +72,7 @@ class TestCapabilitySystem:
 
 class TestApprovalEngine:
     def test_temporary_expiring_approval(self):
-        engine = ApprovalEngine()
+        engine = ApprovalEngine(db_path=":memory:")
         
         # Grant a capability for 2 seconds
         grant = engine.grant_temporary_approval(
@@ -106,7 +106,7 @@ class TestApprovalEngine:
         assert approved_expired is False
 
     def test_session_bound_approval(self):
-        engine = ApprovalEngine()
+        engine = ApprovalEngine(db_path=":memory:")
         
         # Grant capability for specific session
         grant = engine.grant_session_approval(
@@ -143,6 +143,32 @@ class TestApprovalEngine:
         assert approved_ok is True
         assert active_grant.id == grant.id
 
+    def test_approval_persistence_survives_reinit(self, tmp_path):
+        db_file = tmp_path / "test_approvals.db"
+        engine = ApprovalEngine(db_path=db_file)
+        
+        # Grant a capability
+        engine.grant_temporary_approval(
+            actor="agent-persist",
+            capability="s3.write.bucket-1",
+            environment="production",
+            duration_seconds=3600.0,
+            granted_by="slack_webhook",
+        )
+        
+        # Create second ApprovalEngine pointing to the same path
+        engine2 = ApprovalEngine(db_path=db_file)
+        
+        # Check active approval on second engine
+        approved, active_grant = engine2.check_approval(
+            actor="agent-persist",
+            capability_str="s3.write.bucket-1",
+            environment="production",
+        )
+        assert approved is True
+        assert active_grant is not None
+        assert active_grant.capability == "s3.write.bucket-1"
+
 
 class TestActionRuntime:
     def test_runtime_execution_flows(self):
@@ -151,7 +177,7 @@ class TestActionRuntime:
             "allow": ["filesystem.read.*"],
             "require_approval": ["deployment.execute.*"],
         })
-        approvals = ApprovalEngine()
+        approvals = ApprovalEngine(db_path=":memory:")
         audit = ImmutableAuditTrail()
 
         runtime = ActionRuntime(
@@ -216,7 +242,7 @@ class TestReplayEngine:
         })
         runtime = ActionRuntime(
             capability_system=caps,
-            approval_engine=ApprovalEngine(),
+            approval_engine=ApprovalEngine(db_path=":memory:"),
             audit_trail=ImmutableAuditTrail(),
         )
 

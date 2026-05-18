@@ -5,7 +5,7 @@ recorded entry causes chain verification to fail with a precise error pointing
 to the corrupted row.
 
 Run:
-    python examples/tamper_demo.py
+    python examples/core_concepts/tamper_demo.py
 
 Expected output:
     ✓ Chain VALID (6 entries, 0 errors)
@@ -23,13 +23,24 @@ import tempfile
 from pathlib import Path
 
 from capfence.core.audit import AuditLogger
-from capfence.core.gate import Gate
+from capfence.core.runtime import ActionRuntime, ActionEvent
+from capfence.core.capabilities import CapabilitySystem, Capability
+from capfence.core.approvals import ApprovalEngine
 
 
 def _populate_log(db_path: Path) -> AuditLogger:
-    """Record six realistic gate decisions to the audit log."""
+    """Record six realistic ActionRuntime decisions to the audit log."""
     audit = AuditLogger(db_path=db_path, sign_entries=False)
-    gate = Gate(audit_logger=audit)
+    
+    # Configure capability system to allow all actions for the demo
+    caps = CapabilitySystem()
+    caps.allowed.append(Capability.parse("*.*.*"))
+    
+    runtime = ActionRuntime(
+        capability_system=caps,
+        approval_engine=ApprovalEngine(db_path=":memory:"),
+        audit_trail=audit
+    )
 
     scenarios = [
         ("agent-payments-1", "check_balance",       "balance_inquiry",     {"account": "acct_123"}),
@@ -41,7 +52,15 @@ def _populate_log(db_path: Path) -> AuditLogger:
     ]
 
     for agent_id, task_context, risk_category, payload in scenarios:
-        gate.evaluate(agent_id, task_context, risk_category, payload)
+        event = ActionEvent.create(
+            actor=agent_id,
+            action=task_context,
+            resource=risk_category,
+            environment="production",
+            risk="low",
+            **payload
+        )
+        runtime.execute(event)
 
     return audit
 
@@ -68,7 +87,7 @@ def main() -> None:
         print("=== CapFence Tamper-Evidence Demo ===\n")
 
         # 1. Populate
-        print("Step 1 — Recording 6 gate decisions to audit log...")
+        print("Step 1 — Recording 6 ActionRuntime decisions to audit log...")
         audit = _populate_log(db_path)
         events = audit.get_events_chronological(limit=100)
         print(f"  Recorded {len(events)} entries.")
