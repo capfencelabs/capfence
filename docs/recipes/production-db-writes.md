@@ -19,19 +19,22 @@ allow:
 ## Integration
 
 ```python
-from capfence.core.gate import Gate
+from capfence import ActionRuntime, ActionEvent
 
-gate = Gate()
+# 1. Initialize ActionRuntime canonical engine
+runtime = ActionRuntime.from_policy("policies/db.yaml")
 
-result = gate.evaluate(
-    agent_id="db-agent",
-    task_context="db",
-    risk_category="database_write",
-    capability="database.write",
-    policy_path="policies/db.yaml",
-    payload={"query": "update accounts set status='inactive'"},
-    policy_context={"environment": "production"},
+# 2. Formulate the governed event
+event = ActionEvent.create(
+    actor="db-agent",
+    action="write",
+    resource="database",
+    environment="production",
+    payload={"query": "update accounts set status='inactive'"}
 )
+
+# 3. Deterministic execution authorization check
+verdict = runtime.execute(event)
 ```
 
 ## Expected result

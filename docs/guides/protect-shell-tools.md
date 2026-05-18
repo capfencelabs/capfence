@@ -54,25 +54,25 @@ safe_shell = CapFenceTool(
 tools = [safe_shell]
 ```
 
-## Direct gate integration
+## Direct runtime integration
 
 ```python
 import subprocess
-from capfence.core.gate import Gate
+from capfence import ActionRuntime, ActionEvent
 
-gate = Gate()
+runtime = ActionRuntime.from_policy("policies/shell_agent.yaml")
 
 def safe_run(command: str, agent_id: str) -> str:
-    result = gate.evaluate(
-        agent_id=agent_id,
-        task_context="shell",
-        risk_category="shell_execution",
-        capability="shell.execute",
-        policy_path="policies/shell_agent.yaml",
+    event = ActionEvent.create(
+        actor=agent_id,
+        action="execute",
+        resource="shell",
+        environment="production",
         payload={"command": command}
     )
-    if not result.passed:
-        raise PermissionError(f"Blocked: {result.reason}")
+    verdict = runtime.execute(event)
+    if not verdict.authorized:
+        raise PermissionError(f"Blocked: {verdict.reason}")
     return subprocess.check_output(command, shell=True, text=True)
 ```
 

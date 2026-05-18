@@ -18,18 +18,22 @@ allow:
 ## Integration
 
 ```python
-from capfence.core.gate import Gate
+from capfence import ActionRuntime, ActionEvent
 
-gate = Gate()
+# 1. Initialize ActionRuntime canonical engine
+runtime = ActionRuntime.from_policy("policies/saas.yaml")
 
-result = gate.evaluate(
-    agent_id="admin-agent",
-    task_context="saas_admin",
-    risk_category="admin_change",
-    capability="saas.user.role_change",
-    policy_path="policies/saas.yaml",
-    payload={"user_id": "u_123", "role": "owner"},
+# 2. Formulate the governed event
+event = ActionEvent.create(
+    actor="admin-agent",
+    action="role_change",
+    resource="saas.user",
+    environment="production",
+    payload={"user_id": "u_123", "role": "owner"}
 )
+
+# 3. Deterministic execution authorization check
+verdict = runtime.execute(event)
 ```
 
 ## Expected result

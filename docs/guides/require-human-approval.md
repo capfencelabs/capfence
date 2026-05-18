@@ -26,17 +26,17 @@ require_approval:
 
 ## Inline override
 
-When using the direct gate API, you can require approval for a call regardless of policy:
+When using the direct runtime API, you can require approval for a call regardless of policy by setting the metadata field:
 
 ```python
-result = gate.evaluate(
-    agent_id="finance-agent",
-    task_context="payments",
-    risk_category="payment_initiation",
-    capability="payments.transfer",
+event = ActionEvent.create(
+    actor="finance-agent",
+    action="transfer",
+    resource="payments",
     payload={"amount": 5000},
-    require_human_approval=True,
+    metadata={"require_approval": True}
 )
+verdict = runtime.execute(event)
 ```
 
 ## Viewing pending approvals
@@ -61,20 +61,20 @@ capfence reject e5f6g7h8
 ## Python API
 
 ```python
-from capfence.core.approvals import ApprovalManager
+from capfence import ApprovalEngine
 
-manager = ApprovalManager(db_path="capfence_approvals.db")
+engine = ApprovalEngine(db_path="capfence_approvals.db")
 
-# List pending
-pending = manager.get_pending()
-for request in pending:
-    print(request.id, request.capability, request.agent_id)
+# List pending approvals
+pending = engine.get_pending_approvals()
+for req in pending:
+    print(req["id"], req["capability"], req["agent_id"])
 
 # Approve
-manager.approve("a1b2c3d4", resolved_by="alice@company.com")
+engine.approve_request("a1b2c3d4", resolved_by="alice@company.com")
 
 # Reject
-manager.reject("e5f6g7h8", resolved_by="bob@company.com")
+engine.reject_request("e5f6g7h8", resolved_by="bob@company.com")
 ```
 
 ## Approval expiration

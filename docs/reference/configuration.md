@@ -2,46 +2,43 @@
 
 CapFence is configured through constructor parameters and policy files. There is no required global configuration file.
 
-## Gate configuration
+## ActionRuntime configuration
 
 ```python
-from capfence.core.audit import AuditLogger
-from capfence.core.gate import Gate
+from capfence import ActionRuntime, CapabilitySystem, ApprovalEngine, AuditLogger
 
-gate = Gate(
-    taxonomy_path="financial",
-    audit_logger=AuditLogger(db_path="audit.db"),
+runtime = ActionRuntime(
+    capability_system=CapabilitySystem(),
+    approval_engine=ApprovalEngine(db_path="approvals.db"),
+    audit_trail=AuditLogger(db_path="audit.db"),
     mode="enforce",
 )
 ```
 
 | Parameter | Description |
 |---|---|
-| `taxonomy_path` | Built-in taxonomy name or path to a taxonomy file. |
-| `audit_logger` | Audit logger instance. Use `AuditLogger(db_path="audit.db")` for persistent logs. |
-| `mode` | `"enforce"` blocks unauthorized calls. `"observe"` logs without blocking. |
-| `approval_manager` | Optional approval queue manager. |
-| `policy_loader` | Optional policy loader. |
+| `capability_system` | Local declarative policy evaluator. |
+| `approval_engine` | Human approval queue manager (SQLite backed). |
+| `audit_trail` | Verifiable decision logging engine. |
+| `mode` | Operation mode (`"enforce"` or deprecated `"observe"`/`"stealth"`). |
 
 ## Adapter configuration
 
 ```python
-from capfence import CapFenceTool
-from capfence.core.audit import AuditLogger
-from capfence.core.gate import Gate
+from capfence import CapFenceTool, ActionRuntime
 
-gate = Gate(audit_logger=AuditLogger(db_path="audit.db"))
+runtime = ActionRuntime.from_policy("policies/shell.yaml")
 
 safe_tool = CapFenceTool(
     tool=my_tool,
     agent_id="my-agent",
     capability="shell.execute",
     policy_path="policies/shell.yaml",
-    gate=gate,
+    gate=runtime,
 )
 ```
 
-Adapters add framework-specific wrapping around the same gate primitive.
+Adapters add framework-specific wrapping around the same execution runtime primitive.
 
 ## Policy file location
 
@@ -58,15 +55,12 @@ policies/
 
 ## Audit database location
 
-By default, `AuditLogger()` uses an in-memory database. Configure a path for persistent audit logs:
+Configure a path for persistent, verifiable audit logs:
 
 ```python
-from capfence.core.audit import AuditLogger
-from capfence.core.gate import Gate
+from capfence import AuditLogger
 
-gate = Gate(
-    audit_logger=AuditLogger(db_path="/var/log/myapp/capfence.db")
-)
+audit = AuditLogger(db_path="/var/log/myapp/capfence.db")
 ```
 
 ## Approval timeout
@@ -86,4 +80,3 @@ import logging
 
 logging.getLogger("capfence").setLevel(logging.WARNING)
 ```
-

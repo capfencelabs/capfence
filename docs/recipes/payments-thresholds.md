@@ -19,18 +19,22 @@ allow:
 ## Integration
 
 ```python
-from capfence.core.gate import Gate
+from capfence import ActionRuntime, ActionEvent
 
-gate = Gate()
+# 1. Initialize ActionRuntime canonical engine
+runtime = ActionRuntime.from_policy("policies/payments.yaml")
 
-result = gate.evaluate(
-    agent_id="payments-agent",
-    task_context="payments",
-    risk_category="payment_initiation",
-    capability="payments.transfer",
-    policy_path="policies/payments.yaml",
-    payload={"amount": 5000},
+# 2. Formulate the governed event
+event = ActionEvent.create(
+    actor="payments-agent",
+    action="transfer",
+    resource="payments",
+    environment="production",
+    payload={"amount": 5000}
 )
+
+# 3. Deterministic execution authorization check
+verdict = runtime.execute(event)
 ```
 
 ## Expected result

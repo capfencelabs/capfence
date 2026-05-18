@@ -31,23 +31,27 @@ graph = create_react_agent(model, tools=[safe_shell])
 When defining graph nodes manually, gate tool calls within the node function:
 
 ```python
-from capfence.core.gate import Gate
+from capfence import ActionRuntime, ActionEvent
 from langgraph.graph import StateGraph
 
-gate = Gate()
+runtime = ActionRuntime.from_policy("policies/shell.yaml")
 
 def tool_node(state):
     command = state["command"]
-    result = gate.evaluate(
-        agent_id="graph-agent",
-        task_context="shell",
-        risk_category="shell_execution",
-        capability="shell.execute",
-        policy_path="policies/shell.yaml",
+    
+    # Formulate the governed event
+    event = ActionEvent.create(
+        actor="graph-agent",
+        action="execute",
+        resource="shell",
+        environment="production",
         payload={"command": command}
     )
-    if not result.passed:
-        return {"error": f"Blocked: {result.reason}"}
+    
+    verdict = runtime.execute(event)
+    if not verdict.authorized:
+        return {"error": f"Blocked: {verdict.reason}"}
+        
     # execute tool
     output = run_shell(command)
     return {"output": output}
@@ -61,17 +65,15 @@ builder.add_node("tool", tool_node)
 In graphs where one agent hands off to another, propagate the agent lineage:
 
 ```python
-gate.evaluate(
-    agent_id="executor-agent",
-    task_context="database",
-    risk_category="database_write",
-    capability="database.write",
-    policy_path="policies/database.yaml",
+event = ActionEvent.create(
+    actor="executor-agent",
+    action="write",
+    resource="database",
+    environment="production",
     payload={"query": sql}
 )
+verdict = runtime.execute(event)
 ```
-
-Use FlowTracer when you need to track data movement across planner and executor agents.
 
 ## Related integrations
 
