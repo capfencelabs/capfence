@@ -1,5 +1,9 @@
-# Strategy docs, build plans, PR descriptions — keep out of public repo
-# README.md is explicitly allowed (needed for PyPI/GitHub)
+# ==============================================================================
+# CapFence — Git Ignore Configuration
+# ==============================================================================
+
+# --- Documentation Whitelist & Strategy Exclusions ---
+# Protect root-level markdown strategy notes from public tracking.
 *.md
 !README.md
 !CHANGELOG.md
@@ -13,19 +17,27 @@
 !case-studies/*.md
 !case-studies/**/*.md
 
-# Internal review artifacts (do not commit)
+# Block potential future local review artifacts
 docs/CODE_REVIEW_*.md
 docs/REVIEW_*.md
 docs/*_REVIEW.md
 docs/INTERNAL_*.md
-BUILDPLAN.md
-TRADE_SECRET*.md
-CHANGES_TO_APPLY_MANUALLY.md
 
-# Private Cloud repo — decoupled from OSS
-capfence-cloud/
+# --- Corporate & Enterprise Exclusions ---
+capfence-cloud/   # Proprietary enterprise cloud repository
 
-# Python
+# --- Hard Security & Proprietary Protection ---
+# Never check in credentials, keys, patents, or trade-secrets.
+.env
+.env.*
+key.txt
+*.age
+*patent*
+*Patent*
+*PROVISIONAL*
+TRADE_SECRET*
+
+# --- Python & Build Environments ---
 __pycache__/
 *.py[cod]
 *$py.class
@@ -37,51 +49,27 @@ build/
 .eggs/
 *.egg
 
-# Tool caches
+# --- Tool & Execution Caches ---
 .mypy_cache/
 .pytest_cache/
 .ruff_cache/
 
-# Virtual environments
+# --- Virtual Environments ---
 venv/
 .venv/
 env/
 ENV/
 
-# IDE
+# --- IDE & OS Cache Files ---
 .vscode/
 .idea/
 *.swp
 *.swo
-
-# Environment secrets
-.env
-.env.local
-.env.production
-
-# Encrypted files
-*.age
-key.txt
-
-# Trade secrets (NEVER commit to git)
-TRADE_SECRET.md
-TRADE_SECRET*
-
-# Patent documents (NEVER commit)
-*patent*
-*Patent*
-*PROVISIONAL*
-
-# Init docs (patent documents, strategy HTMLs)
-.initdocs/
-
-# Archive (old build plans, deprecated docs, superseded specs)
-archive/
-
-# OS
 .DS_Store
 Thumbs.db
-site/
+site/              # Local built static documentation output
+
+# --- Local Demonstration & Sandbox Files ---
 capfence-demo/capfence-assessment-report.html
 capfence-demo/audit.db
 capfence-demo/approvals.db
