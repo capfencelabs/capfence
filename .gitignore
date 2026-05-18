@@ -67,7 +67,8 @@ ENV/
 *.swo
 .DS_Store
 Thumbs.db
-site/              # Local built static documentation output
+# Local built static documentation output
+site/
 
 # --- Local Demonstration & Sandbox Files ---
 capfence-demo/capfence-assessment-report.html
