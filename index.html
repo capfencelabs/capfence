@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Documentation for the ShadowAudit project">
+        <meta name="description" content="Documentation for the CapFence project">
       
       
       
@@ -23,7 +23,7 @@
     
     
       
-        <title>ShadowAudit Docs</title>
+        <title>CapFence Docs</title>
       
     
     
@@ -64,7 +64,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#shadowaudit-documentation" class="md-skip">
+        <a href="#capfence" class="md-skip">
           Skip to content
         </a>
       
@@ -80,7 +80,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="." title="ShadowAudit Docs" class="md-header__button md-logo" aria-label="ShadowAudit Docs" data-md-component="logo">
+    <a href="." title="CapFence Docs" class="md-header__button md-logo" aria-label="CapFence Docs" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -94,7 +94,7 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            ShadowAudit Docs
+            CapFence Docs
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
@@ -178,13 +178,13 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="." title="ShadowAudit Docs" class="md-nav__button md-logo" aria-label="ShadowAudit Docs" data-md-component="logo">
+    <a href="." title="CapFence Docs" class="md-nav__button md-logo" aria-label="CapFence Docs" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
 
     </a>
-    ShadowAudit Docs
+    CapFence Docs
   </label>
   
   <ul class="md-nav__list" data-md-scrollfix>
@@ -256,10 +256,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#local-development" class="md-nav__link">
+  <a href="#why-it-exists" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Local development
+        Why It Exists
       
     </span>
   </a>
@@ -267,10 +267,82 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#build-for-production" class="md-nav__link">
+  <a href="#core-capabilities" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Build for production
+        Core Capabilities
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#five-minute-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Five-Minute Path
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Five-Minute Path">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-install" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Install
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-create-a-capability-policy-policiesopsyaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Create a Capability Policy (policies/ops.yaml)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-evaluate-and-enforce" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Evaluate and Enforce
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-workflows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Workflows
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#project-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Project Status
       
     </span>
   </a>
@@ -1087,6 +1159,62 @@
   
   
     <li class="md-nav__item">
+      <a href="examples/demo-cast/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Demo cast
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="examples/demo-walkthrough/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Demo walkthrough
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="examples/fintech-agent/" class="md-nav__link">
         
   
@@ -1474,7 +1602,7 @@
   <span class="md-ellipsis">
     
   
-    Integrations
+    Recipes
   
 
     
@@ -1490,11 +1618,289 @@
             <span class="md-nav__icon md-icon"></span>
             
   
+    Recipes
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="recipes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="recipes/shell-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protect shell tools
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="recipes/production-db-writes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protect production DB writes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="recipes/payments-thresholds/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protect payments with thresholds
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="recipes/mcp-filesystem-allowlist/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Secure MCP filesystem access
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="recipes/saas-admin-approval/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Require SaaS admin approval
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Integrations
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
     Integrations
   
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="integrations/compatibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compatibility matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="integrations/autogen/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AutoGen
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -1587,6 +1993,34 @@
   
   
     <li class="md-nav__item">
+      <a href="integrations/llamaindex/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LlamaIndex
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="integrations/mcp/" class="md-nav__link">
         
   
@@ -1623,6 +2057,34 @@
     
   
     OpenAI Agents SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="integrations/pydanticai/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PydanticAI
   
 
     
@@ -1686,10 +2148,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
         
           
-          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
             
   
   
@@ -1707,8 +2169,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_9">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1920,10 +2382,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#local-development" class="md-nav__link">
+  <a href="#why-it-exists" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Local development
+        Why It Exists
       
     </span>
   </a>
@@ -1931,10 +2393,82 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#build-for-production" class="md-nav__link">
+  <a href="#core-capabilities" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Build for production
+        Core Capabilities
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#five-minute-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Five-Minute Path
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Five-Minute Path">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-install" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Install
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-create-a-capability-policy-policiesopsyaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Create a Capability Policy (policies/ops.yaml)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-evaluate-and-enforce" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Evaluate and Enforce
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-workflows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Workflows
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#project-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Project Status
       
     </span>
   </a>
@@ -1958,25 +2492,136 @@
 
 
 
-<h1 id="shadowaudit-documentation">ShadowAudit Documentation</h1>
-<p>Welcome to the ShadowAudit documentation site.</p>
-<h2 id="local-development">Local development</h2>
-<p>Activate the project's virtual environment (optional but recommended):</p>
-<pre><code class="language-bash">source .venv/bin/activate
+<h1 id="capfence">CapFence</h1>
+<blockquote>
+<p><strong>Execution authorization infrastructure for autonomous systems.</strong></p>
+</blockquote>
+<p align="center">
+  <a href="https://pypi.org/project/capfence/"><img src="https://img.shields.io/pypi/v/capfence?color=blue" alt="PyPI version"></a>
+  <a href="https://pypi.org/project/capfence/"><img src="https://img.shields.io/pypi/pyversions/capfence" alt="Python versions"></a>
+  <a href="https://github.com/capfencelabs/capfence/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License: MIT"></a>
+</p>
+
+<p>CapFence is a deterministic trusted execution runtime for autonomous AI systems. It sits between an agent and its tools, evaluates each attempted tool action against capability policy, and blocks unauthorized operations before execution.</p>
+<pre><code class="language-text">               +----------------------------------+
+               |     Probabilistic Agent / LLM    |
+               +----------------------------------+
+                                |
+                   [Tool Call / Execution Request]
+                                v
+               +----------------------------------+
+               |       CapFence ActionEvent       |
+               | (actor, action, resource, risk)  |
+               +----------------------------------+
+                                |
+                                v
+               +----------------------------------+
+               |     ActionRuntime (Enforce)      |
+               +----------------------------------+
+                  /             |              \
+                 /              |               \
+   [Matches Deny]        [Matches Allow]     [Matches Require Approval]
+       /                        |                        \
+      v                         v                         v
++-----------+            +--------------+          +--------------+
+|   BLOCK   |            |  AUTHORIZE   |          | Check Signed |
+|           |            |              |          | Grants / DB  |
+|  (Fail-   |            | (Sub-ms low  |          +--------------+
+|  Closed)  |            |   latency)   |             /        \
++-----------+            +--------------+            v          v
+                                                   [Valid]   [No Grant]
+                                                     /            \
+                                                    v              v
+                                               +---------+    +----------+
+                                               | ALLOW &amp; |    |  BLOCK &amp; |
+                                               |  AUDIT  |    |  QUEUE   |
+                                               +---------+    +----------+
 </code></pre>
-<p>Start the live preview server:</p>
-<pre><code class="language-bash">.venv/bin/mkdocs serve
-# or
-/Users/anshumankumar/Documents/shadowaudit-python/.venv/bin/python -m mkdocs serve
+<p>CapFence is built for teams shipping autonomous agents that interface with high-risk operations: shell execution, production databases, payment APIs, local filesystems, MCP servers, SaaS admin endpoints, and cloud infrastructure.</p>
+<hr />
+<h2 id="why-it-exists">Why It Exists</h2>
+<p>Prompt guardrails and model instructions are not an execution boundary. A prompt can be bypassed, misinterpreted, or manipulated. </p>
+<p>CapFence treats autonomous tool execution like secure infrastructure authorization: <strong>explicit capability policies, deterministic decisions, tamper-evident audit trails, dynamic pre-approvals, and complete fail-closed behavior.</strong></p>
+<hr />
+<h2 id="core-capabilities">Core Capabilities</h2>
+<ul>
+<li><strong>Deterministic Enforcement</strong>: Policy-as-code evaluations mapped to <code>resource.action.scope</code> wildcards.</li>
+<li><strong>Zero LLM Latency</strong>: Pure-Python capability matching ensures sub-millisecond interlocks without any cloud APIs.</li>
+<li><strong>Pluggable Persistence</strong>: Decoupled storage using <a href="concepts/runtime-authorization/">BaseDBEngine</a>, supporting local SQLite WAL files or high-throughput PostgreSQL pools.</li>
+<li><strong>Pre-Authorizations</strong>: Manage expiring temporary and session-bound capability credentials dynamically.</li>
+<li><strong>Cryptographic Audit Chain</strong>: Logs decisions in a tamper-evident hash chain with Ed25519 asymmetric signatures.</li>
+<li><strong>Trace Replay &amp; Incident Simulation</strong>: Replay historical trace files offline to safely test policy changes and generate compliance evidence.</li>
+<li><strong>Static Scanning &amp; CI Checks</strong>: Scan Python codebases to catch and block ungated tool registrations during CI/CD.</li>
+</ul>
+<hr />
+<h2 id="five-minute-path">Five-Minute Path</h2>
+<h3 id="1-install">1. Install</h3>
+<pre><code class="language-bash">pip install capfence
 </code></pre>
-<p>Open http://127.0.0.1:8000 in your browser.</p>
-<h2 id="build-for-production">Build for production</h2>
-<p>Build the static site to the <code>site/</code> directory:</p>
-<pre><code class="language-bash">.venv/bin/mkdocs build
-# or
-/Users/anshumankumar/Documents/shadowaudit-python/.venv/bin/python -m mkdocs build
+<h3 id="2-create-a-capability-policy-policiesopsyaml">2. Create a Capability Policy (<code>policies/ops.yaml</code>)</h3>
+<pre><code class="language-yaml">deny:
+  - capability: filesystem.delete.workspace
+    contains: &quot;rm -rf&quot;
+
+require_approval:
+  - capability: payment.execute.high_value
+    amount_gt: 1000
+
+allow:
+  - capability: filesystem.read.workspace
+  - capability: payment.execute.high_value
+    amount_lte: 1000
 </code></pre>
-<p>The generated site will be in the <code>site/</code> folder.</p>
+<h3 id="3-evaluate-and-enforce">3. Evaluate and Enforce</h3>
+<pre><code class="language-python">from capfence import ActionEvent, ActionRuntime, CapabilitySystem, ApprovalEngine, ImmutableAuditTrail
+
+# 1. Initialize low-latency runtime components
+caps = CapabilitySystem()
+caps.load_policy(&quot;policies/ops.yaml&quot;)
+
+runtime = ActionRuntime(
+    capability_system=caps,
+    approval_engine=ApprovalEngine(),
+    audit_trail=ImmutableAuditTrail(),
+)
+
+# 2. Formulate the governed event
+event = ActionEvent.create(
+    actor=&quot;hotfix-agent&quot;,
+    action=&quot;delete&quot;,
+    resource=&quot;filesystem.workspace&quot;,
+    environment=&quot;production&quot;,
+    risk=&quot;high&quot;,
+    command=&quot;rm -rf /var/lib/postgresql&quot;
+)
+
+# 3. Deterministic enforcement
+verdict = runtime.execute(event)
+
+if not verdict.authorized:
+    raise PermissionError(f&quot;Action blocked by CapFence: {verdict.reason}&quot;)
+</code></pre>
+<hr />
+<h2 id="common-workflows">Common Workflows</h2>
+<ul>
+<li>Start with <a href="getting-started/installation/">Installation</a>.</li>
+<li>Run the <a href="getting-started/quickstart/">Quickstart</a>.</li>
+<li>Write <a href="getting-started/first-policy/">your first policy</a>.</li>
+<li>See <a href="getting-started/first-blocked-action/">your first blocked action</a>.</li>
+<li>Use <a href="recipes/">recipes</a> for copy-paste policy patterns.</li>
+<li>Roll out safely with <a href="guides/observe-mode-rollout/">observe mode</a>.</li>
+<li>Protect <a href="guides/protect-shell-tools/">shell tools</a>, <a href="guides/protect-payment-agents/">payment agents</a>, and <a href="guides/secure-mcp-servers/">MCP servers</a>.</li>
+<li>Use <a href="guides/ci-cd-enforcement/">CI/CD enforcement</a> to catch ungated tools.</li>
+<li>Replay an incident with <a href="guides/replay-an-incident/">trace replay</a>.</li>
+<li>Check the <a href="integrations/compatibility/">compatibility matrix</a> before wiring adapters.</li>
+<li>Run the <a href="examples/demo-walkthrough/">demo walkthrough</a>.</li>
+</ul>
+<hr />
+<h2 id="project-status">Project Status</h2>
+<p>CapFence is open infrastructure for trusted autonomous execution.
+- Docs: https://capfence.dev/
+- PyPI: https://pypi.org/project/capfence/
+- Repository: https://github.com/capfencelabs/capfence</p>
 
 
 
