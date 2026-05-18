@@ -1,37 +1,40 @@
 # Custom Framework Integration
 
-If you are using a framework without a built-in adapter, call the Gate API directly before executing a tool.
+If you are using a framework without a built-in adapter, call the CapFence ActionRuntime API directly before executing a tool.
 
-## Direct gate usage
+## Direct Runtime Usage
 
 ```python
-from capfence.core.gate import Gate
+from capfence import ActionRuntime, ActionEvent
 
-gate = Gate()
+# 1. Initialize ActionRuntime canonical engine
+runtime = ActionRuntime.from_policy("policies/my_policy.yaml")
 
 payload = {"command": "ls /tmp"}
 
-result = gate.evaluate(
-    agent_id="my-agent",
-    task_context="shell",
-    risk_category="shell_execution",
-    capability="shell.execute",
-    policy_path="policies/my_policy.yaml",
-    payload=payload,
+# 2. Formulate the governed event
+event = ActionEvent.create(
+    actor="my-agent",
+    action="execute",
+    resource="shell",
+    environment="production",
+    payload=payload
 )
 
-if result.passed:
+# 3. Deterministic execution authorization check
+verdict = runtime.execute(event)
+
+if verdict.authorized:
     output = run_tool(payload)
 else:
-    raise RuntimeError(f"Blocked: {result.reason}")
+    raise RuntimeError(f"Blocked: {verdict.reason}")
 ```
 
-## Wrapper class
+## Wrapper Class
 
 ```python
 from typing import Any
-
-from capfence.core.gate import Gate
+from capfence import ActionRuntime, ActionEvent
 from capfence.errors import AgentActionBlocked
 
 class GatedTool:
@@ -40,48 +43,32 @@ class GatedTool:
         self.agent_id = agent_id
         self.capability = capability
         self.policy_path = policy_path
-        self.gate = Gate()
+        self.runtime = ActionRuntime.from_policy(policy_path)
 
     def run(self, payload: dict, policy_context: dict | None = None) -> Any:
-        result = self.gate.evaluate(
-            agent_id=self.agent_id,
-            task_context=getattr(self.tool, "name", "tool"),
-            risk_category="tool_execution",
-            capability=self.capability,
-            policy_path=self.policy_path,
+        # Construct the execution event dynamically
+        event = ActionEvent.create(
+            actor=self.agent_id,
+            action="execute",
+            resource=self.capability,
+            environment=policy_context.get("environment", "production") if policy_context else "production",
             payload=payload,
-            policy_context=policy_context,
+            metadata=policy_context or {}
         )
 
-        if not result.passed:
+        verdict = self.runtime.execute(event)
+
+        if not verdict.authorized:
             raise AgentActionBlocked(
-                detail=f"{self.capability} blocked: {result.reason}",
-                gate_result=result,
+                detail=f"{self.capability} blocked: {verdict.reason}",
+                # Map verdict metadata
+                gate_result=verdict,
             )
 
         return self.tool.run(payload)
 ```
 
-## Async support
+## Related Reference
 
-```python
-gate = Gate()
-
-async def safe_tool_call(payload: dict) -> Any:
-    result = await gate.evaluate_async(
-        agent_id="async-agent",
-        task_context="api",
-        risk_category="api_call",
-        capability="api.call",
-        policy_path="policies/api.yaml",
-        payload=payload,
-    )
-    if not result.passed:
-        raise PermissionError(result.reason)
-    return await my_async_tool(payload)
-```
-
-## Related reference
-
-- [Gate API reference](../reference/gate-api.md)
+- [ActionRuntime & ActionEvent API reference](../reference/gate-api.md)
 - [Policy schema](../reference/policy-schema.md)

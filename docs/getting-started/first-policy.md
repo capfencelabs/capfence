@@ -115,15 +115,16 @@ require_approval:
 Policies are plain YAML files. Point any adapter at a policy file, or pass the policy path during direct gate evaluation:
 
 ```python
-gate = Gate()
-result = gate.evaluate(
-    agent_id="ops-agent",
-    task_context="shell",
-    risk_category="shell_execution",
-    capability="shell.execute",
-    policy_path="policies/shell_agent.yaml",
-    payload={"command": "ls -la"},
+runtime = ActionRuntime.from_policy("policies/shell_agent.yaml")
+event = ActionEvent.create(
+    actor="ops-agent",
+    action="execute",
+    resource="shell",
+    environment="production",
+    risk="medium",
+    payload={"command": "ls -la"}
 )
+verdict = runtime.execute(event)
 ```
 
 You can maintain separate policies per agent, environment, or tenant and swap them at runtime.

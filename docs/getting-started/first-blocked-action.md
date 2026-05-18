@@ -18,32 +18,33 @@ allow:
 ## Code
 
 ```python
-from capfence.core.gate import Gate
+from capfence import ActionRuntime, ActionEvent
 
-gate = Gate()
+# 1. Initialize the runtime directly from a policy file
+runtime = ActionRuntime.from_policy("policies/demo.yaml")
 
 # This call is safe — it passes
-result = gate.evaluate(
-    agent_id="demo-agent",
-    task_context="shell",
-    risk_category="shell_execution",
-    capability="shell.execute",
-    policy_path="policies/demo.yaml",
+event1 = ActionEvent.create(
+    actor="demo-agent",
+    action="execute",
+    resource="shell",
+    environment="production",
     payload={"command": "ls -la /tmp"}
 )
-print(result.passed)   # True
+verdict1 = runtime.execute(event1)
+print(verdict1.authorized)   # True
 
 # This call is dangerous — it is blocked before execution
-result = gate.evaluate(
-    agent_id="demo-agent",
-    task_context="shell",
-    risk_category="shell_execution",
-    capability="shell.execute",
-    policy_path="policies/demo.yaml",
+event2 = ActionEvent.create(
+    actor="demo-agent",
+    action="execute",
+    resource="shell",
+    environment="production",
     payload={"command": "rm -rf /var/lib/postgresql"}
 )
-print(result.passed)   # False
-print(result.reason)   # destructive_command_detected
+verdict2 = runtime.execute(event2)
+print(verdict2.authorized)   # False
+print(verdict2.reason)   # destructive_command_detected
 ```
 
 ## What happens at the framework layer

@@ -42,27 +42,32 @@ safe_shell = CapFenceTool(
 )
 ```
 
-### Direct Gate API
+### Direct Runtime API
 
 ```python
-from capfence.core.gate import Gate
+from capfence import ActionRuntime, ActionEvent
 
-gate = Gate()
+# 1. Initialize the runtime directly from a policy file
+runtime = ActionRuntime.from_policy("policies/my_policy.yaml")
 
-result = gate.evaluate(
-    agent_id="my-agent",
-    task_context="shell",
-    risk_category="shell_execution",
-    capability="shell.execute",
-    policy_path="policies/my_policy.yaml",
+# 2. Represent the action as a governed event
+event = ActionEvent.create(
+    actor="my-agent",
+    action="execute",
+    resource="shell",
+    environment="production",
+    risk="medium",
     payload={"command": "ls -la /tmp"}
 )
 
-if result.passed:
+# 3. Enforce the decision
+verdict = runtime.execute(event)
+
+if verdict.authorized:
     # execute the tool
     pass
 else:
-    print(f"Blocked: {result.reason}")
+    print(f"Blocked: {verdict.reason}")
 ```
 
 ## 4. Run your agent
