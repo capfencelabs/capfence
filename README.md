@@ -38,6 +38,27 @@ CapFence introduces an independent enforcement boundary:
 
 ---
 
+## Example Scenarios
+
+### Blocking destructive shell execution
+An autonomous ops agent attempts:
+```bash
+rm -rf /var/lib/postgresql
+```
+CapFence intercepts the action before execution and blocks it using deterministic deny policies.
+
+### Preventing unauthorized fund transfers
+A trading agent attempts to transfer funds beyond its approved threshold.
+
+CapFence requires an expiring pre-authorization before execution.
+
+### Replay during incident review
+A production incident occurs after a policy update.
+
+CapFence replays historical execution traces against the previous policy to reconstruct exactly which actions changed authorization behavior.
+
+---
+
 ## 10-Second Example
 
 ### 1. Define Capability Policies (`policies/ops.yaml`)
