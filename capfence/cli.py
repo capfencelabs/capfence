@@ -17,7 +17,6 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
-from typing import Any
 
 import click
 
@@ -389,7 +388,7 @@ def eu_ai_act(src_path: Path, output: Path, audit_log: Path | None) -> None:
     # b. Audit log metrics
     total_decisions = 0
     block_rate = 0.0
-    decisions_by_actor = {}
+    decisions_by_actor: dict[str, int] = {}
     article_12_status = "NOT ASSESSED"
 
     if audit_log:
