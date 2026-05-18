@@ -10,6 +10,8 @@
 !docs/**/*.md
 !docs-dev/*.md
 !docs-dev/**/*.md
+!case-studies/*.md
+!case-studies/**/*.md
 
 # Internal review artifacts (do not commit)
 docs/CODE_REVIEW_*.md
