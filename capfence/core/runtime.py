@@ -59,6 +59,30 @@ class ActionEvent:
         except (TypeError, OverflowError) as e:
             raise ValueError(f"metadata must be completely JSON-serializable for replay stability: {e}")
 
+        # Strict metadata key-value schema validation to prevent execution drift and ambiguity
+        allowed_metadata_keys = {
+            "session_id", "scope", "payload", "require_approval", "risk_category",
+            "payload_hash", "threshold", "latency_ms", "decision", "reason",
+            "timestamp", "entry_hash", "signature", "policy_decision", "verdict", "id"
+        }
+        for k, v in self.metadata.items():
+            if k not in allowed_metadata_keys:
+                raise ValueError(f"Metadata key '{k}' is invalid. Allowed keys are: {sorted(list(allowed_metadata_keys))}")
+            
+            # Strict type assertions per canonical key
+            if k == "session_id" and v is not None and not isinstance(v, str):
+                raise ValueError("metadata['session_id'] must be a string")
+            elif k == "scope" and v is not None and not isinstance(v, str):
+                raise ValueError("metadata['scope'] must be a string")
+            elif k == "payload" and v is not None and not isinstance(v, dict):
+                raise ValueError("metadata['payload'] must be a dictionary")
+            elif k == "require_approval" and v is not None and not isinstance(v, bool):
+                raise ValueError("metadata['require_approval'] must be a boolean")
+            elif k == "payload_hash" and v is not None and not isinstance(v, str):
+                raise ValueError("metadata['payload_hash'] must be a string")
+            elif k == "latency_ms" and v is not None and not isinstance(v, (int, float)):
+                raise ValueError("metadata['latency_ms'] must be an integer or float")
+
     @classmethod
     def create(
         cls,
@@ -106,6 +130,14 @@ class ActionRuntime:
         audit_trail: AuditLogger,
         mode: str = "enforce",
     ) -> None:
+        if mode in ("observe", "stealth"):
+            import warnings
+            warnings.warn(
+                f"Mode '{mode}' is deprecated in v0.8.0 and will be removed in v1.0. "
+                "Use 'enforce' mode for deterministic fail-closed runtime control. See docs/migration.md.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
         self.capability_system = capability_system
         self.approval_engine = approval_engine
         self.audit_trail = audit_trail

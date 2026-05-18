@@ -125,7 +125,31 @@ class ReplayEngine:
                         events.append(json.loads(line))
                     except json.JSONDecodeError as exc:
                         raise ValueError(f"Invalid JSON on trace line {line_idx}: {exc}") from exc
-        return events
+
+        if not events:
+            raise ValueError("Empty or invalid trace file")
+
+        # Strict version check on the metadata block header (first item)
+        first_item = events[0]
+        if "capfence_replay_version" not in first_item:
+            raise ValueError("Trace is missing the mandatory 'capfence_replay_version' metadata block header.")
+        
+        version = first_item["capfence_replay_version"]
+        if version != "1.0":
+            raise ValueError(f"Unsupported replay trace version: {version}. Expected '1.0'.")
+
+        # Replay integrity verification via SHA-256 checksum check
+        if "checksum" in first_item and first_item["checksum"]:
+            chk = first_item["checksum"]
+            if chk not in ("ignore", "auto"):
+                import hashlib
+                payload_str = json.dumps(events[1:], sort_keys=True)
+                actual_chk = hashlib.sha256(payload_str.encode("utf-8")).hexdigest()[:8]
+                if chk != actual_chk:
+                    raise ValueError(f"Replay integrity verification failed: trace checksum mismatch (expected {actual_chk}, got {chk}).")
+
+        # Subsequent items are the actual events to replay
+        return events[1:]
 
     def replay_incident(self, trace_path: str | Path) -> ReplaySummary:
         """Reconstruct an incident by replaying its trace against the current Action Runtime."""

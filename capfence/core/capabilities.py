@@ -146,6 +146,25 @@ class CapabilitySystem:
                 else:
                     self.allowed.append(cap)
 
+        # Wildcard permissiveness auditing to prevent overly broad operational scopes
+        import logging
+        logger = logging.getLogger("capfence")
+        all_loaded = self.allowed + self.require_approval
+        for cap in all_loaded:
+            if cap.resource == "*" and cap.action == "*":
+                logger.warning(
+                    "SECURITY WARNING: Overly permissive wildcard policy loaded: '%s'. "
+                    "This grants blanket authorization across all resources and actions. "
+                    "Restrict capability scope to enforce deterministic boundaries.",
+                    cap
+                )
+            elif (cap.resource == "system" or cap.resource == "root") and (cap.action == "*" or cap.scope == "*"):
+                logger.warning(
+                    "SECURITY WARNING: Highly sensitive system-level wildcard loaded: '%s'. "
+                    "Restrict capability scope to enforce deterministic boundaries.",
+                    cap
+                )
+
     def evaluate_capability(self, required_cap_str: str) -> str:
         """Evaluate if a capability is allowed, denied, or requires approval."""
         required = Capability.parse(required_cap_str)

@@ -51,6 +51,38 @@ def test_action_event_validations() -> None:
             metadata={"func_ref": sample_func}
         )
 
+    # 4. Test strict whitelisted metadata keys
+    with pytest.raises(ValueError, match="Metadata key 'invalid_key_xyz' is invalid"):
+        ActionEvent(
+            actor="agent",
+            action="read",
+            resource="fs",
+            environment="prod",
+            risk="low",
+            metadata={"invalid_key_xyz": "some_value"}
+        )
+
+    # 5. Test strict type validation on metadata fields
+    with pytest.raises(ValueError, match="metadata\\['session_id'\\] must be a string"):
+        ActionEvent(
+            actor="agent",
+            action="read",
+            resource="fs",
+            environment="prod",
+            risk="low",
+            metadata={"session_id": 12345}  # Should be string
+        )
+
+    with pytest.raises(ValueError, match="metadata\\['require_approval'\\] must be a boolean"):
+        ActionEvent(
+            actor="agent",
+            action="read",
+            resource="fs",
+            environment="prod",
+            risk="low",
+            metadata={"require_approval": "yes"}  # Should be boolean
+        )
+
 
 def test_capability_regex_parsing() -> None:
     # 1. Test valid capability characters
@@ -89,6 +121,7 @@ def test_replay_engine_absolute_isolation(tmp_path: Path) -> None:
 
     # Trace containing 1 event
     trace_data = [
+        {"capfence_replay_version": "1.0", "checksum": "ignore"},
         {
             "actor": "agent-1",
             "action": "read",
@@ -111,3 +144,120 @@ def test_replay_engine_absolute_isolation(tmp_path: Path) -> None:
     # Verify that the live SQLite audit log has ZERO entries, preserving absolute state isolation!
     events = real_audit.get_events()
     assert len(events) == 0
+
+
+def test_replay_engine_missing_version_header_fails_closed(tmp_path: Path) -> None:
+    trace_data = [
+        {"actor": "agent-1", "action": "read", "resource": "fs", "environment": "production", "risk": "low"}
+    ]
+    trace_file = tmp_path / "bad_trace.json"
+    with open(trace_file, "w", encoding="utf-8") as f:
+        json.dump(trace_data, f)
+        
+    engine = ReplayEngine()
+    with pytest.raises(ValueError, match="Trace is missing the mandatory 'capfence_replay_version'"):
+        engine.replay_incident(trace_file)
+
+
+def test_replay_engine_invalid_version_fails_closed(tmp_path: Path) -> None:
+    trace_data = [
+        {"capfence_replay_version": "2.0", "checksum": "ignore"},
+        {"actor": "agent-1", "action": "read", "resource": "fs", "environment": "production", "risk": "low"}
+    ]
+    trace_file = tmp_path / "bad_trace.json"
+    with open(trace_file, "w", encoding="utf-8") as f:
+        json.dump(trace_data, f)
+        
+    engine = ReplayEngine()
+    with pytest.raises(ValueError, match="Unsupported replay trace version: 2.0"):
+        engine.replay_incident(trace_file)
+
+
+def test_replay_engine_checksum_integrity_verification_fails_closed(tmp_path: Path) -> None:
+    trace_data = [
+        {"capfence_replay_version": "1.0", "checksum": "wrong-checksum-hash"},
+        {"actor": "agent-1", "action": "read", "resource": "fs", "environment": "production", "risk": "low"}
+    ]
+    trace_file = tmp_path / "bad_trace.json"
+    with open(trace_file, "w", encoding="utf-8") as f:
+        json.dump(trace_data, f)
+        
+    engine = ReplayEngine()
+    with pytest.raises(ValueError, match="Replay integrity verification failed: trace checksum mismatch"):
+        engine.replay_incident(trace_file)
+
+
+def test_cryptographically_signed_grants_fail_closed_on_tampering() -> None:
+    approvals = ApprovalEngine(db_path=":memory:")
+    
+    # 1. Create a signed grant
+    grant = approvals.grant_temporary_approval(
+        actor="ops-agent",
+        capability="deployment.execute.production",
+        environment="production",
+        duration_seconds=100.0,
+    )
+    
+    # Check succeeds because the signature is intact
+    ok, fetched_grant = approvals.check_approval(
+        actor="ops-agent",
+        capability_str="deployment.execute.production",
+        environment="production",
+    )
+    assert ok is True
+    assert fetched_grant is not None
+    assert fetched_grant.metadata.get("signature") is not None
+    
+    # 2. Simulate manual SQLite database tampering of the capability parameter
+    # Update SQLite database directly to tamper with the capability of the grant
+    approvals._db.execute(
+        "UPDATE approved_grants SET capability = ? WHERE id = ?",
+        ("system.root.production", grant.id)
+    )
+    
+    # Check fails (fail-closed!) because capability was changed and signature verification fails!
+    ok_tampered, _ = approvals.check_approval(
+        actor="ops-agent",
+        capability_str="system.root.production",
+        environment="production",
+    )
+    assert ok_tampered is False
+
+
+def test_break_glass_operational_semantics(caplog) -> None:
+    import logging
+    approvals = ApprovalEngine(db_path=":memory:")
+    
+    # Create break-glass emergency grant
+    grant = approvals.grant_temporary_approval(
+        actor="ops-agent",
+        capability="deployment.execute.production",
+        environment="production",
+        duration_seconds=100.0,
+        granted_by="break_glass",
+        metadata={"break_glass": True}
+    )
+    
+    # Check generates warning logs
+    with caplog.at_level(logging.WARNING):
+        ok, _ = approvals.check_approval(
+            actor="ops-agent",
+            capability_str="deployment.execute.production",
+            environment="production",
+        )
+        assert ok is True
+        assert any("BREAK-GLASS: Emergency break-glass authorization activated" in r.message for r in caplog.records)
+
+
+def test_wildcard_permissiveness_auditing(caplog) -> None:
+    import logging
+    caps = CapabilitySystem()
+    
+    with caplog.at_level(logging.WARNING):
+        caps.load_policy({
+            "allow": ["*.*.*", "system.root.*"],
+        })
+        
+        warnings = [r.message for r in caplog.records]
+        assert any("SECURITY WARNING: Overly permissive wildcard policy loaded" in msg for msg in warnings)
+        assert any("SECURITY WARNING: Highly sensitive system-level wildcard loaded" in msg for msg in warnings)

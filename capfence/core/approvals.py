@@ -136,6 +136,26 @@ class ApprovalManager:
         """Grant a session-bound capability to an actor."""
         return self._insert_grant(actor, capability, environment, None, session_id, granted_by, metadata)
 
+    def generate_grant_signature(
+        self,
+        actor: str,
+        capability: str,
+        environment: str,
+        expires_at: float | None,
+        session_id: str | None,
+        secret_key: str | None = None,
+    ) -> str:
+        """Generate a cryptographically attributable signature for a capability grant."""
+        import hmac
+        import hashlib
+        import os
+        
+        # Message contract: binding all authorization coordinates
+        msg = f"{actor}:{capability}:{environment}:{expires_at}:{session_id}".encode("utf-8")
+        
+        key = (secret_key or os.environ.get("CAPFENCE_OPERATOR_SECRET") or "default_capfence_operator_secret_key").encode("utf-8")
+        return hmac.new(key, msg, hashlib.sha256).hexdigest()
+
     def _insert_grant(
         self,
         actor: str,
@@ -149,6 +169,10 @@ class ApprovalManager:
         grant_id = str(uuid.uuid4())
         now = time.time()
         meta = metadata or {}
+
+        # Automatically sign the grant coordinates cryptographically to prevent database tampering
+        sig = self.generate_grant_signature(actor, capability, environment, expires_at, session_id)
+        meta["signature"] = sig
 
         grant = ApprovedGrant(
             id=grant_id,
@@ -231,6 +255,30 @@ class ApprovalManager:
             # 4. Verify session
             if grant.session_id is not None and grant.session_id != session_id:
                 continue
+
+            # 5. Cryptographic signature and lineage validation
+            sig = grant.metadata.get("signature")
+            if sig:
+                expected_sig = self.generate_grant_signature(
+                    grant.actor,
+                    grant.capability,
+                    grant.environment,
+                    grant.expires_at,
+                    grant.session_id
+                )
+                import hmac
+                if not hmac.compare_digest(sig, expected_sig):
+                    # Tampering detected! Fail-closed on this specific grant.
+                    import logging
+                    logger = logging.getLogger("capfence")
+                    logger.error("CRITICAL: Cryptographic lineage validation failed on grant %s. Tampering detected!", grant.id)
+                    continue
+
+            # 6. Break-glass emergency audit logging
+            if grant.granted_by == "break_glass" or grant.metadata.get("break_glass"):
+                import logging
+                logger = logging.getLogger("capfence")
+                logger.warning("BREAK-GLASS: Emergency break-glass authorization activated for actor '%s', capability '%s'!", grant.actor, grant.capability)
 
             # Fully authorized grant!
             return True, grant

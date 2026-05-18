@@ -228,6 +228,7 @@ class TestReplayEngine:
         # Create a trace file
         trace_file = tmp_path / "incident.jsonl"
         events = [
+            {"capfence_replay_version": "1.0", "checksum": "ignore"},
             {"actor": "coding-agent", "action": "push", "resource": "github", "environment": "production", "risk": "critical", "decision": "pass"},
             {"actor": "ops-agent", "action": "execute", "resource": "deployment", "environment": "production", "risk": "critical", "decision": "fail"},
         ]
