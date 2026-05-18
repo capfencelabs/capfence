@@ -138,6 +138,46 @@ capfence check ./src --fail-on-ungated
 
 ---
 
+## Model Context Protocol (MCP) Governance
+
+CapFence natively implements **Model Context Protocol (MCP)** execution controls, providing both a transparent stdio proxy gateway and an in-process session adapter to intercept and authorize tool invocations before they reach underlying systems.
+
+### 1. Transparent Proxy Gateway (`MCPGatewayServer`)
+Run a secure stdio proxy between any MCP client (such as Claude Desktop or Cursor) and an upstream tool server process. If a tool call violates capability policy, the gateway intercepts the request and responds with a standard JSON-RPC error.
+
+```python
+from capfence import MCPGatewayServer
+
+# Initialize proxy wrapping any upstream server command
+gateway = MCPGatewayServer(
+    upstream_command=["python", "-m", "mcp_server_filesystem", "/tmp"],
+    policy_path="policies/ops.yaml",
+    agent_id="mcp-file-agent",
+)
+
+# Start stdio proxying (blocks and intercepts tool calls dynamically)
+gateway.run()
+```
+
+### 2. In-Process Client Session Adapter (`CapFenceMCPSession`)
+Wrap any active `mcp.ClientSession` instance in-process. CapFence evaluates every `call_tool` request against the active capability runtime. If rejected, it raises `AgentActionBlocked` without forwarding to the server.
+
+```python
+from capfence import CapFenceMCPSession
+
+# Wrap any active MCP client session dynamically
+gated_session = CapFenceMCPSession(
+    underlying_session=mcp_client_session,
+    policy_path="policies/ops.yaml",
+    agent_id="mcp-agent-1"
+)
+
+# Calls are intercepted and audited seamlessly before execution
+response = await gated_session.call_tool("filesystem_write", {"path": "/tmp/test", "content": "data"})
+```
+
+---
+
 ## Operational Scope
 
 CapFence enforces runtime policy boundaries. It does not replace:
