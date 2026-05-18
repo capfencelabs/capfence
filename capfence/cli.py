@@ -26,7 +26,7 @@ from capfence.core.approvals import ApprovalManager
 from capfence.core.policy import PolicyLoader
 from capfence.core.replay import ReplayEngine
 
-__version__ = "0.8.0"
+__version__ = "0.8.1"
 
 
 @click.group()
