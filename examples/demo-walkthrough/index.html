@@ -2502,7 +2502,7 @@
 <ul>
 <li>Python 3.10+</li>
 <li>Local repo checkout</li>
-<li>Virtual environment with CapFence installed (<code>pip install -e ".[dev]"</code>)</li>
+<li>Virtual environment with CapFence installed (<code>pip install --require-hashes -r requirements-dev.txt &amp;&amp; pip install -e . --no-deps</code>)</li>
 </ul>
 <h2 id="run-the-demo">Run the demo</h2>
 <pre><code class="language-bash">chmod +x ./scripts/demo.sh
