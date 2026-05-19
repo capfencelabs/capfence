@@ -55,6 +55,10 @@ capfence = "capfence.cli:main"
 [project.optional-dependencies]
 langchain = ["langchain-core>=0.1"]
 crewai = ["crewai>=0.30"]
+docs = [
+    "mkdocs>=1.6",
+    "mkdocs-material>=9.5",
+]
 dev = [
     "pytest>=8.0",
     "pytest-cov>=4.0",
