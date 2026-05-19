@@ -1,5 +1,4 @@
 """Tests for the unified exception hierarchy."""
-import pytest
 
 import capfence
 from capfence.errors import (

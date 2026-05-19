@@ -46,6 +46,10 @@ class _GuardedToolMixin:
             environment="production",
             risk=self._risk_category or "medium",
             payload=payload,
+            capability=capability,
+            tool_name=self.name,
+            risk_level=self._risk_category or "medium",
+            framework="langchain",
         )
 
         verdict = self._gate.execute(event)
@@ -68,6 +72,10 @@ class _GuardedToolMixin:
             environment="production",
             risk=self._risk_category or "medium",
             payload=payload,
+            capability=capability,
+            tool_name=self.name,
+            risk_level=self._risk_category or "medium",
+            framework="langchain",
         )
 
         verdict = self._gate.execute(event)

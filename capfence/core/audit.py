@@ -7,7 +7,6 @@ Supports CloudTrail-style autonomous execution records.
 from __future__ import annotations
 
 import json
-import time
 from pathlib import Path
 from typing import Any, TYPE_CHECKING
 
@@ -127,6 +126,12 @@ class AuditLogger:
         timestamp = round(verdict.timestamp, 6)
         decision_str = "pass" if verdict.authorized else "fail"
 
+        metadata_json = json.dumps(verdict.metadata, sort_keys=True, separators=(",", ":"))
+        approval_state = "approved" if verdict.authorized and verdict.approval_id else (
+            "pending" if verdict.decision == "require_approval" else "none"
+        )
+        execution_result = "authorized" if verdict.authorized else "blocked"
+
         fields = {
             "agent_id": verdict.event.actor,
             "task_context": verdict.event.action,
@@ -138,6 +143,15 @@ class AuditLogger:
             "reason": verdict.reason,
             "latency_ms": verdict.metadata.get("latency_ms", 0),
             "timestamp": timestamp,
+            "actor": verdict.event.actor,
+            "action": verdict.event.action,
+            "resource": verdict.event.resource,
+            "environment": verdict.event.environment,
+            "capability": verdict.metadata.get("required_capability", ""),
+            "approval_state": approval_state,
+            "policy_decision": verdict.decision,
+            "execution_result": execution_result,
+            "metadata_json": metadata_json,
         }
         entry_hash = compute_entry_hash(fields, prev_hash)
 
@@ -172,12 +186,10 @@ class AuditLogger:
                 verdict.event.resource,
                 verdict.event.environment,
                 verdict.metadata.get("required_capability", ""),
-                "approved" if verdict.authorized and verdict.approval_id else (
-                    "pending" if verdict.decision == "require_approval" else "none"
-                ),
+                approval_state,
                 verdict.decision,
-                "authorized" if verdict.authorized else "blocked",
-                json.dumps(verdict.metadata),
+                execution_result,
+                metadata_json,
             ),
         )
 

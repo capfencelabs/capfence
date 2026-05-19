@@ -86,6 +86,10 @@ class CapFenceToolNode:
             environment="production",
             risk=self._get_risk_category(tool_name) or "medium",
             payload=arguments,
+            capability=capability,
+            tool_name=tool_name,
+            risk_level=self._get_risk_category(tool_name) or "medium",
+            framework="langgraph",
         )
 
         verdict = self._gate.execute(event)
@@ -109,6 +113,10 @@ class CapFenceToolNode:
             environment="production",
             risk=self._get_risk_category(tool_name) or "medium",
             payload=arguments,
+            capability=capability,
+            tool_name=tool_name,
+            risk_level=self._get_risk_category(tool_name) or "medium",
+            framework="langgraph",
         )
 
         verdict = self._gate.execute(event)

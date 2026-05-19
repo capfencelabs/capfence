@@ -1,7 +1,7 @@
 """Tests for LangChain CapFenceTool wrapper."""
 
 import pytest
-from capfence import ActionRuntime, ExecutionVerdict
+from capfence import ActionRuntime
 from capfence.framework.langchain import CapFenceTool, AgentActionBlocked, capfence_guard
 
 

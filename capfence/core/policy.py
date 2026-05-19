@@ -6,6 +6,7 @@ YAML-based policy engine supporting capabilities, risk levels, and contextual co
 from __future__ import annotations
 
 import copy
+import fnmatch
 import logging
 import re
 from dataclasses import dataclass, field
@@ -140,9 +141,18 @@ class Rule:
                     return False
             else:
                 # Direct context or payload match.
-                if context.get(k) != v and payload_dict.get(k) != v:
+                context_value = context.get(k)
+                payload_value = payload_dict.get(k)
+                if not self._value_matches(context_value, v) and not self._value_matches(payload_value, v):
                     return False
         return True
+
+    def _value_matches(self, actual: Any, expected: Any) -> bool:
+        if actual == expected:
+            return True
+        if isinstance(actual, str) and isinstance(expected, str):
+            return fnmatch.fnmatchcase(actual, expected)
+        return False
 
     def _extract_amount(self, payload: dict[str, Any]) -> float | None:
         for key in ("amount", "total", "value", "sum", "quantity", "price", "cost"):
@@ -310,9 +320,27 @@ class Policy:
         self.raw_data.update(copy.deepcopy(other.raw_data))
 
     def evaluate(self, capability: str, context: dict[str, Any], payload: dict[str, Any] | None = None) -> str | None:
-        """Evaluate rules and return action if matched. Evaluates in order."""
+        """Evaluate rules and return action if matched.
+
+        Deny rules have highest precedence, followed by approval requirements,
+        risk-level policy, then allow/warn rules.
+        """
         for rule in self.rules:
-            if rule.matches(capability, context, payload):
+            if rule.action in {"deny", "block"} and rule.matches(capability, context, payload):
+                return rule.action
+
+        for rule in self.rules:
+            if rule.action == "require_approval" and rule.matches(capability, context, payload):
+                return rule.action
+
+        risk_level = context.get("risk_level")
+        if isinstance(risk_level, str):
+            risk_action = self.evaluate_risk_level(risk_level)
+            if risk_action in {"deny", "block", "require_approval", "warn"}:
+                return risk_action
+
+        for rule in self.rules:
+            if rule.action in {"allow", "warn"} and rule.matches(capability, context, payload):
                 return rule.action
         return None
 

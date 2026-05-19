@@ -11,8 +11,8 @@ src/fintech_agent/
 │   ├── account_tools.py      # DeleteAccountTool, UpdateAccountTool, BulkDataExportTool
 │   └── readonly_tools.py     # BalanceInquiryTool, TransactionHistoryTool
 └── agents/                   # Agent builders (wrap tools with CapFenceTool)
-    ├── payment_agent.py      # Wraps PaymentTool, RefundTool (WireTransferTool UNGATED)
-    └── admin_agent.py        # Wraps DeleteAccount, UpdateAccount, Balance, History (BulkExport UNGATED)
+    ├── payment_agent.py      # Wraps all payment tools
+    └── admin_agent.py        # Wraps all admin and read-only tools
 ```
 
 ## Tool Inventory
@@ -21,10 +21,10 @@ src/fintech_agent/
 |---|---|---|---|---|
 | PaymentTool | payment_initiation | 0.3 | ✅ | tools/payment_tools.py |
 | RefundTool | payment_initiation | 0.3 | ✅ | tools/payment_tools.py |
-| WireTransferTool | payment_initiation | 0.3 | ❌ | tools/payment_tools.py |
+| WireTransferTool | payment_initiation | 0.3 | ✅ | tools/payment_tools.py |
 | DeleteAccountTool | delete | 0.2 | ✅ | tools/account_tools.py |
 | UpdateAccountTool | update | 0.3 | ✅ | tools/account_tools.py |
-| BulkDataExportTool | data_export | 0.15 | ❌ | tools/account_tools.py |
+| BulkDataExportTool | data_export | 0.15 | ✅ | tools/account_tools.py |
 | BalanceInquiryTool | read_only | 1.0 | ✅ | tools/readonly_tools.py |
 | TransactionHistoryTool | read_only | 1.0 | ✅ | tools/readonly_tools.py |
 
@@ -41,14 +41,14 @@ capfence check src/
 
 # Expected output:
 #   [SCAN] 8 tool(s) found
-#   Gated: 6, Ungated: 2, High-risk ungated: 2
+#   Gated: 8, Ungated: 0
 
-# CI mode — fails if high-risk tools are ungated
+# CI mode — fails if high-risk tools become ungated
 capfence check src/ --fail-on-ungated
-# Exit code: 1 (fails because WireTransferTool and BulkDataExportTool are ungated)
+# Exit code: 0
 
-# Generate HTML assessment report
-capfence assess src/ --taxonomy financial
+# Generate machine-readable scanner output
+capfence check src/ --report-json
 
 # Run the verification tests
 pip install -e ".[dev]"
@@ -58,7 +58,7 @@ pytest tests/ -v
 ## What This Demonstrates
 
 1. **Cross-file detection** — tools in `tools/*.py`, wrappers in `agents/*.py`
-2. **Intentional gaps** — 2 tools left ungated to simulate real oversights
-3. **CI integration** — `--fail-on-ungated` blocks deployment
+2. **Complete gating** — every detected tool is wrapped before deployment
+3. **CI integration** — `--fail-on-ungated` blocks regressions
 4. **Risk categorization** — automatic delta assignment from tool names
 5. **Framework detection** — LangChain BaseTool identified from imports

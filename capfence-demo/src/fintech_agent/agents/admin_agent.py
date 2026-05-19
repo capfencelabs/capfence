@@ -1,8 +1,4 @@
-"""Admin agent — handles account management and data operations.
-
-Wraps DeleteAccountTool and UpdateAccountTool with CapFenceTool.
-BulkDataExportTool is intentionally LEFT UNGATED (simulates a real oversight).
-"""
+"""Admin agent — handles account management and data operations."""
 
 from capfence.framework.langchain import CapFenceTool
 
@@ -13,8 +9,7 @@ from fintech_agent.tools.readonly_tools import BalanceInquiryTool, TransactionHi
 def build_admin_agent():
     """Build the admin agent with gated tools.
 
-    BulkDataExportTool is intentionally NOT wrapped — another oversight
-    that CapFence's CI check would catch before deployment.
+    Returns a dict of tool_name -> tool_instance.
     """
     safe_delete = CapFenceTool(
         tool=DeleteAccountTool(),
@@ -40,14 +35,16 @@ def build_admin_agent():
         risk_category="read_only",
     )
 
-    # BulkDataExportTool — INTENTIONALLY UNGATED
-    # This is a data exfiltration risk that should be caught in CI
-    bulk_export = BulkDataExportTool()
+    safe_bulk_export = CapFenceTool(
+        tool=BulkDataExportTool(),
+        agent_id="admin-agent-1",
+        risk_category="data_export",
+    )
 
     return {
         "delete_account": safe_delete,
         "update_account": safe_update,
         "check_balance": safe_balance,
         "transaction_history": safe_history,
-        "bulk_export": bulk_export,  # UNGATED — CapFence will flag this
+        "bulk_export": safe_bulk_export,
     }

@@ -40,8 +40,7 @@ class WireTransferTool(BaseTool):
     Risk: CRITICAL — irreversible external money movement.
     Category: payment_initiation (delta=0.3)
 
-    WARNING: This tool is intentionally LEFT UNGATED in the agent layer
-    to demonstrate CapFence's detection capabilities.
+    Must be wrapped by the agent before deployment.
     """
     name: str = "wire_transfer"
     description: str = "Send a wire transfer to an external bank account. Requires routing_number, account_number, amount, and recipient_name."

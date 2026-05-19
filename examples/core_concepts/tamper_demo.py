@@ -58,7 +58,7 @@ def _populate_log(db_path: Path) -> AuditLogger:
             resource=risk_category,
             environment="production",
             risk="low",
-            **payload
+            payload=payload,
         )
         runtime.execute(event)
 

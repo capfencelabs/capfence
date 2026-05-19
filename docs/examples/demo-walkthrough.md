@@ -1,6 +1,6 @@
 # Demo Walkthrough
 
-This demo highlights CapFence's static scan, assessment, live gate decisions, trace simulation, and audit verification workflows using the bundled fintech demo project.
+This demo highlights CapFence's static scan, live gate decisions, trace replay, and audit verification workflows using the bundled fintech demo project.
 
 ## Why this demo exists
 
@@ -16,7 +16,7 @@ CapFence does not replace sandboxing or least-privilege credentials. It compleme
 
 ## Rollout story (observe → enforce → audit)
 
-1. Observe: scan the codebase and assess coverage.
+1. Observe: scan the codebase and export machine-readable coverage.
 2. Enforce: block and allow real tool calls with policy.
 3. Audit: verify the hash chain and replay traces.
 
@@ -45,19 +45,17 @@ If you share the demo cast, add a brief text overlay (or preface) that says:
 [DEMO] Running CapFence demo from repo root
 [DEMO] Deterministic runtime authorization for agent tool calls, enforced before execution.
 [SCAN] 8 tool(s) found in capfence-demo/src
-  Gated: 6
-  Ungated: 2
-  High-risk ungated: 1
+  Gated: 8
+  Ungated: 0
 
-Assessment report written to: capfence-demo/capfence-assessment-report.html
-[INFO] Assessment exited with status 2 (expected when critical ungated tools exist).
-[GATE] passed=False reason=policy_deny
-[GATE] passed=True reason=policy_allow
-Replayed 50 tool call(s):
-  Static rules blocked:     0
-  Adaptive would block:     0
-  Additional flagged:       0
-[RECOMMENDATION] Static rules caught all issues. No adaptive gap detected.
+[SCAN] JSON report written to /tmp/capfence-demo-scan.json
+[RUNTIME] blocked authorized=False decision=deny reason=policy_deny
+[RUNTIME] allowed authorized=True decision=allow reason=policy_allow
+Replayed 1 events:
+  Authorized:         1
+  Blocked:            0
+  Requires Approval:  0
+  Drifts/Diffs:       0
 [VERIFY] Audit chain: VALID
   No tampering detected.
 [POLICY] VALID: policies/production_shell_policy.yaml
@@ -67,5 +65,4 @@ Replayed 50 tool call(s):
 
 ## Next steps
 
-- Open `capfence-demo/capfence-assessment-report.html` to review findings.
 - Try `capfence check` on your own project.

@@ -64,6 +64,8 @@ class ReplayEngine:
         sandbox_caps.allowed = list(runtime.capability_system.allowed)
         sandbox_caps.require_approval = list(runtime.capability_system.require_approval)
         sandbox_caps.denied = list(runtime.capability_system.denied)
+        if hasattr(runtime.capability_system, "_policy"):
+            sandbox_caps._policy = runtime.capability_system._policy
 
         # Build in-memory isolated approval engine
         sandbox_approval = ApprovalEngine(db_path=":memory:")

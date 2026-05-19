@@ -56,18 +56,23 @@ class CapFenceMCPSession:
         """Call a tool through the CapFence gate."""
         risk_category = self._default_risk_category or self._guess_category(name)
         
-        capability = f"{name}.execute"
+        capability = "mcp.tool.execute"
         parts = capability.split(".", 1)
         resource = parts[0]
         action = parts[1] if len(parts) > 1 else "execute"
+        risk_level = risk_category or "medium"
 
         event = ActionEvent.create(
             actor=self._agent_id,
             action=action,
             resource=resource,
             environment="production",
-            risk=risk_category or "medium",
+            risk=risk_level,
             payload=arguments or {},
+            capability=capability,
+            tool_name=name,
+            risk_level=risk_level,
+            framework="mcp",
         )
 
         verdict = self._gate.execute(event)

@@ -149,17 +149,25 @@ class MCPGatewayServer:
         if capability is None:
             capability = self._guess_capability(tool_name)
 
+        if capability is None:
+            capability = "mcp.tool.execute"
+
         parts = capability.split(".", 1)
         resource = parts[0]
         action = parts[1] if len(parts) > 1 else "execute"
+        risk_level = risk_category or "medium"
 
         event = ActionEvent.create(
             actor=self._agent_id,
             action=action,
             resource=resource,
             environment="production",
-            risk=risk_category or "medium",
+            risk=risk_level,
             payload=arguments or {},
+            capability=capability,
+            tool_name=tool_name,
+            risk_level=risk_level,
+            framework="mcp",
         )
 
         verdict = self._gate.execute(event)

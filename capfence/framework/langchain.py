@@ -121,6 +121,10 @@ def capfence_guard(
                 environment="production",
                 risk=risk_category or "medium",
                 payload=payload,
+                capability=capability_str,
+                tool_name=func.__name__,
+                risk_level=risk_category or "medium",
+                framework="langchain",
             )
 
             verdict = _gate.execute(event)

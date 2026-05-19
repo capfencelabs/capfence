@@ -4,6 +4,7 @@ Demonstrates CapFenceToolNode for LangGraph ToolNode replacement.
 """
 
 from capfence.framework.langgraph import CapFenceToolNode
+from capfence import ActionRuntime, ApprovalEngine, AuditLogger, CapabilitySystem
 
 
 class MockLangGraphTool:
@@ -23,9 +24,21 @@ def main():
     pay_tool = MockLangGraphTool("pay_vendor")
 
     # Create CapFence-wrapped node
+    caps = CapabilitySystem()
+    caps.load_policy({
+        "allow": ["read_balance.execute"],
+        "deny": ["shell.execute"],
+        "require_approval": ["pay_vendor.execute"],
+    })
+    gate = ActionRuntime(
+        capability_system=caps,
+        approval_engine=ApprovalEngine(db_path=":memory:"),
+        audit_trail=AuditLogger(db_path=":memory:"),
+    )
     node = CapFenceToolNode(
         tools=[read_tool, shell_tool, pay_tool],
         agent_id="langgraph-agent-1",
+        gate=gate,
         risk_category_map={
             "read_balance": "read_only",
             "shell": "execute",

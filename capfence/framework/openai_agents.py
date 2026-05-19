@@ -74,6 +74,10 @@ class CapFenceOpenAITool:
             environment="production",
             risk=self._risk_category or "medium",
             payload=arguments,
+            capability=capability,
+            tool_name=self.name,
+            risk_level=self._risk_category or "medium",
+            framework="openai_agents",
         )
 
         verdict = self._gate.execute(event)

@@ -490,7 +490,7 @@ def main() -> None:
     print(f"  capfence verify --audit-log {AUDIT_DB}")
     print()
     print("To replay this trace through the gate:")
-    print("  (use capfence simulate with a JSONL trace file)")
+    print("  capfence replay <trace.json> --policy <policy.yaml>")
     print()
 
     # Show final audit log summary

@@ -1,6 +1,4 @@
-import pytest
 from click.testing import CliRunner
-from pathlib import Path
 
 from capfence.cli import main
 from capfence.core.audit import AuditLogger

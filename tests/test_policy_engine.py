@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import pytest
 from click.testing import CliRunner
-from pathlib import Path
 
 from capfence.cli import main
 from capfence import ActionRuntime, ActionEvent
 from capfence.core.policy import PolicyLoader
+from capfence.core.replay import ReplayEngine
 from capfence.errors import PolicyLoadError
 
 
@@ -167,6 +167,151 @@ allow:
     assert verdict.authorized is False
     assert verdict.decision == "deny"
     assert verdict.reason == "policy_deny"
+
+
+def test_policy_tool_name_wildcard_and_risk_level_conditions(tmp_path):
+    policy_path = tmp_path / "mcp.yaml"
+    policy_path.write_text(
+        """
+deny:
+  - capability: mcp.tool.execute
+    tool_name: "admin_*"
+
+require_approval:
+  - capability: mcp.tool.execute
+    risk_level: "high"
+
+allow:
+  - capability: mcp.tool.execute
+""",
+        encoding="utf-8",
+    )
+
+    runtime = ActionRuntime.from_policy(str(policy_path))
+
+    admin_event = ActionEvent.create(
+        actor="mcp-agent",
+        action="tool",
+        resource="mcp",
+        risk="critical",
+        capability="mcp.tool.execute",
+        tool_name="admin_delete_users",
+        risk_level="critical",
+    )
+    admin_verdict = runtime.execute(admin_event)
+    assert admin_verdict.authorized is False
+    assert admin_verdict.decision == "deny"
+
+    high_risk_event = ActionEvent.create(
+        actor="mcp-agent",
+        action="tool",
+        resource="mcp",
+        risk="high",
+        capability="mcp.tool.execute",
+        tool_name="regular_tool",
+        risk_level="high",
+    )
+    high_risk_verdict = runtime.execute(high_risk_event)
+    assert high_risk_verdict.authorized is False
+    assert high_risk_verdict.decision == "require_approval"
+
+
+def test_policy_risk_levels_are_enforced_before_allow(tmp_path):
+    policy_path = tmp_path / "risk.yaml"
+    policy_path.write_text(
+        """
+allow:
+  - capability: mcp.tool.execute
+
+risk_levels:
+  critical:
+    action: block
+""",
+        encoding="utf-8",
+    )
+
+    runtime = ActionRuntime.from_policy(str(policy_path))
+    event = ActionEvent.create(
+        actor="mcp-agent",
+        action="tool",
+        resource="mcp",
+        risk="critical",
+        capability="mcp.tool.execute",
+        tool_name="regular_tool",
+        risk_level="critical",
+    )
+
+    verdict = runtime.execute(event)
+    assert verdict.authorized is False
+    assert verdict.decision == "deny"
+    assert verdict.reason == "policy_deny"
+
+
+def test_policy_risk_level_warn_is_authorized_with_warn_reason(tmp_path):
+    policy_path = tmp_path / "risk.yaml"
+    policy_path.write_text(
+        """
+risk_levels:
+  medium:
+    action: warn
+""",
+        encoding="utf-8",
+    )
+
+    runtime = ActionRuntime.from_policy(str(policy_path))
+    event = ActionEvent.create(
+        actor="mcp-agent",
+        action="tool",
+        resource="mcp",
+        risk="medium",
+        capability="mcp.tool.execute",
+        tool_name="regular_tool",
+        risk_level="medium",
+    )
+
+    verdict = runtime.execute(event)
+    assert verdict.authorized is True
+    assert verdict.decision == "allow"
+    assert verdict.reason == "policy_warn"
+
+
+def test_replay_policy_simulation_preserves_loaded_policy_object(tmp_path):
+    policy_path = tmp_path / "shell.yaml"
+    policy_path.write_text(
+        """
+rules:
+  - match_keywords:
+      - "rm -rf"
+    action: block
+  - match_regex:
+      - "^ls"
+    action: allow
+""",
+        encoding="utf-8",
+    )
+    trace_path = tmp_path / "trace.json"
+    trace_path.write_text(
+        """
+[
+  {"capfence_replay_version": "1.0", "checksum": "ignore"},
+  {
+    "actor": "demo-agent",
+    "action": "execute",
+    "resource": "shell",
+    "environment": "production",
+    "risk": "low",
+    "payload": {"command": "ls -la /tmp"},
+    "decision": "pass"
+  }
+]
+""",
+        encoding="utf-8",
+    )
+
+    summary = ReplayEngine().simulate_policy(trace_path, policy_path)
+    assert summary.total_events == 1
+    assert summary.authorized == 1
+    assert summary.diffs_detected == 0
 
 
 def test_policy_loader_rejects_unknown_condition(tmp_path):

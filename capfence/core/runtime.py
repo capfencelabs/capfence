@@ -77,7 +77,7 @@ class ActionEvent:
             "session_id", "scope", "payload", "require_approval", "risk_category",
             "payload_hash", "threshold", "latency_ms", "decision", "reason",
             "timestamp", "entry_hash", "signature", "policy_decision", "verdict", "id",
-            "caller_depth"
+            "caller_depth", "capability", "tool_name", "risk_level", "framework",
         }
         for k, v in self.metadata.items():
             if k not in allowed_metadata_keys:
@@ -96,6 +96,14 @@ class ActionEvent:
                 raise ValueError("metadata['payload_hash'] must be a string")
             elif k == "latency_ms" and v is not None and not isinstance(v, (int, float)):
                 raise ValueError("metadata['latency_ms'] must be an integer or float")
+            elif k == "capability" and v is not None and not isinstance(v, str):
+                raise ValueError("metadata['capability'] must be a string")
+            elif k == "tool_name" and v is not None and not isinstance(v, str):
+                raise ValueError("metadata['tool_name'] must be a string")
+            elif k == "risk_level" and v is not None and not isinstance(v, str):
+                raise ValueError("metadata['risk_level'] must be a string")
+            elif k == "framework" and v is not None and not isinstance(v, str):
+                raise ValueError("metadata['framework'] must be a string")
 
     @classmethod
     def create(
@@ -180,14 +188,31 @@ class ActionRuntime:
         """Safely evaluate and govern an ActionEvent, returning a deterministic ExecutionVerdict."""
         start_time = time.time()
 
-        # 1. Format required capability in resource.action.scope format
-        scope = event.metadata.get("scope") or event.environment or "*"
-        required_cap_str = f"{event.resource}.{event.action}.{scope}"
+        # 1. Resolve the canonical capability. Framework adapters pass the
+        # exact policy capability here to avoid lossy string splitting.
+        required_cap_str = event.metadata.get("capability")
+        if required_cap_str is None:
+            scope = event.metadata.get("scope") or event.environment or "*"
+            required_cap_str = f"{event.resource}.{event.action}.{scope}"
+
+        risk_level = (
+            event.risk
+            if isinstance(event.risk, str)
+            else event.metadata.get("risk_level")
+        )
+        context = {
+            **event.metadata,
+            "actor": event.actor,
+            "action": event.action,
+            "resource": event.resource,
+            "environment": event.environment,
+            "risk_level": str(risk_level).lower() if risk_level is not None else None,
+        }
 
         # 2. Check declarative capability policy
         policy_verdict = self.capability_system.evaluate_capability(
             required_cap_str,
-            context=event.metadata,
+            context=context,
             payload=event.metadata.get("payload"),
         )
 
@@ -196,10 +221,10 @@ class ActionRuntime:
         reason = "policy_default_deny"
         approval_id = None
 
-        if policy_verdict == "allow":
+        if policy_verdict in {"allow", "warn"}:
             authorized = True
             decision = "allow"
-            reason = "policy_allow"
+            reason = "policy_warn" if policy_verdict == "warn" else "policy_allow"
         elif policy_verdict == "deny":
             authorized = False
             decision = "deny"

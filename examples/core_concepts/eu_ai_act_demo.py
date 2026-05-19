@@ -1,53 +1,30 @@
-"""Example: EU AI Act Annex IV evidence pack (Week 11).
+"""Example: EU AI Act evidence report generation.
 
-Generates a compliance evidence pack for AI system conformity assessment.
+Uses the supported `capfence eu-ai-act` CLI command against the bundled demo.
 """
 
+from __future__ import annotations
+
 from pathlib import Path
-from capfence.assessment.scanner import scan_assessment
-from capfence.assessment.eu_ai_act import generate_evidence_pack
+from click.testing import CliRunner
+
+from capfence.cli import main
 
 
-def main():
-    # Scan the examples directory for tools
-    data = scan_assessment(Path("./examples"), taxonomy_path="general")
-
-    # Generate evidence pack
-    pack = generate_evidence_pack(
-        data=data,
-        system_name="CapFence Demo Agent",
-        system_version="0.4.0",
+def main_demo() -> None:
+    output = Path("eu-ai-act-evidence.html")
+    result = CliRunner().invoke(
+        main,
+        ["eu-ai-act", "capfence-demo/src", "--output", str(output)],
     )
+    if result.exit_code != 0:
+        raise RuntimeError(result.output)
 
-    print("EU AI Act Annex IV Evidence Pack")
+    print("EU AI Act Evidence Report")
     print("=" * 50)
-    print(f"System:     {pack.system_name}")
-    print(f"Version:    {pack.system_version}")
-    print(f"Generated:  {pack.generated_at}")
-    print()
-
-    # Print risk management summary
-    rm = pack.risk_management
-    print("Risk Management:")
-    print(f"  Tool count:       {rm.get('tool_count', 0)}")
-    print(f"  Ungated tools:    {rm.get('ungated_tools', 0)}")
-    print(f"  Critical ungated: {rm.get('critical_ungated', 0)}")
-    print(f"  Risk score:       {rm.get('risk_score', 'N/A')}/100 ({rm.get('risk_label', 'N/A')})")
-
-    # Print cybersecurity section
-    cs = pack.cybersecurity
-    print("\nCybersecurity:")
-    print(f"  OWASP coverage: {cs.get('owasp_agentic_coverage', 'N/A')}")
-    print(f"  Covered risks:  {cs.get('covered_risks', 0)}")
-    print(f"  Full coverage:  {cs.get('full_coverage', 0)}")
-
-    # Write outputs
-    pack.write_json(Path("eu-ai-act-evidence.json"))
-    pack.write_html(Path("eu-ai-act-evidence.html"))
-    print("\nEvidence pack written to:")
-    print("  JSON: eu-ai-act-evidence.json")
-    print("  HTML: eu-ai-act-evidence.html")
+    print(result.output.strip())
+    print(f"HTML: {output}")
 
 
 if __name__ == "__main__":
-    main()
+    main_demo()

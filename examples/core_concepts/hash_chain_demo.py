@@ -36,7 +36,7 @@ def main() -> None:
         resource="read_only",
         environment="production",
         risk="low",
-        account_id="123",
+        payload={"account_id": "123"},
     )
     verdict1 = runtime.execute(event1)
     print(f"Decision 1: {'PASS' if verdict1.authorized else 'BLOCK'} (decision={verdict1.decision})")
@@ -48,7 +48,7 @@ def main() -> None:
         resource="execute",
         environment="production",
         risk="high",
-        command="rm -rf /",
+        payload={"command": "rm -rf /"},
     )
     verdict2 = runtime.execute(event2)
     print(f"Decision 2: {'PASS' if verdict2.authorized else 'BLOCK'} (decision={verdict2.decision})")

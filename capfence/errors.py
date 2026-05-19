@@ -18,10 +18,7 @@ handle any CapFence failure; catch specific subclasses for targeted handling.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from capfence.types import GateResult
+from typing import Any
 
 
 class CapFenceError(Exception):
@@ -48,7 +45,7 @@ class AgentActionBlocked(CapFenceError):
         gate_result: The full GateResult (risk_score, threshold, metadata).
     """
 
-    def __init__(self, detail: str, gate_result: "GateResult | None" = None) -> None:
+    def __init__(self, detail: str, gate_result: Any | None = None) -> None:
         super().__init__(detail)
         self.detail = detail
         self.gate_result = gate_result

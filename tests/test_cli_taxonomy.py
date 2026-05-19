@@ -1,4 +1,3 @@
-import pytest
 from click.testing import CliRunner
 from capfence.cli import main
 from capfence.core.capabilities import TAXONOMY_TO_CAPABILITY

@@ -38,8 +38,7 @@ class BulkDataExportTool(BaseTool):
     Risk: CRITICAL — mass data exfiltration vector.
     Category: data_export (delta=0.15)
 
-    WARNING: This tool is intentionally LEFT UNGATED in the agent layer
-    to demonstrate CapFence's detection capabilities.
+    Must be wrapped by the agent before deployment.
     """
     name: str = "bulk_export"
     description: str = "Export all customer data to CSV/JSON. Includes PII, payment history, and account details."

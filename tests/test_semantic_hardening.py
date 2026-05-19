@@ -7,7 +7,6 @@ from __future__ import annotations
 import json
 import pytest
 from pathlib import Path
-from tempfile import NamedTemporaryFile
 
 from capfence.core.runtime import ActionEvent, ActionRuntime
 from capfence.core.capabilities import Capability, CapabilitySystem
@@ -229,7 +228,7 @@ def test_break_glass_operational_semantics(caplog) -> None:
     approvals = ApprovalEngine(db_path=":memory:")
     
     # Create break-glass emergency grant
-    grant = approvals.grant_temporary_approval(
+    approvals.grant_temporary_approval(
         actor="ops-agent",
         capability="deployment.execute.production",
         environment="production",
@@ -261,3 +260,33 @@ def test_wildcard_permissiveness_auditing(caplog) -> None:
         warnings = [r.message for r in caplog.records]
         assert any("SECURITY WARNING: Overly permissive wildcard policy loaded" in msg for msg in warnings)
         assert any("SECURITY WARNING: Highly sensitive system-level wildcard loaded" in msg for msg in warnings)
+
+
+def test_audit_chain_covers_runtime_columns(tmp_path: Path) -> None:
+    caps = CapabilitySystem()
+    caps.load_policy({"allow": ["filesystem.read"]})
+    audit = ImmutableAuditTrail(db_path=tmp_path / "audit.db")
+    runtime = ActionRuntime(
+        capability_system=caps,
+        approval_engine=ApprovalEngine(db_path=":memory:"),
+        audit_trail=audit,
+    )
+
+    event = ActionEvent.create(
+        actor="agent",
+        action="read",
+        resource="filesystem",
+        environment="production",
+        risk="low",
+        payload={"path": "/tmp/report.txt"},
+    )
+    runtime.execute(event)
+
+    valid_before, errors_before = audit.verify()
+    assert valid_before is True
+    assert errors_before == []
+
+    audit._db.execute("UPDATE audit_events SET capability = ? WHERE id = 1", ("filesystem.write",))
+    valid_after, errors_after = audit.verify()
+    assert valid_after is False
+    assert any("entry_hash mismatch" in error for error in errors_after)

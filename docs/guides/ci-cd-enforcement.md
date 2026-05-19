@@ -66,19 +66,15 @@ capfence check ./src --framework crewai
 capfence check ./src --framework openai_agents
 ```
 
-## Full risk assessment report
+## Machine-readable scan report
 
-For a richer report with compliance mapping and remediation guidance:
+For CI systems that need structured output:
 
 ```bash
-capfence assess ./src -o report.html
+capfence check ./src --report-json
 ```
 
-The assessment report includes:
-- Executive summary
-- Risk breakdown by tool and framework
-- Compliance framework mapping (OWASP, EU AI Act)
-- Remediation checklist
+The JSON output includes discovered tools, framework, category, risk delta, source location, and gated status.
 
 ## Pre-commit hook
 

@@ -5,7 +5,7 @@ AST scanner can detect them via `capfence check`.
 
 Usage:
     capfence check ./examples/langchain_realistic.py
-    capfence check ./examples/langchain_realistic.py --output report.html
+    capfence check ./examples/langchain_realistic.py --report-json
 """
 
 from langchain.tools import BaseTool
@@ -65,8 +65,11 @@ safe_shell = CapFenceTool(
     risk_category="execute",
 )
 
-# Payment tool intentionally LEFT ungated for demo purposes
-# (the scanner should flag this as a high-risk ungated finding)
+safe_payment = CapFenceTool(
+    tool=PaymentTool(),
+    agent_id="finance-agent-1",
+    risk_category="payment_initiation",
+)
 
 # Read-only tool wrapped for auditing
 safe_balance = CapFenceTool(
@@ -82,16 +85,20 @@ safe_delete = CapFenceTool(
     risk_category="delete",
 )
 
-# Email tool intentionally LEFT ungated
+safe_email = CapFenceTool(
+    tool=SendEmailTool(),
+    agent_id="support-agent-1",
+    risk_category="write",
+)
 
 
 def main():
     print("Realistic LangChain agent with 5 tools:")
     print("  - ShellTool (gated)")
-    print("  - PaymentTool (UNGATED)")
+    print("  - PaymentTool (gated)")
     print("  - ReadBalanceTool (gated)")
     print("  - DeleteAccountTool (gated)")
-    print("  - SendEmailTool (UNGATED)")
+    print("  - SendEmailTool (gated)")
 
 
 if __name__ == "__main__":

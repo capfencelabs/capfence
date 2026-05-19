@@ -179,7 +179,7 @@ class CapabilitySystem:
                 return res
 
         if not self.allowed and not self.denied and not self.require_approval:
-            return "allow"
+            return "default_deny"
 
         required = Capability.parse(required_cap_str)
 

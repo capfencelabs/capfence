@@ -30,6 +30,15 @@ class ChainEntry:
     timestamp: float
     prev_hash: str
     entry_hash: str
+    actor: str | None = None
+    action: str | None = None
+    resource: str | None = None
+    environment: str | None = None
+    capability: str | None = None
+    approval_state: str | None = None
+    policy_decision: str | None = None
+    execution_result: str | None = None
+    metadata_json: str | None = None
 
 
 def _canonical_json(data: dict[str, Any]) -> str:
@@ -79,7 +88,7 @@ def verify_chain(entries: list[ChainEntry]) -> tuple[bool, list[str]]:
 
         # 2. Recompute entry_hash and verify
         # Note: id is excluded because it is a DB artifact not known at record time
-        fields = {
+        fields: dict[str, Any] = {
             "agent_id": entry.agent_id,
             "task_context": entry.task_context,
             "risk_category": entry.risk_category,
@@ -91,6 +100,19 @@ def verify_chain(entries: list[ChainEntry]) -> tuple[bool, list[str]]:
             "latency_ms": entry.latency_ms,
             "timestamp": entry.timestamp,
         }
+        extended_fields = {
+            "actor": entry.actor,
+            "action": entry.action,
+            "resource": entry.resource,
+            "environment": entry.environment,
+            "capability": entry.capability,
+            "approval_state": entry.approval_state,
+            "policy_decision": entry.policy_decision,
+            "execution_result": entry.execution_result,
+            "metadata_json": entry.metadata_json,
+        }
+        if any(value is not None for value in extended_fields.values()):
+            fields.update(extended_fields)
         expected = compute_entry_hash(fields, entry.prev_hash)
         if entry.entry_hash != expected:
             errors.append(
@@ -119,6 +141,7 @@ def verify_chain_from_rows(rows: list[dict[str, Any]]) -> tuple[bool, list[str]]
         if missing:
             errors.append(f"Row {i}: missing required keys {missing}")
             continue
+        extended_protected = _uses_extended_hash_fields(row.get("metadata_json"))
         entries.append(
             ChainEntry(
                 id=row["id"],
@@ -134,7 +157,28 @@ def verify_chain_from_rows(rows: list[dict[str, Any]]) -> tuple[bool, list[str]]
                 timestamp=row["timestamp"],
                 prev_hash=row.get("prev_hash", ""),
                 entry_hash=row.get("entry_hash", ""),
+                actor=row.get("actor") if extended_protected else None,
+                action=row.get("action") if extended_protected else None,
+                resource=row.get("resource") if extended_protected else None,
+                environment=row.get("environment") if extended_protected else None,
+                capability=row.get("capability") if extended_protected else None,
+                approval_state=row.get("approval_state") if extended_protected else None,
+                policy_decision=row.get("policy_decision") if extended_protected else None,
+                execution_result=row.get("execution_result") if extended_protected else None,
+                metadata_json=row.get("metadata_json") if extended_protected else None,
             )
         )
     valid, verify_errors = verify_chain(entries)
     return valid and not errors, errors + verify_errors
+
+
+def _uses_extended_hash_fields(metadata_json: Any) -> bool:
+    """Return True for rows written with v0.8.2+ compact metadata hashing."""
+    if not isinstance(metadata_json, str) or not metadata_json:
+        return False
+    try:
+        parsed = json.loads(metadata_json)
+    except json.JSONDecodeError:
+        return False
+    canonical = json.dumps(parsed, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return metadata_json == canonical

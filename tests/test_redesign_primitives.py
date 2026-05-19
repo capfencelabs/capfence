@@ -2,16 +2,12 @@
 
 import json
 import time
-import pytest
-from pathlib import Path
 
 from capfence import (
     ActionEvent,
     ActionRuntime,
-    ExecutionVerdict,
     Capability,
     CapabilitySystem,
-    ApprovedGrant,
     ApprovalEngine,
     ImmutableAuditTrail,
     ReplayEngine,

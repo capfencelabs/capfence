@@ -1,8 +1,4 @@
-"""Payment agent — handles customer payments and refunds.
-
-Wraps PaymentTool and RefundTool with CapFenceTool.
-WireTransferTool is intentionally LEFT UNGATED (simulates a real oversight).
-"""
+"""Payment agent — handles customer payments and refunds."""
 
 from capfence.framework.langchain import CapFenceTool
 
@@ -13,8 +9,6 @@ def build_payment_agent():
     """Build the payment agent with gated tools.
 
     Returns a dict of tool_name -> tool_instance.
-    WireTransferTool is intentionally NOT wrapped — this is the kind of
-    oversight CapFence's scanner catches in CI.
     """
     safe_payment = CapFenceTool(
         tool=PaymentTool(),
@@ -28,15 +22,14 @@ def build_payment_agent():
         risk_category="payment_initiation",
     )
 
-    # WireTransferTool — INTENTIONALLY UNGATED
-    # In a real codebase, this might happen because:
-    # - A developer forgot to wrap it
-    # - It was added in a hurry during an incident
-    # - The team didn't realize it was a BaseTool subclass
-    wire_transfer = WireTransferTool()
+    safe_wire_transfer = CapFenceTool(
+        tool=WireTransferTool(),
+        agent_id="payment-agent-1",
+        risk_category="payment_initiation",
+    )
 
     return {
         "process_payment": safe_payment,
         "issue_refund": safe_refund,
-        "wire_transfer": wire_transfer,  # UNGATED — CapFence will flag this
+        "wire_transfer": safe_wire_transfer,
     }

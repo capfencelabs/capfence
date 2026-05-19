@@ -23,7 +23,6 @@ Options:
 |---|---|
 | `PATH` | File or directory to scan. Defaults to `.` |
 | `-f, --framework TEXT` | Filter by framework, such as `langchain`, `crewai`, or `autogen`. |
-| `-o, --output PATH` | Write an HTML report. |
 | `--fail-on-ungated` | Exit non-zero if high-risk ungated tools are found. |
 | `--strict` | Exit non-zero if any ungated tools are found. |
 | `--report-json` | Print findings as JSON. |
@@ -33,27 +32,18 @@ Examples:
 ```bash
 capfence check ./src
 capfence check ./src --fail-on-ungated
-capfence check ./src --framework langchain --output report.html
+capfence check ./src --framework langchain --report-json
 ```
 
 ---
 
-## `capfence assess`
+## `capfence check-policy`
 
-Generate a detailed HTML assessment report with taxonomy enrichment.
+Validate a CapFence YAML policy file.
 
 ```bash
-capfence assess [OPTIONS] PATH
+capfence check-policy POLICY_FILE
 ```
-
-Options:
-
-| Flag | Description |
-|---|---|
-| `PATH` | Directory or file to assess. |
-| `-o, --output PATH` | Write the HTML report to a specific path. |
-| `-t, --taxonomy TEXT` | Taxonomy to use, such as `general`, `financial`, `legal`, or a taxonomy file path. |
-| `-c, --compliance` | Include compliance mappings in the report. |
 
 ---
 
@@ -247,4 +237,3 @@ Options:
 | `--agent-id TEXT` | Limit analysis to one agent. |
 | `--window INTEGER` | Number of recent decisions to analyze. Defaults to `200`. |
 | `--false-positive-budget FLOAT` | Acceptable false-positive rate. Defaults to `0.05`. |
-

@@ -1,4 +1,4 @@
-"""Test runner for all v0.4.0 examples.
+"""Test runner for maintained core-concept examples.
 
 Runs each example and reports success/failure.
 Usage: python examples/run_all_examples.py
@@ -10,15 +10,14 @@ import sys
 from pathlib import Path
 
 EXAMPLES = [
-    ("Hash Chain (Week 7a)", "hash_chain_demo.py"),
-    ("Ed25519 Signing (Week 7b)", "ed25519_signing_demo.py"),
-    ("OWASP Report (Week 8)", "owasp_report_demo.py"),
-    ("MCP Gateway (Week 9)", "mcp_gateway_demo.py"),
-    ("LangGraph (Week 10)", "langgraph_demo.py"),
-    ("OpenAI Agents (Week 10)", "openai_agents_demo.py"),
-    ("EU AI Act (Week 11)", "eu_ai_act_demo.py"),
-    ("Plaid Taxonomy (Week 12)", "plaid_taxonomy_demo.py"),
-    ("Telemetry (Week 13)", "telemetry_demo.py"),
+    ("Hash Chain", "hash_chain_demo.py"),
+    ("Ed25519 Signing", "ed25519_signing_demo.py"),
+    ("OWASP Mapping", "owasp_report_demo.py"),
+    ("LangGraph", "langgraph_demo.py"),
+    ("EU AI Act", "eu_ai_act_demo.py"),
+    ("Plaid Taxonomy", "plaid_taxonomy_demo.py"),
+    ("Telemetry Metrics", "telemetry_demo.py"),
+    ("Tamper Detection", "tamper_demo.py"),
 ]
 
 
@@ -54,7 +53,7 @@ def run_example(name: str, filename: str) -> bool:
 
 
 def main():
-    print("CapFence v0.4.0 Example Test Runner")
+    print("CapFence Core Example Test Runner")
     print(f"Python: {sys.version}")
 
     passed = 0

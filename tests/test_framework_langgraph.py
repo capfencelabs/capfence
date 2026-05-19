@@ -105,7 +105,17 @@ class TestCapFenceToolNode:
 
     def test_call_passes_safe_tool(self):
         tools = [MockTool("read_tool")]
-        node = CapFenceToolNode(tools=tools, agent_id="agent-1")
+        from capfence.core.capabilities import CapabilitySystem
+        from capfence.core.approvals import ApprovalEngine
+        from capfence.core.audit import AuditLogger
+        caps = CapabilitySystem()
+        caps.load_policy({"allow": ["read_tool.execute"]})
+        gate = ActionRuntime(
+            capability_system=caps,
+            approval_engine=ApprovalEngine(db_path=":memory:"),
+            audit_trail=AuditLogger(db_path=":memory:"),
+        )
+        node = CapFenceToolNode(tools=tools, agent_id="agent-1", gate=gate)
         state = {
             "messages": [
                 type("Msg", (), {
@@ -161,7 +171,17 @@ deny:
 
     def test_call_dict_messages(self):
         tools = [MockTool("read_tool")]
-        node = CapFenceToolNode(tools=tools, agent_id="agent-1")
+        from capfence.core.capabilities import CapabilitySystem
+        from capfence.core.approvals import ApprovalEngine
+        from capfence.core.audit import AuditLogger
+        caps = CapabilitySystem()
+        caps.load_policy({"allow": ["read_tool.execute"]})
+        gate = ActionRuntime(
+            capability_system=caps,
+            approval_engine=ApprovalEngine(db_path=":memory:"),
+            audit_trail=AuditLogger(db_path=":memory:"),
+        )
+        node = CapFenceToolNode(tools=tools, agent_id="agent-1", gate=gate)
         state = {
             "messages": [
                 {"tool_calls": [{"name": "read_tool", "args": {}, "id": "1"}]}

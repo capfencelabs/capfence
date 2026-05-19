@@ -8,9 +8,7 @@ import pytest
 
 pytest.importorskip("pytest_asyncio", reason="pytest-asyncio not installed")
 
-from capfence.core.gate import Gate
-from capfence.core.fsm import FailClosedFSM
-from capfence.types import GateResult
+from capfence import ActionRuntime, ApprovalEngine, AuditLogger, CapabilitySystem, ExecutionVerdict, ActionEvent
 from capfence.framework.openai_agents import CapFenceOpenAITool, AgentActionBlocked
 
 
@@ -32,17 +30,28 @@ class MockOpenAITool:
 class TestCapFenceOpenAITool:
     """Tests for CapFenceOpenAITool."""
 
+    def _gate(self) -> ActionRuntime:
+        caps = CapabilitySystem()
+        caps.load_policy({
+            "allow": ["read_tool.execute", "simple.execute", "broken.execute"],
+            "deny": ["shell.execute"],
+        })
+        return ActionRuntime(
+            capability_system=caps,
+            approval_engine=ApprovalEngine(db_path=":memory:"),
+            audit_trail=AuditLogger(db_path=":memory:"),
+        )
+
     def test_init_defaults(self):
         tool = MockOpenAITool("read_tool")
         wrapped = CapFenceOpenAITool(tool=tool, agent_id="agent-1")
         assert wrapped.name == "read_tool"
         assert wrapped._agent_id == "agent-1"
         assert wrapped._risk_category is None
-        assert isinstance(wrapped._gate, Gate)
-        assert isinstance(wrapped._fsm, FailClosedFSM)
+        assert isinstance(wrapped._gate, ActionRuntime)
 
     def test_init_custom(self):
-        gate = Gate()
+        gate = self._gate()
         tool = MockOpenAITool("shell")
         wrapped = CapFenceOpenAITool(
             tool=tool,
@@ -75,7 +84,7 @@ class TestCapFenceOpenAITool:
     @pytest.mark.asyncio
     async def test_on_invoke_tool_passes_safe(self):
         tool = MockOpenAITool("read_tool")
-        wrapped = CapFenceOpenAITool(tool=tool, agent_id="agent-1")
+        wrapped = CapFenceOpenAITool(tool=tool, agent_id="agent-1", gate=self._gate())
         result = await wrapped.on_invoke_tool(None, json.dumps({"query": "test"}))
         assert "read_tool" in result
 
@@ -86,6 +95,7 @@ class TestCapFenceOpenAITool:
             tool=tool,
             agent_id="agent-1",
             risk_category="execute",
+            gate=self._gate(),
         )
         with pytest.raises(AgentActionBlocked):
             await wrapped.on_invoke_tool(None, json.dumps({"command": "exec rm -rf /"}))
@@ -93,7 +103,7 @@ class TestCapFenceOpenAITool:
     @pytest.mark.asyncio
     async def test_on_invoke_tool_invalid_json(self):
         tool = MockOpenAITool("read_tool")
-        wrapped = CapFenceOpenAITool(tool=tool, agent_id="agent-1")
+        wrapped = CapFenceOpenAITool(tool=tool, agent_id="agent-1", gate=self._gate())
         result = await wrapped.on_invoke_tool(None, "not json")
         assert "read_tool" in result
 
@@ -109,7 +119,7 @@ class TestCapFenceOpenAITool:
             def invoke(self, arguments: dict) -> str:
                 return f"invoked with {arguments}"
 
-        wrapped = CapFenceOpenAITool(tool=InvokeOnlyTool(), agent_id="agent-1")
+        wrapped = CapFenceOpenAITool(tool=InvokeOnlyTool(), agent_id="agent-1", gate=self._gate())
         result = await wrapped.on_invoke_tool(None, json.dumps({"key": "val"}))
         assert "invoked" in result
 
@@ -122,7 +132,7 @@ class TestCapFenceOpenAITool:
             description = ""
             params_json_schema = {}
 
-        wrapped = CapFenceOpenAITool(tool=NoMethodTool(), agent_id="agent-1")
+        wrapped = CapFenceOpenAITool(tool=NoMethodTool(), agent_id="agent-1", gate=self._gate())
         with pytest.raises(AgentActionBlocked):
             await wrapped.on_invoke_tool(None, json.dumps({}))
 
@@ -133,7 +143,19 @@ class TestCapFenceOpenAITool:
         assert wrapped.description == ""
 
     def test_agent_action_blocked_exception(self):
-        result = GateResult(passed=False, reason="test")
+        event = ActionEvent.create(
+            actor="agent",
+            action="execute",
+            resource="shell",
+            environment="production",
+        )
+        result = ExecutionVerdict(
+            authorized=False,
+            decision="deny",
+            reason="test",
+            event=event,
+            timestamp=123.456,
+        )
         exc = AgentActionBlocked(detail="blocked", gate_result=result)
         assert exc.detail == "blocked"
         assert exc.gate_result is result
