@@ -3,11 +3,11 @@ name: Pip-Compile
 on:
   pull_request:
     paths:
-      - "requirements.in"
+      - "requirements*.in"
   push:
     branches: [main, master]
     paths:
-      - "requirements.in"
+      - "requirements*.in"
   workflow_dispatch:
 
 permissions:
@@ -27,5 +27,8 @@ jobs:
       - name: Compile requirements.txt
         run: |
           pip-compile --generate-hashes --output-file=requirements.txt requirements.in
+          pip-compile --generate-hashes --output-file=requirements-dev.txt requirements-dev.in
+          pip-compile --generate-hashes --output-file=requirements-docs.txt requirements-docs.in
+          pip-compile --generate-hashes --output-file=requirements-build.txt requirements-build.in
       - name: Check for changes
         run: git diff --exit-code
