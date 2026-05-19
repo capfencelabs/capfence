@@ -34,7 +34,10 @@ src/fintech_agent/
 
 ```bash
 # Install
-pip install capfence
+python -m pip install --upgrade pip
+pip install --require-hashes -r ../requirements-dev.txt
+pip install -e .. --no-deps
+pip install -e . --no-deps
 
 # Scan the project
 capfence check src/
@@ -51,7 +54,6 @@ capfence check src/ --fail-on-ungated
 capfence check src/ --report-json
 
 # Run the verification tests
-pip install -e ".[dev]"
 pytest tests/ -v
 ```
 

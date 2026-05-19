@@ -1,2 +1,3 @@
 build
 twine
+SecretStorage>=3.2; sys_platform == "linux"
