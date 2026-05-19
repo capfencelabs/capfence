@@ -24,9 +24,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install --require-hashes -r requirements-dev.txt
+        run: pip install --require-hashes -r requirements-dev.txt
       - name: Lint with ruff
         run: ruff check capfence tests
       - name: Type check with mypy
@@ -44,9 +42,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install build tools
-        run: |
-          python -m pip install --upgrade pip
-          pip install --require-hashes -r requirements-build.txt
+        run: pip install --require-hashes -r requirements-build.txt
       - name: Build wheel and sdist
         run: |
           rm -rf dist

@@ -23,12 +23,13 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install pip-tools
-        run: python -m pip install --upgrade pip pip-tools
+        run: pip install --require-hashes -r requirements-pip-tools.txt
       - name: Compile requirements.txt
         run: |
           pip-compile --pip-args="--python-version 3.10" --generate-hashes --output-file=requirements.txt requirements.in
           pip-compile --pip-args="--python-version 3.10" --generate-hashes --output-file=requirements-dev.txt requirements-dev.in
           pip-compile --pip-args="--python-version 3.10" --generate-hashes --output-file=requirements-docs.txt requirements-docs.in
           pip-compile --pip-args="--python-version 3.10" --generate-hashes --output-file=requirements-build.txt requirements-build.in
+          pip-compile --pip-args="--python-version 3.10" --generate-hashes --allow-unsafe --output-file=requirements-pip-tools.txt requirements-pip-tools.in
       - name: Check for changes
         run: git diff --exit-code
