@@ -24,7 +24,7 @@ CapFence does not replace sandboxing or least-privilege credentials. It compleme
 
 - Python 3.10+
 - Local repo checkout
-- Virtual environment with CapFence installed (`pip install -e ".[dev]"`)
+- Virtual environment with CapFence installed (`pip install --require-hashes -r requirements-dev.txt && pip install -e . --no-deps`)
 
 ## Run the demo
 

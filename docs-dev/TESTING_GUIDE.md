@@ -17,7 +17,9 @@ pip install capfence
 ```bash
 git clone https://github.com/capfencelabs/capfence.git
 cd capfence
-pip install -e ".[dev]"
+python -m pip install --upgrade pip
+pip install --require-hashes -r requirements-dev.txt
+pip install -e . --no-deps
 ```
 
 Verify installation:
@@ -353,7 +355,10 @@ A realistic fintech agent is included for end-to-end testing:
 cd capfence-demo/
 
 # Install demo dependencies
-pip install -e ".[dev]"
+python -m pip install --upgrade pip
+pip install --require-hashes -r ../requirements-dev.txt
+pip install -e .. --no-deps
+pip install -e . --no-deps
 
 # Run CapFence scanner
 capfence check src/
@@ -390,7 +395,7 @@ The demo has 8 tools, 2 intentionally ungated — perfect for validating the sca
 
 | Issue | Fix |
 |---|---|
-| `ModuleNotFoundError: capfence` | Install with `pip install -e .` from repo root, or set `PYTHONPATH=/path/to/repo` |
+| `ModuleNotFoundError: capfence` | Install with `pip install -e . --no-deps` from repo root after `pip install --require-hashes -r requirements-dev.txt`, or set `PYTHONPATH=/path/to/repo` |
 | `capfence: command not found` | Ensure your Python scripts directory is on `PATH`, or use `python -m capfence.cli` |
 | `1 skipped` in tests | Install `pytest-asyncio` if you want to run async tests: `pip install pytest-asyncio` |
 | FastAPI tests skipped | Install `fastapi` if testing Cloud API: `pip install fastapi` |

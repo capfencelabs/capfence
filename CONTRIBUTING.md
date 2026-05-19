@@ -16,7 +16,9 @@ This document outlines the engineering standards and workflows for contributing 
 ```bash
 git clone https://github.com/capfencelabs/capfence.git
 cd capfence
-pip install -e ".[dev,langchain]"
+python -m pip install --upgrade pip
+pip install --require-hashes -r requirements-dev.txt
+pip install -e . --no-deps
 ```
 
 ## Pull Request Pipeline
