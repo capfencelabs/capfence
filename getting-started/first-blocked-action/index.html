@@ -2478,7 +2478,7 @@ event2 = ActionEvent.create(
 )
 verdict2 = runtime.execute(event2)
 print(verdict2.authorized)   # False
-print(verdict2.reason)   # destructive_command_detected
+print(verdict2.reason)   # policy_deny
 </code></pre>
 <h2 id="what-happens-at-the-framework-layer">What happens at the framework layer</h2>
 <p>With a LangChain wrapper, blocked calls raise an exception so the agent cannot proceed:</p>
@@ -2495,15 +2495,15 @@ safe_shell = CapFenceTool(
 # This raises AgentActionBlocked — the shell never runs
 safe_shell.run(&quot;rm -rf /var/lib/postgresql&quot;)
 </code></pre>
-<pre><code>AgentActionBlocked: capability=shell.execute decision=denied reason=destructive_command_detected
+<pre><code>AgentActionBlocked: Blocked: policy_deny
 </code></pre>
 <h2 id="checking-the-audit-log">Checking the audit log</h2>
 <p>Both the allowed and denied decisions are recorded:</p>
 <pre><code class="language-bash">capfence logs
 </code></pre>
 <pre><code>timestamp            agent_id      capability      decision  reason
-2024-01-15 10:23:01  demo-agent    shell.execute   allow     —
-2024-01-15 10:23:02  demo-agent    shell.execute   deny      destructive_command_detected
+2024-01-15 10:23:01  demo-agent    shell.execute   allow     policy_allow
+2024-01-15 10:23:02  demo-agent    shell.execute   deny      policy_deny
 </code></pre>
 <h2 id="verifying-log-integrity">Verifying log integrity</h2>
 <pre><code class="language-bash">capfence verify --audit-log ./audit.db

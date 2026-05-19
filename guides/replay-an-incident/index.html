@@ -2476,12 +2476,12 @@ Policy file:  policies/payments_agent.yaml (sha256:c8d1f2...)
 <h2 id="replaying-against-a-different-policy">Replaying against a different policy</h2>
 <p>If you've updated your policy and want to see how the incident would have been handled:</p>
 <pre><code class="language-bash"># Replay the captured trace
-capfence replay incident.jsonl
+capfence replay incident.jsonl --policy policies/new_policy.yaml
 </code></pre>
-<p>This replays the captured payloads and prints deterministic replay output.</p>
+<p>This replays the captured payloads against the candidate policy and prints deterministic replay output.</p>
 <h2 id="replaying-a-batch-of-entries">Replaying a batch of entries</h2>
 <p>Replay an entire time window against a policy:</p>
-<pre><code class="language-bash">capfence simulate --trace-file daily.jsonl --taxonomy policies/new_policy.yaml --compare
+<pre><code class="language-bash">capfence replay daily.jsonl --policy policies/new_policy.yaml
 </code></pre>
 <p>This is useful for validating a policy change before deploying it.</p>
 <h2 id="verifying-log-integrity-before-replay">Verifying log integrity before replay</h2>

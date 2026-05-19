@@ -1335,7 +1335,7 @@
   <a href="#the-rollout-pattern" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The rollout pattern
+        The Rollout Pattern
       
     </span>
   </a>
@@ -1343,10 +1343,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-1-observe-mode" class="md-nav__link">
+  <a href="#step-1-write-an-observe-policy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 1: Observe mode
+        Step 1: Write an Observe Policy
       
     </span>
   </a>
@@ -1354,10 +1354,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-2-review-what-would-have-been-blocked" class="md-nav__link">
+  <a href="#step-2-initialize-actionruntime" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 2: Review what would have been blocked
+        Step 2: Initialize ActionRuntime
       
     </span>
   </a>
@@ -1365,10 +1365,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-3-simulate-policy-changes" class="md-nav__link">
+  <a href="#step-3-review-observed-logs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 3: Simulate policy changes
+        Step 3: Review Observed Logs
       
     </span>
   </a>
@@ -1376,10 +1376,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-4-switch-to-enforce-mode" class="md-nav__link">
+  <a href="#step-4-simulate-policy-changes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 4: Switch to enforce mode
+        Step 4: Simulate Policy Changes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-5-switch-to-enforce-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 5: Switch to Enforce Mode
       
     </span>
   </a>
@@ -1390,7 +1401,7 @@
   <a href="#related-guides" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Related guides
+        Related Guides
       
     </span>
   </a>
@@ -2361,7 +2372,7 @@
   <a href="#the-rollout-pattern" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The rollout pattern
+        The Rollout Pattern
       
     </span>
   </a>
@@ -2369,10 +2380,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-1-observe-mode" class="md-nav__link">
+  <a href="#step-1-write-an-observe-policy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 1: Observe mode
+        Step 1: Write an Observe Policy
       
     </span>
   </a>
@@ -2380,10 +2391,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-2-review-what-would-have-been-blocked" class="md-nav__link">
+  <a href="#step-2-initialize-actionruntime" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 2: Review what would have been blocked
+        Step 2: Initialize ActionRuntime
       
     </span>
   </a>
@@ -2391,10 +2402,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-3-simulate-policy-changes" class="md-nav__link">
+  <a href="#step-3-review-observed-logs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 3: Simulate policy changes
+        Step 3: Review Observed Logs
       
     </span>
   </a>
@@ -2402,10 +2413,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-4-switch-to-enforce-mode" class="md-nav__link">
+  <a href="#step-4-simulate-policy-changes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 4: Switch to enforce mode
+        Step 4: Simulate Policy Changes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-5-switch-to-enforce-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 5: Switch to Enforce Mode
       
     </span>
   </a>
@@ -2416,7 +2438,7 @@
   <a href="#related-guides" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Related guides
+        Related Guides
       
     </span>
   </a>
@@ -2441,63 +2463,90 @@
 
 
 <h1 id="observe-mode-rollout">Observe Mode Rollout</h1>
-<p>Deploying CapFence in enforce mode immediately can surface policy gaps that block legitimate agent behavior. Observe mode lets you run CapFence in production — logging all decisions — without blocking anything. You tune your policy on real traffic, then flip to enforce.</p>
-<h2 id="the-rollout-pattern">The rollout pattern</h2>
+<p>Deploying CapFence in strict block mode immediately can surface policy gaps that block legitimate agent behavior. To keep enforcement boring, calm, and predictable, CapFence enforces a strict fail-closed architecture at the code level, but allows you to run a safe rollout period by configuring declarative <code>warn</code> rules in your policy.</p>
+<p>Declarative warning rules log decisions to the audit database without blocking tool execution. You tune your policy on real traffic, then flip to strict enforcement.</p>
+<hr />
+<h2 id="the-rollout-pattern">The Rollout Pattern</h2>
 <ol>
-<li><strong>Observe</strong>: Log all decisions. Block nothing. Understand your traffic.</li>
-<li><strong>Tune</strong>: Adjust policy rules based on what you see.</li>
-<li><strong>Enforce</strong>: Switch to full enforcement with confidence.</li>
+<li><strong>Observe</strong>: Map capabilities in your policy to the <code>warn</code> action. This logs all tool calls without blocking.</li>
+<li><strong>Tune</strong>: Adjust policy rules based on what you see in the audit log.</li>
+<li><strong>Enforce</strong>: Transition rule actions from <code>warn</code> to <code>deny</code> or <code>require_approval</code> with confidence.</li>
 </ol>
-<h2 id="step-1-observe-mode">Step 1: Observe mode</h2>
-<p>Create the gate in observe mode and pass it to the adapter:</p>
-<pre><code class="language-python">from capfence import CapFenceTool
-from capfence.core.gate import Gate
+<hr />
+<h2 id="step-1-write-an-observe-policy">Step 1: Write an Observe Policy</h2>
+<p>Instead of blocking tool use, define a policy that uses the <code>warn</code> action for suspicious or unverified capabilities:</p>
+<pre><code class="language-yaml"># policies/shell_rollout.yaml
+
+deny:
+  - capability: shell.execute
+    contains: &quot;rm -rf&quot; # Block catastrophic commands immediately
+
+require_approval: []
+
+warn:
+  - capability: shell.execute # Log all execution context without blocking
+  - capability: filesystem.write
+
+allow:
+  - capability: filesystem.read
+</code></pre>
+<h2 id="step-2-initialize-actionruntime">Step 2: Initialize ActionRuntime</h2>
+<p>Pass the rollout policy to the adapters or use it directly via <code>ActionRuntime</code>:</p>
+<pre><code class="language-python">from capfence import CapFenceTool, ActionRuntime
+
+runtime = ActionRuntime.from_policy(&quot;policies/shell_rollout.yaml&quot;)
 
 safe_tool = CapFenceTool(
     tool=my_tool,
     agent_id=&quot;prod-agent&quot;,
     capability=&quot;shell.execute&quot;,
-    policy_path=&quot;policies/shell.yaml&quot;,
-    gate=Gate(mode=&quot;observe&quot;)
+    gate=runtime
 )
 </code></pre>
-<p>Or on the gate directly:</p>
-<pre><code class="language-python">gate = Gate(
-    policy_path=&quot;policies/shell.yaml&quot;,
-    mode=&quot;observe&quot;
-)
-</code></pre>
-<p>In observe mode:
-- Every tool call is evaluated against policy.
-- Every decision is logged to the audit database.
-- No call is blocked, regardless of the decision.</p>
-<h2 id="step-2-review-what-would-have-been-blocked">Step 2: Review what would have been blocked</h2>
-<pre><code class="language-bash">capfence logs --audit-log audit.db --json
+<p>During this rollout:
+- Every tool call is evaluated against your policy.
+- Warning events match the <code>warn</code> block, which logs a full verdict record to your audit database (<code>audit.db</code>).
+- The agent continues to run without interruptions because <code>warn</code> verdicts are authorized.</p>
+<hr />
+<h2 id="step-3-review-observed-logs">Step 3: Review Observed Logs</h2>
+<p>Query the local audit database using the CLI to see what would have been blocked:</p>
+<pre><code class="language-bash">capfence logs --audit-log audit.db
 </code></pre>
 <p>Identify patterns:
-- Are any denials legitimate calls your agent needs? Adjust the policy.
-- Are any approvals actually safe to auto-allow? Move them to <code>allow</code>.
-- Are there dangerous patterns not yet covered by <code>deny</code> rules? Add them.</p>
-<h2 id="step-3-simulate-policy-changes">Step 3: Simulate policy changes</h2>
-<p>Export observed traffic and replay it against a revised policy:</p>
-<pre><code class="language-bash">capfence simulate --trace-file audit.jsonl --taxonomy policies/shell_v2.yaml --compare
+- Are any warned actions legitimate calls your agent needs? Move them to the <code>allow</code> block.
+- Are there dangerous commands that should be strictly blocked? Prepare <code>deny</code> rules for them.
+- Are there transaction thresholds that require human sign-off? Plan your <code>require_approval</code> thresholds.</p>
+<hr />
+<h2 id="step-4-simulate-policy-changes">Step 4: Simulate Policy Changes</h2>
+<p>Before pushing policy updates to production, export your traffic and dry-run it against your new strict policy:</p>
+<pre><code class="language-bash">capfence replay audit.jsonl --policy policies/shell_production.yaml
 </code></pre>
-<p>This shows you how your updated policy would have handled all real traffic from the observe period — before you deploy it.</p>
-<h2 id="step-4-switch-to-enforce-mode">Step 4: Switch to enforce mode</h2>
-<p>Use an enforcing gate:</p>
-<pre><code class="language-python">safe_tool = CapFenceTool(
-    tool=my_tool,
-    agent_id=&quot;prod-agent&quot;,
-    capability=&quot;shell.execute&quot;,
-    policy_path=&quot;policies/shell_v2.yaml&quot;,
-    gate=Gate(mode=&quot;enforce&quot;)
-)
+<p>This validates how your updated strict policy would have handled all real traffic from the observe period — before you deploy it.</p>
+<hr />
+<h2 id="step-5-switch-to-enforce-mode">Step 5: Switch to Enforce Mode</h2>
+<p>Once you are confident in your rule coverage, switch the actions in your policy file to <code>deny</code> or <code>require_approval</code>:</p>
+<pre><code class="language-yaml"># policies/shell_production.yaml
+
+deny:
+  - capability: shell.execute
+    contains: &quot;rm -rf&quot;
+  - capability: shell.execute
+    contains: &quot;curl&quot;
+
+require_approval:
+  - capability: shell.execute
+    contains: &quot;systemctl&quot;
+
+allow:
+  - capability: shell.execute
+  - capability: filesystem.read
 </code></pre>
-<p>Monitor the first hours of enforcement using the audit log for any unexpected denials.</p>
-<h2 id="related-guides">Related guides</h2>
+<p>Since the policy is loaded at startup, updating the yaml file updates enforcement parameters safely and immediately.</p>
+<hr />
+<h2 id="related-guides">Related Guides</h2>
 <ul>
-<li><a href="../replay-an-incident/">Replay an incident</a></li>
-<li><a href="../ci-cd-enforcement/">CI/CD enforcement</a></li>
+<li><a href="../protect-shell-tools/">Protect shell tools</a></li>
+<li><a href="../require-human-approval/">Require human approval</a></li>
 </ul>
 
 

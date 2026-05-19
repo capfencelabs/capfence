@@ -2617,34 +2617,39 @@ runtime = ActionRuntime(
 </thead>
 <tbody>
 <tr>
-<td><code>decision</code></td>
-<td><code>str</code></td>
-<td>Evaluation outcome (<code>"allow"</code>, <code>"deny"</code>, <code>"require_approval"</code>, or <code>"default_deny"</code>).</td>
-</tr>
-<tr>
-<td><code>reason</code></td>
-<td><code>str</code></td>
-<td>Structured explanation of the decision.</td>
-</tr>
-<tr>
 <td><code>authorized</code></td>
 <td><code>bool</code></td>
 <td>Convenience helper. <code>True</code> if <code>decision</code> is <code>"allow"</code>.</td>
 </tr>
 <tr>
-<td><code>risk_score</code></td>
-<td><code>float \| None</code></td>
-<td>Evaluated numeric risk value.</td>
+<td><code>decision</code></td>
+<td><code>str</code></td>
+<td>Evaluation outcome (<code>"allow"</code>, <code>"deny"</code>, or <code>"require_approval"</code>).</td>
 </tr>
 <tr>
-<td><code>threshold</code></td>
-<td><code>float \| None</code></td>
-<td>Active risk threshold boundary.</td>
+<td><code>reason</code></td>
+<td><code>str</code></td>
+<td>Structured explanation of the decision (e.g. <code>"policy_allow"</code>, <code>"policy_deny"</code>).</td>
 </tr>
 <tr>
-<td><code>latency_ms</code></td>
-<td><code>float \| None</code></td>
-<td>Evaluated execution runtime duration.</td>
+<td><code>event</code></td>
+<td><code>ActionEvent</code></td>
+<td>The original ActionEvent associated with this verdict.</td>
+</tr>
+<tr>
+<td><code>timestamp</code></td>
+<td><code>float</code></td>
+<td>Epoch execution timestamp.</td>
+</tr>
+<tr>
+<td><code>approval_id</code></td>
+<td><code>str \| None</code></td>
+<td>Associated approval ticket identifier, if applicable.</td>
+</tr>
+<tr>
+<td><code>confidence</code></td>
+<td><code>float</code></td>
+<td>Floating-point representation of the event risk level.</td>
 </tr>
 </tbody>
 </table>

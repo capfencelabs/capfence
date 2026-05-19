@@ -2407,8 +2407,8 @@
 <h2 id="replay">Replay</h2>
 <pre><code class="language-bash">capfence replay trace.jsonl
 </code></pre>
-<p>For simulation and comparison:</p>
-<pre><code class="language-bash">capfence simulate --trace-file trace.jsonl --taxonomy financial --compare
+<p>To replay against a candidate policy:</p>
+<pre><code class="language-bash">capfence replay trace.jsonl --policy policies/candidate.yaml
 </code></pre>
 <h2 id="what-to-look-for">What to look for</h2>
 <p>Replay answers questions such as:</p>

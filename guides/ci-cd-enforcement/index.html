@@ -1348,10 +1348,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#full-risk-assessment-report" class="md-nav__link">
+  <a href="#machine-readable-scan-report" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Full risk assessment report
+        Machine-readable scan report
       
     </span>
   </a>
@@ -2413,10 +2413,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#full-risk-assessment-report" class="md-nav__link">
+  <a href="#machine-readable-scan-report" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Full risk assessment report
+        Machine-readable scan report
       
     </span>
   </a>
@@ -2535,15 +2535,11 @@ capfence check ./src --framework crewai
 # Check only OpenAI Agents SDK tools
 capfence check ./src --framework openai_agents
 </code></pre>
-<h2 id="full-risk-assessment-report">Full risk assessment report</h2>
-<p>For a richer report with compliance mapping and remediation guidance:</p>
-<pre><code class="language-bash">capfence assess ./src -o report.html
+<h2 id="machine-readable-scan-report">Machine-readable scan report</h2>
+<p>For CI systems that need structured output:</p>
+<pre><code class="language-bash">capfence check ./src --report-json
 </code></pre>
-<p>The assessment report includes:
-- Executive summary
-- Risk breakdown by tool and framework
-- Compliance framework mapping (OWASP, EU AI Act)
-- Remediation checklist</p>
+<p>The JSON output includes discovered tools, framework, category, risk delta, source location, and gated status.</p>
 <h2 id="pre-commit-hook">Pre-commit hook</h2>
 <p>Add a pre-commit check so developers catch issues before pushing:</p>
 <pre><code class="language-yaml"># .pre-commit-config.yaml

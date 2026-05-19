@@ -2121,10 +2121,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#capfence-assess" class="md-nav__link">
+  <a href="#capfence-check-policy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        capfence assess
+        capfence check-policy
       
     </span>
   </a>
@@ -2169,17 +2169,6 @@
     <span class="md-ellipsis">
       
         capfence replay
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#capfence-simulate" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        capfence simulate
       
     </span>
   </a>
@@ -2446,10 +2435,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#capfence-assess" class="md-nav__link">
+  <a href="#capfence-check-policy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        capfence assess
+        capfence check-policy
       
     </span>
   </a>
@@ -2494,17 +2483,6 @@
     <span class="md-ellipsis">
       
         capfence replay
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#capfence-simulate" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        capfence simulate
       
     </span>
   </a>
@@ -2622,10 +2600,6 @@ capfence --version
 <td>Filter by framework, such as <code>langchain</code>, <code>crewai</code>, or <code>autogen</code>.</td>
 </tr>
 <tr>
-<td><code>-o, --output PATH</code></td>
-<td>Write an HTML report.</td>
-</tr>
-<tr>
 <td><code>--fail-on-ungated</code></td>
 <td>Exit non-zero if high-risk ungated tools are found.</td>
 </tr>
@@ -2642,40 +2616,13 @@ capfence --version
 <p>Examples:</p>
 <pre><code class="language-bash">capfence check ./src
 capfence check ./src --fail-on-ungated
-capfence check ./src --framework langchain --output report.html
+capfence check ./src --framework langchain --report-json
 </code></pre>
 <hr />
-<h2 id="capfence-assess"><code>capfence assess</code></h2>
-<p>Generate a detailed HTML assessment report with taxonomy enrichment.</p>
-<pre><code class="language-bash">capfence assess [OPTIONS] PATH
+<h2 id="capfence-check-policy"><code>capfence check-policy</code></h2>
+<p>Validate a CapFence YAML policy file.</p>
+<pre><code class="language-bash">capfence check-policy POLICY_FILE
 </code></pre>
-<p>Options:</p>
-<table>
-<thead>
-<tr>
-<th>Flag</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>PATH</code></td>
-<td>Directory or file to assess.</td>
-</tr>
-<tr>
-<td><code>-o, --output PATH</code></td>
-<td>Write the HTML report to a specific path.</td>
-</tr>
-<tr>
-<td><code>-t, --taxonomy TEXT</code></td>
-<td>Taxonomy to use, such as <code>general</code>, <code>financial</code>, <code>legal</code>, or a taxonomy file path.</td>
-</tr>
-<tr>
-<td><code>-c, --compliance</code></td>
-<td>Include compliance mappings in the report.</td>
-</tr>
-</tbody>
-</table>
 <hr />
 <h2 id="capfence-verify"><code>capfence verify</code></h2>
 <p>Verify the integrity of a hash-chained audit log.</p>
@@ -2779,12 +2726,7 @@ capfence logs --agent finance-agent --json
 <h2 id="capfence-replay"><code>capfence replay</code></h2>
 <p>Replay a JSONL trace file for deterministic output.</p>
 <pre><code class="language-bash">capfence replay trace.jsonl
-</code></pre>
-<p>Use <code>simulate</code> when you need taxonomy selection, comparison, or JSON output.</p>
-<hr />
-<h2 id="capfence-simulate"><code>capfence simulate</code></h2>
-<p>Replay agent execution traces through the CapFence simulator.</p>
-<pre><code class="language-bash">capfence simulate --trace-file trace.jsonl --taxonomy financial --compare
+capfence replay trace.jsonl --policy policies/candidate.yaml
 </code></pre>
 <p>Options:</p>
 <table>
@@ -2796,24 +2738,12 @@ capfence logs --agent finance-agent --json
 </thead>
 <tbody>
 <tr>
-<td><code>-t, --trace-file PATH</code></td>
-<td>JSONL trace file to replay. Required.</td>
+<td><code>TRACE_FILE</code></td>
+<td>JSON or JSONL replay trace.</td>
 </tr>
 <tr>
-<td><code>--taxonomy TEXT</code></td>
-<td>Primary taxonomy to use. Defaults to <code>general</code>.</td>
-</tr>
-<tr>
-<td><code>-p, --taxonomy-pack TEXT</code></td>
-<td>Additional taxonomy pack. Can be used multiple times.</td>
-</tr>
-<tr>
-<td><code>--compare</code></td>
-<td>Show static and adaptive decisions side by side.</td>
-</tr>
-<tr>
-<td><code>-o, --output PATH</code></td>
-<td>Write simulation output as JSON.</td>
+<td><code>-p, --policy PATH</code></td>
+<td>Candidate policy file to use during replay.</td>
 </tr>
 </tbody>
 </table>

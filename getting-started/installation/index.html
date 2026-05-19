@@ -2419,7 +2419,7 @@
 
 
 <h1 id="installation">Installation</h1>
-<p>CapFence requires Python 3.9 or later.</p>
+<p>CapFence requires Python 3.10 or later.</p>
 <h2 id="install-from-pypi">Install from PyPI</h2>
 <pre><code class="language-bash">pip install capfence
 </code></pre>
@@ -2430,11 +2430,6 @@ pip install &quot;capfence[langchain]&quot;
 # CrewAI support
 pip install &quot;capfence[crewai]&quot;
 
-# OpenAI Agents SDK support
-pip install &quot;capfence[openai-agents]&quot;
-
-# All integrations
-pip install &quot;capfence[all]&quot;
 </code></pre>
 <h2 id="verify-the-installation">Verify the installation</h2>
 <pre><code class="language-bash">capfence --version
@@ -2450,14 +2445,14 @@ pip install &quot;capfence[all]&quot;
 <tbody>
 <tr>
 <td><code>capfence</code> CLI</td>
-<td>Scan, assess, audit, replay, approve</td>
+<td>Scan, audit, replay, approve</td>
 </tr>
 <tr>
-<td><code>capfence.core.gate</code></td>
-<td>Runtime gate for direct API use</td>
+<td><code>capfence.ActionRuntime</code></td>
+<td>Runtime authorization for direct API use</td>
 </tr>
 <tr>
-<td><code>capfence.adapters.*</code></td>
+<td><code>capfence.framework.*</code></td>
 <td>Framework-specific wrappers</td>
 </tr>
 <tr>
@@ -2466,7 +2461,7 @@ pip install &quot;capfence[all]&quot;
 </tr>
 <tr>
 <td>Local SQLite audit database</td>
-<td>Created on first run in <code>./audit.db</code></td>
+<td>Created when a runtime or CLI command writes audit events</td>
 </tr>
 </tbody>
 </table>
