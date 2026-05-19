@@ -1,0 +1,31 @@
+name: Pip-Compile
+
+on:
+  pull_request:
+    paths:
+      - "requirements.in"
+  push:
+    branches: [main, master]
+    paths:
+      - "requirements.in"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pip-tools
+        run: python -m pip install --upgrade pip pip-tools
+      - name: Compile requirements.txt
+        run: |
+          pip-compile --generate-hashes --output-file=requirements.txt requirements.in
+      - name: Check for changes
+        run: git diff --exit-code
