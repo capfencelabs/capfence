@@ -18,10 +18,10 @@ Create a JSONL trace of tool calls:
 capfence replay trace.jsonl
 ```
 
-For simulation and comparison:
+To replay against a candidate policy:
 
 ```bash
-capfence simulate --trace-file trace.jsonl --taxonomy financial --compare
+capfence replay trace.jsonl --policy policies/candidate.yaml
 ```
 
 ## What to look for

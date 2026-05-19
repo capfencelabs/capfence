@@ -1,6 +1,6 @@
 # Installation
 
-CapFence requires Python 3.9 or later.
+CapFence requires Python 3.10 or later.
 
 ## Install from PyPI
 
@@ -17,11 +17,6 @@ pip install "capfence[langchain]"
 # CrewAI support
 pip install "capfence[crewai]"
 
-# OpenAI Agents SDK support
-pip install "capfence[openai-agents]"
-
-# All integrations
-pip install "capfence[all]"
 ```
 
 ## Verify the installation
@@ -34,11 +29,11 @@ capfence --version
 
 | Component | Purpose |
 |---|---|
-| `capfence` CLI | Scan, assess, audit, replay, approve |
-| `capfence.core.gate` | Runtime gate for direct API use |
-| `capfence.adapters.*` | Framework-specific wrappers |
+| `capfence` CLI | Scan, audit, replay, approve |
+| `capfence.ActionRuntime` | Runtime authorization for direct API use |
+| `capfence.framework.*` | Framework-specific wrappers |
 | `capfence.mcp.gateway` | MCP governance gateway |
-| Local SQLite audit database | Created on first run in `./audit.db` |
+| Local SQLite audit database | Created when a runtime or CLI command writes audit events |
 
 ## Next steps
 

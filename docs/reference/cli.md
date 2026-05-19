@@ -119,29 +119,15 @@ Replay a JSONL trace file for deterministic output.
 
 ```bash
 capfence replay trace.jsonl
-```
-
-Use `simulate` when you need taxonomy selection, comparison, or JSON output.
-
----
-
-## `capfence simulate`
-
-Replay agent execution traces through the CapFence simulator.
-
-```bash
-capfence simulate --trace-file trace.jsonl --taxonomy financial --compare
+capfence replay trace.jsonl --policy policies/candidate.yaml
 ```
 
 Options:
 
 | Flag | Description |
 |---|---|
-| `-t, --trace-file PATH` | JSONL trace file to replay. Required. |
-| `--taxonomy TEXT` | Primary taxonomy to use. Defaults to `general`. |
-| `-p, --taxonomy-pack TEXT` | Additional taxonomy pack. Can be used multiple times. |
-| `--compare` | Show static and adaptive decisions side by side. |
-| `-o, --output PATH` | Write simulation output as JSON. |
+| `TRACE_FILE` | JSON or JSONL replay trace. |
+| `-p, --policy PATH` | Candidate policy file to use during replay. |
 
 ---
 

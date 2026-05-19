@@ -79,7 +79,7 @@ Identify patterns:
 Before pushing policy updates to production, export your traffic and dry-run it against your new strict policy:
 
 ```bash
-capfence simulate --trace-file audit.jsonl --policy policies/shell_production.yaml --compare
+capfence replay audit.jsonl --policy policies/shell_production.yaml
 ```
 
 This validates how your updated strict policy would have handled all real traffic from the observe period — before you deploy it.

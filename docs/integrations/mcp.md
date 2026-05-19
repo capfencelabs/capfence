@@ -10,11 +10,9 @@ The gateway intercepts JSON-RPC messages on stdin, extracts `params.arguments` f
 
 ```python
 from capfence.mcp.gateway import MCPGatewayServer
-from capfence.core.gate import Gate
 
 gateway = MCPGatewayServer(
     upstream_command=["python", "-m", "mcp_server_filesystem", "/data"],
-    gate=Gate(),
     policy_path="policies/mcp.yaml",
     agent_id="mcp-agent"
 )
@@ -42,18 +40,18 @@ MCPGatewayServer(
 # policies/mcp.yaml
 
 deny:
-  - capability: filesystem.delete
-  - capability: shell.execute
+  - capability: mcp.tool.execute
+    tool_name: "delete_*"
+  - capability: mcp.tool.execute
+    tool_name: "shell_*"
 
 require_approval:
-  - capability: filesystem.write
+  - capability: mcp.tool.execute
+    tool_name: "write_*"
     path_prefix: "/data/prod"
 
 allow:
-  - capability: filesystem.read
-  - capability: filesystem.list
-  - capability: filesystem.write
-    path_prefix: "/data/staging"
+  - capability: mcp.tool.execute
 ```
 
 ## Blocked call response
@@ -66,7 +64,7 @@ When a call is blocked, the client receives a JSON-RPC error:
   "id": 1,
   "error": {
     "code": -32000,
-    "message": "AgentActionBlocked: capability=filesystem.delete decision=denied reason=destructive_operation"
+    "message": "CapFence blocked this tool call"
   }
 }
 ```

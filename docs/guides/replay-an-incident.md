@@ -49,17 +49,17 @@ If you've updated your policy and want to see how the incident would have been h
 
 ```bash
 # Replay the captured trace
-capfence replay incident.jsonl
+capfence replay incident.jsonl --policy policies/new_policy.yaml
 ```
 
-This replays the captured payloads and prints deterministic replay output.
+This replays the captured payloads against the candidate policy and prints deterministic replay output.
 
 ## Replaying a batch of entries
 
 Replay an entire time window against a policy:
 
 ```bash
-capfence simulate --trace-file daily.jsonl --taxonomy policies/new_policy.yaml --compare
+capfence replay daily.jsonl --policy policies/new_policy.yaml
 ```
 
 This is useful for validating a policy change before deploying it.

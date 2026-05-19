@@ -21,11 +21,9 @@ allow:
 
 ```python
 from capfence.mcp.gateway import MCPGatewayServer
-from capfence.core.gate import Gate
 
 MCPGatewayServer(
     upstream_command=["python", "-m", "mcp_server_filesystem", "/data"],
-    gate=Gate(),
     policy_path="policies/mcp.yaml",
     agent_id="mcp-agent",
 ).run()
