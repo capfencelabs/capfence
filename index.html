@@ -256,21 +256,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#why-it-exists" class="md-nav__link">
+  <a href="#what-is-implemented-today" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Why It Exists
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#core-capabilities" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Core Capabilities
+        What is implemented today
       
     </span>
   </a>
@@ -281,12 +270,12 @@
   <a href="#five-minute-path" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Five-Minute Path
+        Five-minute path
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Five-Minute Path">
+    <nav class="md-nav" aria-label="Five-minute path">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -301,10 +290,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#2-create-a-capability-policy-policiesopsyaml" class="md-nav__link">
+  <a href="#2-create-a-capability-policy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Create a Capability Policy (policies/ops.yaml)
+        2. Create a capability policy
       
     </span>
   </a>
@@ -312,10 +301,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#3-evaluate-and-enforce" class="md-nav__link">
+  <a href="#3-evaluate-before-execution" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Evaluate and Enforce
+        3. Evaluate before execution
       
     </span>
   </a>
@@ -328,10 +317,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#common-workflows" class="md-nav__link">
+  <a href="#core-docs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Common Workflows
+        Core docs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#operational-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Operational patterns
       
     </span>
   </a>
@@ -342,7 +342,7 @@
   <a href="#project-status" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Project Status
+        Project status
       
     </span>
   </a>
@@ -2382,21 +2382,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#why-it-exists" class="md-nav__link">
+  <a href="#what-is-implemented-today" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Why It Exists
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#core-capabilities" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Core Capabilities
+        What is implemented today
       
     </span>
   </a>
@@ -2407,12 +2396,12 @@
   <a href="#five-minute-path" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Five-Minute Path
+        Five-minute path
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Five-Minute Path">
+    <nav class="md-nav" aria-label="Five-minute path">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2427,10 +2416,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#2-create-a-capability-policy-policiesopsyaml" class="md-nav__link">
+  <a href="#2-create-a-capability-policy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Create a Capability Policy (policies/ops.yaml)
+        2. Create a capability policy
       
     </span>
   </a>
@@ -2438,10 +2427,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#3-evaluate-and-enforce" class="md-nav__link">
+  <a href="#3-evaluate-before-execution" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Evaluate and Enforce
+        3. Evaluate before execution
       
     </span>
   </a>
@@ -2454,10 +2443,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#common-workflows" class="md-nav__link">
+  <a href="#core-docs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Common Workflows
+        Core docs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#operational-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Operational patterns
       
     </span>
   </a>
@@ -2468,7 +2468,7 @@
   <a href="#project-status" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Project Status
+        Project status
       
     </span>
   </a>
@@ -2496,69 +2496,46 @@
 <blockquote>
 <p><strong>Execution authorization infrastructure for autonomous systems.</strong></p>
 </blockquote>
-<p align="center">
-  <a href="https://pypi.org/project/capfence/"><img src="https://img.shields.io/pypi/v/capfence?color=blue" alt="PyPI version"></a>
-  <a href="https://pypi.org/project/capfence/"><img src="https://img.shields.io/pypi/pyversions/capfence" alt="Python versions"></a>
-  <a href="https://github.com/capfencelabs/capfence/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License: MIT"></a>
-</p>
-
-<p>CapFence is a deterministic trusted execution runtime for autonomous AI systems. It sits between an agent and its tools, evaluates each attempted tool action against capability policy, and blocks unauthorized operations before execution.</p>
-<pre><code class="language-text">               +----------------------------------+
-               |     Probabilistic Agent / LLM    |
-               +----------------------------------+
-                                |
-                   [Tool Call / Execution Request]
-                                v
-               +----------------------------------+
-               |       CapFence ActionEvent       |
-               | (actor, action, resource, risk)  |
-               +----------------------------------+
-                                |
-                                v
-               +----------------------------------+
-               |     ActionRuntime (Enforce)      |
-               +----------------------------------+
-                  /             |              \
-                 /              |               \
-   [Matches Deny]        [Matches Allow]     [Matches Require Approval]
-       /                        |                        \
-      v                         v                         v
-+-----------+            +--------------+          +--------------+
-|   BLOCK   |            |  AUTHORIZE   |          | Check Signed |
-|           |            |              |          | Grants / DB  |
-|  (Fail-   |            | (Sub-ms low  |          +--------------+
-|  Closed)  |            |   latency)   |             /        \
-+-----------+            +--------------+            v          v
-                                                   [Valid]   [No Grant]
-                                                     /            \
-                                                    v              v
-                                               +---------+    +----------+
-                                               | ALLOW &amp; |    |  BLOCK &amp; |
-                                               |  AUDIT  |    |  QUEUE   |
-                                               +---------+    +----------+
+<p>CapFence is an early runtime authorization layer for autonomous agents and tool-using systems. It sits between an agent runtime and downstream systems, evaluates each attempted action against explicit capability policy, and returns one of three decisions: <code>allow</code>, <code>deny</code>, or <code>require_approval</code>.</p>
+<p>The core thesis is simple:</p>
+<blockquote>
+<p>Prompt instructions are not execution boundaries.</p>
+</blockquote>
+<pre><code class="language-text">Agent runtime
+  |
+  | ActionEvent(actor, resource, action, risk, metadata[payload], environment)
+  v
+CapFence authorization layer
+  |
+  | policy evaluation + approval lookup + audit write
+  v
+Downstream system
+  shell | database | MCP tool | API | payment gateway
 </code></pre>
-<p>CapFence is built for teams shipping autonomous agents that interface with high-risk operations: shell execution, production databases, payment APIs, local filesystems, MCP servers, SaaS admin endpoints, and cloud infrastructure.</p>
+<p>CapFence is not an observability tool, prompt guardrail, eval framework, orchestration framework, tracing platform, or moderation system. It is focused on deterministic execution authorization before a tool or downstream system is invoked.</p>
 <hr />
-<h2 id="why-it-exists">Why It Exists</h2>
-<p>Prompt guardrails and model instructions are not an execution boundary. A prompt can be bypassed, misinterpreted, or manipulated. </p>
-<p>CapFence treats autonomous tool execution like secure infrastructure authorization: <strong>explicit capability policies, deterministic decisions, tamper-evident audit trails, dynamic pre-approvals, and complete fail-closed behavior.</strong></p>
-<hr />
-<h2 id="core-capabilities">Core Capabilities</h2>
+<h2 id="what-is-implemented-today">What is implemented today</h2>
 <ul>
-<li><strong>Deterministic Enforcement</strong>: Policy-as-code evaluations mapped to <code>resource.action.scope</code> wildcards.</li>
-<li><strong>Zero LLM Latency</strong>: Pure-Python capability matching ensures sub-millisecond interlocks without any cloud APIs.</li>
-<li><strong>Pluggable Persistence</strong>: Decoupled storage using <a href="concepts/runtime-authorization/">BaseDBEngine</a>, supporting local SQLite WAL files or high-throughput PostgreSQL pools.</li>
-<li><strong>Pre-Authorizations</strong>: Manage expiring temporary and session-bound capability credentials dynamically.</li>
-<li><strong>Cryptographic Audit Chain</strong>: Logs decisions in a tamper-evident hash chain with Ed25519 asymmetric signatures.</li>
-<li><strong>Trace Replay &amp; Incident Simulation</strong>: Replay historical trace files offline to safely test policy changes and generate compliance evidence.</li>
-<li><strong>Static Scanning &amp; CI Checks</strong>: Scan Python codebases to catch and block ungated tool registrations during CI/CD.</li>
+<li>Capability-based policy evaluation with explicit <code>deny</code>, <code>require_approval</code>, and <code>allow</code> rules.</li>
+<li>Fail-closed default behavior for unmatched capabilities and for policy/runtime failures, with execution blocked either by a non-authorized result or by an error that must be treated as a block.</li>
+<li>Local approval state for scoped, expiring grants.</li>
+<li>Local audit records with hash chaining for tamper-evidence.</li>
+<li>Replay-oriented CLI and examples for re-evaluating historical decisions against policy.</li>
+<li>Lightweight adapters and examples for common agent/tool boundaries, including MCP.</li>
+</ul>
+<p>Some areas are intentionally early:</p>
+<ul>
+<li>Framework adapters are thin wrappers around public tool interfaces.</li>
+<li>Database examples classify coarse request categories; they are not a complete SQL firewall.</li>
+<li>Multi-agent lineage examples use caller metadata and policy context; they are experimental patterns, not a mature distributed identity system.</li>
+<li>Audit hash chaining detects changes to the recorded log; it does not replace external key management, centralized SIEM, or full forensic controls.</li>
 </ul>
 <hr />
-<h2 id="five-minute-path">Five-Minute Path</h2>
+<h2 id="five-minute-path">Five-minute path</h2>
 <h3 id="1-install">1. Install</h3>
 <pre><code class="language-bash">pip install capfence
 </code></pre>
-<h3 id="2-create-a-capability-policy-policiesopsyaml">2. Create a Capability Policy (<code>policies/ops.yaml</code>)</h3>
+<h3 id="2-create-a-capability-policy">2. Create a capability policy</h3>
 <pre><code class="language-yaml">deny:
   - capability: filesystem.delete.workspace
     contains: &quot;rm -rf&quot;
@@ -2572,56 +2549,55 @@ allow:
   - capability: payment.execute.high_value
     amount_lte: 1000
 </code></pre>
-<h3 id="3-evaluate-and-enforce">3. Evaluate and Enforce</h3>
-<pre><code class="language-python">from capfence import ActionEvent, ActionRuntime, CapabilitySystem, ApprovalEngine, ImmutableAuditTrail
+<h3 id="3-evaluate-before-execution">3. Evaluate before execution</h3>
+<pre><code class="language-python">from capfence import ActionEvent, ActionRuntime
 
-# 1. Initialize low-latency runtime components
-caps = CapabilitySystem()
-caps.load_policy(&quot;policies/ops.yaml&quot;)
+runtime = ActionRuntime.from_policy(&quot;policies/ops.yaml&quot;)
 
-runtime = ActionRuntime(
-    capability_system=caps,
-    approval_engine=ApprovalEngine(),
-    audit_trail=ImmutableAuditTrail(),
-)
-
-# 2. Formulate the governed event
 event = ActionEvent.create(
     actor=&quot;hotfix-agent&quot;,
     action=&quot;delete&quot;,
-    resource=&quot;filesystem.workspace&quot;,
+    resource=&quot;filesystem&quot;,
     environment=&quot;production&quot;,
     risk=&quot;high&quot;,
-    command=&quot;rm -rf /var/lib/postgresql&quot;
+    scope=&quot;workspace&quot;,
+    payload={&quot;command&quot;: &quot;rm -rf /var/lib/postgresql&quot;},
 )
 
-# 3. Deterministic enforcement
 verdict = runtime.execute(event)
 
 if not verdict.authorized:
     raise PermissionError(f&quot;Action blocked by CapFence: {verdict.reason}&quot;)
 </code></pre>
 <hr />
-<h2 id="common-workflows">Common Workflows</h2>
+<h2 id="core-docs">Core docs</h2>
 <ul>
-<li>Start with <a href="getting-started/installation/">Installation</a>.</li>
-<li>Run the <a href="getting-started/quickstart/">Quickstart</a>.</li>
-<li>Write <a href="getting-started/first-policy/">your first policy</a>.</li>
-<li>See <a href="getting-started/first-blocked-action/">your first blocked action</a>.</li>
-<li>Use <a href="recipes/">recipes</a> for copy-paste policy patterns.</li>
-<li>Roll out safely with <a href="guides/observe-mode-rollout/">observe mode</a>.</li>
-<li>Protect <a href="guides/protect-shell-tools/">shell tools</a>, <a href="guides/protect-payment-agents/">payment agents</a>, and <a href="guides/secure-mcp-servers/">MCP servers</a>.</li>
-<li>Use <a href="guides/ci-cd-enforcement/">CI/CD enforcement</a> to catch ungated tools.</li>
-<li>Replay an incident with <a href="guides/replay-an-incident/">trace replay</a>.</li>
-<li>Check the <a href="integrations/compatibility/">compatibility matrix</a> before wiring adapters.</li>
-<li>Run the <a href="examples/demo-walkthrough/">demo walkthrough</a>.</li>
+<li><a href="concepts/runtime-authorization/">Runtime authorization</a></li>
+<li><a href="concepts/policy-model/">Policy model</a></li>
+<li><a href="concepts/fail-closed-enforcement/">Fail-closed enforcement</a></li>
+<li><a href="concepts/replayability/">Replayability</a></li>
+<li><a href="concepts/audit-chain/">Audit chain</a></li>
+<li><a href="architecture/policy-evaluation-model/">Policy evaluation model</a></li>
+<li><a href="architecture/approval-lifecycle/">Approval lifecycle</a></li>
+<li><a href="architecture/replay-engine-model/">Replay engine model</a></li>
+<li><a href="architecture/mcp-interception-model/">MCP interception model</a></li>
+<li><a href="architecture/failure-behavior/">Failure behavior</a></li>
 </ul>
-<hr />
-<h2 id="project-status">Project Status</h2>
-<p>CapFence is open infrastructure for trusted autonomous execution.
-- Docs: https://capfence.dev/
-- PyPI: https://pypi.org/project/capfence/
-- Repository: https://github.com/capfencelabs/capfence</p>
+<h2 id="operational-patterns">Operational patterns</h2>
+<ul>
+<li><a href="guides/protect-shell-tools/">Protect shell tools</a></li>
+<li><a href="guides/protect-payment-agents/">Protect payment agents</a></li>
+<li><a href="guides/secure-mcp-servers/">Secure MCP servers</a></li>
+<li><a href="guides/replay-an-incident/">Replay an incident</a></li>
+<li><a href="guides/observe-mode-rollout/">Observe-mode rollout</a></li>
+</ul>
+<h2 id="project-status">Project status</h2>
+<p>CapFence is early OSS infrastructure. Review the implementation, policy model, and examples before using it in high-risk execution paths.</p>
+<ul>
+<li>Docs: https://capfence.dev/</li>
+<li>PyPI: https://pypi.org/project/capfence/</li>
+<li>Repository: https://github.com/capfencelabs/capfence</li>
+</ul>
 
 
 

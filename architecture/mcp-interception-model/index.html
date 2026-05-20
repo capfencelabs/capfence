@@ -11,10 +11,6 @@
       
       
       
-        <link rel="prev" href="../audit-chain/">
-      
-      
-        <link rel="next" href="../policy-model/">
       
       
         
@@ -25,7 +21,7 @@
     
     
       
-        <title>Fail-closed enforcement - CapFence Docs</title>
+        <title>MCP Interception Model - CapFence Docs</title>
       
     
     
@@ -66,7 +62,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#fail-closed-enforcement" class="md-skip">
+        <a href="#mcp-interception-model" class="md-skip">
           Skip to content
         </a>
       
@@ -102,7 +98,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Fail-closed enforcement
+              MCP Interception Model
             
           </span>
         </div>
@@ -438,7 +434,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../architecture/audit-chain-design/" class="md-nav__link">
+      <a href="../audit-chain-design/" class="md-nav__link">
         
   
   
@@ -466,7 +462,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../architecture/enforcement-flow/" class="md-nav__link">
+      <a href="../enforcement-flow/" class="md-nav__link">
         
   
   
@@ -494,7 +490,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../architecture/internal-components/" class="md-nav__link">
+      <a href="../internal-components/" class="md-nav__link">
         
   
   
@@ -522,7 +518,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../architecture/threat-model/" class="md-nav__link">
+      <a href="../threat-model/" class="md-nav__link">
         
   
   
@@ -554,20 +550,18 @@
       
   
   
-    
   
   
-  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
         
           
           <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
@@ -588,7 +582,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
@@ -606,7 +600,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../audit-chain/" class="md-nav__link">
+      <a href="../../concepts/audit-chain/" class="md-nav__link">
         
   
   
@@ -631,37 +625,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Fail-closed enforcement
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../concepts/fail-closed-enforcement/" class="md-nav__link">
         
   
   
@@ -677,92 +644,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#the-default-position" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The default position
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#why-fail-closed-matters-for-agents" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Why fail-closed matters for agents
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#what-triggers-a-fail-closed-block" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        What triggers a fail-closed block
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#fail-closed-in-practice" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Fail-closed in practice
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#configuring-strict-mode" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Configuring strict mode
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#related-concepts" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Related concepts
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -775,7 +656,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../policy-model/" class="md-nav__link">
+      <a href="../../concepts/policy-model/" class="md-nav__link">
         
   
   
@@ -803,7 +684,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../replayability/" class="md-nav__link">
+      <a href="../../concepts/replayability/" class="md-nav__link">
         
   
   
@@ -831,7 +712,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../runtime-authorization/" class="md-nav__link">
+      <a href="../../concepts/runtime-authorization/" class="md-nav__link">
         
   
   
@@ -859,7 +740,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../trust-propagation/" class="md-nav__link">
+      <a href="../../concepts/trust-propagation/" class="md-nav__link">
         
   
   
@@ -2358,10 +2239,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#the-default-position" class="md-nav__link">
+  <a href="#flow" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The default position
+        Flow
       
     </span>
   </a>
@@ -2369,10 +2250,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#why-fail-closed-matters-for-agents" class="md-nav__link">
+  <a href="#request-mapping" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Why fail-closed matters for agents
+        Request mapping
       
     </span>
   </a>
@@ -2380,43 +2261,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#what-triggers-a-fail-closed-block" class="md-nav__link">
+  <a href="#boundaries" class="md-nav__link">
     <span class="md-ellipsis">
       
-        What triggers a fail-closed block
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#fail-closed-in-practice" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Fail-closed in practice
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#configuring-strict-mode" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Configuring strict mode
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#related-concepts" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Related concepts
+        Boundaries
       
     </span>
   </a>
@@ -2440,56 +2288,31 @@
 
 
 
-<h1 id="fail-closed-enforcement">Fail-Closed Enforcement</h1>
-<p>Fail-closed means that when CapFence cannot reach a decision — due to a policy error, missing configuration, or internal fault — it blocks the action rather than allowing it through.</p>
-<h2 id="the-default-position">The default position</h2>
-<p>In a fail-open system, uncertainty means "allow." In a fail-closed system, uncertainty means "deny."</p>
-<p>CapFence is fail-closed by default. If the runtime raises an unhandled exception, the framework adapter catches it and blocks the tool call. The agent receives an error. The tool never runs.</p>
-<pre><code>policy error → runtime exception → AgentActionBlocked raised → tool not invoked
+<h1 id="mcp-interception-model">MCP Interception Model</h1>
+<p>CapFence can sit in front of an MCP server as an authorization proxy. The proxy receives MCP tool calls, maps them to capability context, evaluates policy, and only forwards allowed requests.</p>
+<h2 id="flow">Flow</h2>
+<pre><code class="language-text">MCP client
+  -&gt; tools/call JSON-RPC request
+  -&gt; CapFence MCP gateway
+  -&gt; policy evaluation
+  -&gt; upstream MCP server only if allowed
 </code></pre>
-<h2 id="why-fail-closed-matters-for-agents">Why fail-closed matters for agents</h2>
-<p>AI agents can make hundreds of tool calls across a session. A single gap in enforcement — one call that slips through while the runtime is misconfigured — can have real consequences: a deleted file, a transferred payment, a leaked secret.</p>
-<p>Fail-closed behavior makes gaps in policy visible as errors rather than silent passes.</p>
-<h2 id="what-triggers-a-fail-closed-block">What triggers a fail-closed block</h2>
+<h2 id="request-mapping">Request mapping</h2>
+<p>An MCP request becomes an <code>ActionEvent</code> using fields such as:</p>
 <ul>
-<li>Policy file is missing or malformed</li>
-<li>Policy rule references an unknown condition field</li>
-<li>Runtime raises an internal error during evaluation</li>
-<li>Audit log write fails (depending on configuration)</li>
+<li>tool name</li>
+<li>method</li>
+<li>arguments</li>
+<li>workspace path</li>
+<li>actor or client identity when available</li>
+<li>environment or policy context</li>
 </ul>
-<h2 id="fail-closed-in-practice">Fail-closed in practice</h2>
-<pre><code class="language-python">from capfence import ActionRuntime, ActionEvent
-
-# 1. Loading a missing policy file fails closed automatically
-runtime = ActionRuntime.from_policy(&quot;policies/missing_file.yaml&quot;)
-
-event = ActionEvent.create(
-    actor=&quot;agent-1&quot;,
-    action=&quot;execute&quot;,
-    resource=&quot;shell&quot;,
-    environment=&quot;production&quot;,
-    payload={&quot;command&quot;: &quot;echo hello&quot;}
-)
-
-# 2. Evaluation returns a default deny verdict
-verdict = runtime.execute(event)
-# verdict.authorized == False
-# verdict.decision == &quot;default_deny&quot;
+<pre><code class="language-yaml">allow:
+  - capability: mcp.filesystem.read
+    path_prefix: &quot;/workspace/docs&quot;
 </code></pre>
-<p>The tool is blocked. The error is logged. The agent is informed.</p>
-<h2 id="configuring-strict-mode">Configuring strict mode</h2>
-<p>By default, CapFence blocks unmatched capabilities (no rule matches → deny). This is the strictest posture. You can explicitly add an allow-all fallback if needed, but this is not recommended for production:</p>
-<pre><code class="language-yaml"># Not recommended in production
-allow:
-  - capability: &quot;*&quot;
-</code></pre>
-<p>The correct approach is to enumerate capabilities your agent uses and write explicit rules for each one.</p>
-<h2 id="related-concepts">Related concepts</h2>
-<ul>
-<li><a href="../runtime-authorization/">Runtime authorization</a></li>
-<li><a href="../policy-model/">Policy model</a></li>
-<li><a href="../../architecture/threat-model/">Threat model</a></li>
-</ul>
+<h2 id="boundaries">Boundaries</h2>
+<p>The gateway can block tool calls before the upstream MCP server receives them. It does not make an unsafe MCP server safe by itself. The upstream server should still run with least privilege, constrained filesystem access, and normal host-level controls.</p>
 
 
 
