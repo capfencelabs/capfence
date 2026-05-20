@@ -1,43 +1,56 @@
 # Replay Engine Model
 
-Replay re-evaluates recorded execution decisions against policy. It is useful for incident review, policy simulation, and before/after comparisons.
+The replay engine re-evaluates recorded execution requests against a selected policy.
 
-## What replay does
-
-Replay loads recorded action context and runs policy evaluation again:
+It is built for incident review and policy change validation. It is not model simulation.
 
 ```text
-recorded ActionEvent + selected policy -> new verdict
+recorded ActionEvent + policy file -> replay verdict + decision diff
 ```
 
-This helps answer operational questions:
+## Lifecycle
 
-- Would a proposed policy have blocked this action?
-- Which historical requests change from `allow` to `deny`?
-- Why did a request require approval?
-- Did a policy update broaden access unexpectedly?
+1. An agent requests a tool call.
+2. CapFence records the structured execution input and decision.
+3. An operator selects the original policy or a candidate policy.
+4. Replay evaluates the recorded request against that policy.
+5. The report shows whether the decision changed.
 
 ## Before and after example
 
 ```text
 Recorded request:
+  actor: finance-agent
   capability: payments.transfer.production
-  payload: {"amount": 5000}
+  payload: {"amount": 5000, "destination": "unknown"}
 
 Policy v1:
   amount_gt: 1000 -> require_approval
 
 Policy v2:
-  amount_gt: 2500 -> deny
+  unknown_destination -> deny
 
 Replay result:
-  decision changed from require_approval to deny
+  REQUIRE_APPROVAL -> DENY
 ```
+
+## Useful outputs
+
+| Output | Use |
+|---|---|
+| Decision diff | See which historical calls change behavior. |
+| Matched rule | Explain why a decision happened. |
+| Payload hash | Tie replay output back to audit evidence. |
+| Policy hash | Prove which policy was evaluated. |
 
 ## Determinism
 
-Given the same recorded event and same policy, evaluation should produce the same decision. Replay does not re-run the model or reconstruct hidden chain-of-thought. It re-runs policy against recorded execution context.
+Given the same recorded event and the same policy, evaluation should produce the same decision.
+
+Replay does not reconstruct hidden model reasoning. It re-runs policy against recorded execution context.
 
 ## Limits
 
-Replay quality depends on what was recorded. If raw payload storage is disabled or an adapter omits important fields, replay cannot recover that missing context.
+Replay cannot recover fields the adapter failed to record.
+
+Replay also cannot prove that the downstream system executed correctly after an allow decision. It proves the authorization decision for the request CapFence saw.

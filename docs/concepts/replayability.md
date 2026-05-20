@@ -1,65 +1,68 @@
 # Replayability
 
-CapFence can re-evaluate any past enforcement decision against the current policy. This lets you understand why a decision was made, test policy changes against real historical traffic, and reproduce incidents deterministically.
+Replay is how CapFence turns historical agent execution into testable policy evidence.
 
-## How replay works
+CapFence does not rerun the agent. It reruns deterministic policy evaluation over recorded execution input.
 
-Every audit log entry captures the full context of a gate evaluation:
+```text
+recorded request + selected policy -> replay decision
+```
 
-- The agent ID
-- The capability
-- The payload (via hash and optional raw storage)
-- The policy that was in effect
-- The decision and reason
+## What is recorded
 
-The replay engine loads this context and runs it through the gate again, producing a new decision trace.
+Every useful replay record should preserve:
 
-## CLI replay
+- Actor
+- Capability
+- Environment
+- Payload hash
+- Optional raw payload
+- Policy identity
+- Matched rule
+- Decision and reason
+- Timestamp
+
+## What replay answers
+
+| Operator question | Replay answer |
+|---|---|
+| Why did this call run? | Shows the matched policy rule and decision trace. |
+| Would a stricter policy have blocked it? | Re-evaluates the same request against the candidate policy. |
+| Which recent requests would change decision? | Produces a before/after diff across historical traffic. |
+| Did a policy update broaden access? | Flags requests that move from `deny` to `allow`. |
+
+## Example
+
+```text
+Recorded request:
+  actor: analytics-agent
+  capability: database.query.production
+  payload: DELETE FROM customers
+
+Original policy:
+  database.write.production -> require_approval
+
+Candidate policy:
+  contains DELETE FROM -> deny
+
+Replay result:
+  REQUIRE_APPROVAL -> DENY
+```
+
+## CLI
 
 ```bash
-# View a specific audit entry or payload hash
-capfence trace <entry_hash>
-
-# Replay from an exported trace file
-capfence replay trace.jsonl
-```
-
-## What replay is useful for
-
-**Incident investigation**: Something unexpected happened — an agent made a call that should have been blocked, or was blocked unexpectedly. Replay shows you exactly what the gate saw and why it decided what it did.
-
-**Policy change validation**: Before deploying a new policy, replay recent audit log entries against it. See what would have been allowed or denied differently without running live traffic.
-
-**Compliance reporting**: Auditors need to know what controls were in place at a given point in time and that they functioned correctly. Replay provides deterministic proof.
-
-## Trace output format
-
-```
-Trace ID:     a1b2c3d4
-Timestamp:    2024-01-15 10:23:01 UTC
-Agent ID:     finance-agent-prod
-Capability:   payments.transfer
-Payload hash: sha256:e3b0c4...
-
-Risk evaluation:
-  Score: 82 / 100
-  Keywords matched: ["transfer", "production_account"]
-  Threshold: 70
-
-Policy rules evaluated:
-  Rule 1 (deny, amount_gt=50000): not matched
-  Rule 2 (require_approval, amount_gt=1000): MATCHED
-
-Decision: require_approval
-Reason:   threshold_exceeded
+capfence replay audit.jsonl --policy policies/production.yaml
 ```
 
 ## Determinism property
 
-Given the same payload and the same policy, the gate always produces the same decision. This is the property that makes replay useful: you are not re-running a probabilistic model, you are re-running a deterministic function.
+Given the same recorded request and the same policy, CapFence should produce the same decision.
 
-## Related concepts
+That is the useful security property: replay is not another model judgment. It is the same authorization function run over preserved execution input.
 
-- [Audit chain](audit-chain.md)
-- [Replay an incident guide](../guides/replay-an-incident.md)
-- [FlowTracer API reference](../reference/flowtracer-api.md)
+## Limits
+
+Replay quality depends on capture quality. If the adapter omits important fields or raw payload storage is disabled, replay cannot recover missing context.
+
+Replay also does not prove the downstream system behaved correctly. It proves what CapFence would decide for a recorded request and policy.

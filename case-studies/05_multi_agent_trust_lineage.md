@@ -1,149 +1,60 @@
 # Operational Pattern 05: Experimental Agent Handoff Checks
 
-## 1. Executive Summary
+Multi-agent systems can pass untrusted context into privileged execution. CapFence can evaluate adapter-provided handoff metadata before allowing a privileged tool call.
 
-### The Challenge
-Some agent systems use multi-agent collaboration graphs. A public-facing routing agent may receive raw inputs and pass work to a more privileged internal action agent. This introduces propagation risks:
-1. **Secondary Prompt Injection**: An attacker injects the public agent, which does not execute the injection itself but propagates the malicious payload to a privileged backend agent which executes it.
-2. **Context Poisoning**: A low-trust agent reads untrusted web data and passes corrupted context to an executive agent, triggering unauthorized tool calls.
-3. **Identity Spoofing**: A compromised node attempts to invoke backend capabilities by pretending to act on behalf of a highly privileged internal system.
+## Threat
 
-### The CapFence Pattern
-This reference implementation passes adapter-provided handoff metadata into CapFence policy evaluation. The privileged tool authorizes more than the immediate caller by checking whether the request came through a trusted or untrusted path.
+A recursive workflow escalates from low-risk planning into privileged billing execution.
 
-This is experimental. It is not a complete distributed identity, provenance, or trust-lineage system. Treat it as a pattern for carrying execution context into policy.
+```text
+billing.adjust_credit actor=worker-agent source=unverified_planner
+```
 
----
+## Request
 
-## 2. Declarative Policy (`policies/multi_agent_policy.yaml`)
+```text
+actor: worker-agent
+capability: billing.adjust_credit.production
+payload: {"customer_id": "cus_123", "amount": 500}
+metadata: {"upstream_node": "public-planner", "verified_handoff": false}
+```
+
+## Policy
 
 ```yaml
-# policies/multi_agent_policy.yaml
-policy_name: Multi-Agent Trust Propagation Policy
-version: 1.0.0
-
 deny:
-  # Block privileged billing actions if initiated by low-trust public nodes
-  - capability: billing.charge
-    user_role: unverified_public
-  - capability: system.restart
-    environment: staging
+  - capability: billing.adjust_credit.production
+    verified_handoff: false
 
 require_approval:
-  # Force approvals if a high-risk operation has mixed-trust lineage
-  - capability: database.write
-    user_role: mixed_trust
+  - capability: billing.adjust_credit.production
 
 allow:
-  # Permits full access only if the lineage is 100% verified internal agents
-  - capability: database.read
-  - capability: billing.charge
-    user_role: internal_operator
+  - capability: billing.read
 ```
 
----
+## Decision
 
-## 3. Reference Implementation
-
-Below is a self-contained Python program demonstrating metadata-based handoff checks and capability authorization based on caller context.
-
-```python
-import os
-from capfence import ActionRuntime, ActionEvent
-
-class BillingSystem:
-    """Mock billing gateway charging customer credit cards."""
-    def charge_card(self, amount: float) -> str:
-        print(f"💳 [BILLING] Successfully charged credit card for ${amount:.2f}.")
-        return "charge_success"
-
-def execute_multi_agent_flow(
-    nodes_traversed: list[str],
-    payload: dict,
-    runtime: ActionRuntime,
-    billing: BillingSystem
-) -> None:
-    """Simulates a multi-agent task runner evaluating execution lineage."""
-    print(f"\nEvaluating execution transit chain: {' -> '.join(nodes_traversed)}")
-    
-    # 1. Evaluate trust level based on nodes traversed in lineage
-    if "untrusted_public_agent" in nodes_traversed:
-        user_role = "unverified_public"
-    elif "marketing_analytics_agent" in nodes_traversed:
-        user_role = "mixed_trust"
-    else:
-        user_role = "internal_operator"
-        
-    # 2. Build our governed action event, encapsulating lineage context
-    event = ActionEvent.create(
-        actor=nodes_traversed[-1],  # The immediate calling agent
-        action="charge",
-        resource="billing",
-        environment="production",
-        risk="high",
-        payload=payload,
-        metadata={"user_role": user_role, "lineage": nodes_traversed}
-    )
-    
-    # 3. Authorize via CapFence ActionRuntime
-    verdict = runtime.execute(event)
-    print(f"Verdict: Authorized={verdict.authorized} | Decision={verdict.decision} | AssignedRole={user_role}")
-    
-    if verdict.authorized:
-        billing.charge_card(payload["amount"])
-    else:
-        print(f"🛡️ [SECURITY REJECTION] Denied billing charge of ${payload['amount']}! Reason: Lineage trust violation.")
-
-def run_multi_agent_demo():
-    policy_path = "policies/multi_agent_policy.yaml"
-    
-    # Write our multi-agent trust policy
-    os.makedirs("policies", exist_ok=True)
-    with open(policy_path, "w") as f:
-        f.write("""
-deny:
-  - capability: billing.charge
-    user_role: "unverified_public"
-allow:
-  - capability: billing.charge
-    user_role: "internal_operator"
-""")
-
-    runtime = ActionRuntime.from_policy(policy_path)
-    billing = BillingSystem()
-    print("🚀 Multi-Agent Trust Guard initialized successfully.")
-
-    # ----------------------------------------------------
-    # Scenario 1: Trusted Internal Flow (Internal Agent -> Billing)
-    # ----------------------------------------------------
-    print("\n--- Scenario 1: Trusted Internal Execution Lineage ---")
-    execute_multi_agent_flow(
-        nodes_traversed=["sales_agent", "order_processing_agent"],
-        payload={"amount": 49.99},
-        runtime=runtime,
-        billing=billing
-    )
-
-    # ----------------------------------------------------
-    # Scenario 2: High-Risk Hijacked Flow (Public Agent -> Internal Agent -> Billing)
-    # ----------------------------------------------------
-    print("\n--- Scenario 2: Hijacked/Untrusted Egress Lineage Blocked ---")
-    execute_multi_agent_flow(
-        nodes_traversed=["untrusted_public_agent", "order_processing_agent"],
-        payload={"amount": 999.99},
-        runtime=runtime,
-        billing=billing
-    )
-
-if __name__ == "__main__":
-    run_multi_agent_demo()
+```text
+decision: DENY
+reason: unverified_agent_handoff
+tool_invoked: false
 ```
 
----
+The privileged billing tool does not run for unverified handoff paths.
 
-## 4. Operational Notes
+## Replay
 
-1. **Context as policy input**: The adapter supplies handoff metadata instead of asking the model to describe its authority.
-2. **Deterministic mapping**: The wrapper maps known execution paths to policy fields such as `user_role`.
-3. **Audit support**: The metadata can be recorded with the decision for later replay.
-4. **Limit**: This pattern depends on the integrity of the orchestrator and adapter metadata. It does not prove global provenance across untrusted systems.
+```bash
+capfence replay handoff.jsonl --policy policies/handoffs.yaml
+```
+
+Use replay to compare policy changes against historical multi-agent handoff metadata.
+
+## Audit
+
+Record actor chain, handoff metadata, capability, policy hash, decision, and replay identifier.
+
+## What CapFence does not solve
+
+This is an experimental pattern. CapFence does not provide a complete distributed identity or provenance system for multi-agent runtimes.
