@@ -25,9 +25,13 @@ A grant should be scoped to the smallest useful boundary:
 - reason
 
 ```python
-approval_engine.grant_capability(
+from capfence.core.approvals import ApprovalEngine
+
+approval_engine = ApprovalEngine()
+approval_engine.grant_temporary_approval(
     actor="treasury-agent",
     capability="payments.transfer.production",
+    environment="production",
     granted_by="operator-01",
     duration_seconds=900,
 )
