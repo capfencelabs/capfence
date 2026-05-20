@@ -81,7 +81,7 @@ event = ActionEvent.create(
     resource="filesystem",
     environment="production",
     risk="high",
-    metadata={"scope": "workspace"},
+    scope="workspace",
     payload={"command": "rm -rf /var/lib/postgresql"},
 )
 
