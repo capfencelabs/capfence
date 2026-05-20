@@ -24,10 +24,6 @@ An MCP request becomes an `ActionEvent` using fields such as:
 - environment or policy context
 
 ```yaml
-deny:
-  - capability: mcp.filesystem.read
-    path_outside: "/workspace"
-
 allow:
   - capability: mcp.filesystem.read
     path_prefix: "/workspace/docs"
