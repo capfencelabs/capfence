@@ -11,7 +11,7 @@ The core thesis is simple:
 ```text
 Agent runtime
   |
-  | ActionEvent(actor, resource, action, payload, environment)
+  | ActionEvent(actor, resource, action, risk, metadata[payload], environment)
   v
 CapFence authorization layer
   |
