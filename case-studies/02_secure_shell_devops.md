@@ -1,4 +1,4 @@
-# Case Study 02: Secure Shell & DevOps Execution
+# Operational Pattern 02: Shell Execution Boundary
 
 ## 1. Executive Summary
 
@@ -8,8 +8,8 @@ Operations and infrastructure teams leverage autonomous AI agents to parse serve
 2. **Data Exfiltration**: An attacker injects code that forces the agent to read secrets (`cat /etc/passwd`, `cat .env`) and stream them to a public endpoint via `curl` or `wget`.
 3. **Malicious Package Execution**: An injection triggers the installation of third-party malicious scripts (`curl | bash`).
 
-### The CapFence Solution
-CapFence acts as an **in-process terminal firewall**. Every command string is intercepted, sanitized, and evaluated against strict regular expression rules, capability matrices, and blocklists. If a dangerous execution attempt is detected, execution is immediately halted before the terminal process is spawned.
+### The CapFence Pattern
+CapFence can wrap shell execution before a process is spawned. In this reference implementation, command text and execution context are mapped to a capability and evaluated against policy. Configured dangerous patterns are denied before the command reaches the host shell.
 
 ---
 
@@ -51,7 +51,7 @@ allow:
 
 ## 3. Reference Implementation
 
-Below is a complete, self-contained Python program demonstrating terminal payload scanning, blocklist rejection, and safe diagnostics execution.
+Below is a self-contained Python program demonstrating terminal payload checks, blocklist rejection, and safe diagnostics execution.
 
 ```python
 import os
@@ -165,9 +165,9 @@ if __name__ == "__main__":
 
 ---
 
-## 4. Security & Compliance Analysis
+## 4. Operational Notes
 
 ### Threat Mitigation Profile
-1. **Zero-Trust CLI Scanning**: CapFence treats the terminal command not as a friendly string, but as an adversarial payload. By scanning the command block before it is dispatched to `subprocess` or standard executors, we prevent shell escape codes and script injection vectors from gaining root privileges.
-2. **Deterministic Fail-Closed Boundary**: Standard LLM guardrails rely on asking the model "is this command safe?". CapFence ignores model opinions entirely. If the string matches a block pattern, execution is instantly terminated.
-3. **Audit Trail Authenticity**: Every attempted terminal command is logged with its full payload metadata. In the event of a forensic breach investigation, the SHA-256 chained log database proves exactly which commands were allowed and blocked with mathematical finality.
+1. **Command as policy input**: The wrapper treats the command string as execution context and evaluates it before dispatch.
+2. **Deterministic fail-closed boundary**: The model is not asked whether a command is safe. If the request matches a deny rule, the wrapper blocks before execution.
+3. **Audit support**: Attempted commands can be logged with metadata for replay and review.

@@ -1,4 +1,4 @@
-# Case Study 03: Model Context Protocol (MCP) Boundary Security
+# Operational Pattern 03: MCP Filesystem Boundary
 
 ## 1. Executive Summary
 
@@ -9,8 +9,8 @@ If an agent downloads or interacts with an untrusted project codebase containing
 2. **Inject Backdoors**: Silently modify `package.json` scripts, inject malicious cronjobs, or tamper with system binaries.
 3. **Execute Host Traversal**: Escape sandbox environments and write files directly to operating system root folders.
 
-### The CapFence Solution
-CapFence introduces an **stdio JSON-RPC proxy gateway (`MCPGatewayServer`)** sitting transparently between the MCP Client and the target MCP Server. Every JSON-RPC request is parsed, the tool arguments are extracted and validated against directories and capabilities, and unauthorized requests are blocked and injected with a standard JSON-RPC protocol error before reaching the host server.
+### The CapFence Pattern
+CapFence can run as an stdio JSON-RPC proxy gateway between an MCP client and an upstream MCP server. The gateway parses tool calls, maps arguments to capability context, evaluates policy, and only forwards allowed requests.
 
 ---
 
@@ -46,7 +46,7 @@ allow:
 
 ## 3. Reference Implementation
 
-Below is a complete, self-contained Python program demonstrating stdio JSON-RPC interception, message payload extraction, capability mapping, and custom JSON-RPC error generation.
+Below is a self-contained Python program demonstrating stdio JSON-RPC interception, message payload extraction, capability mapping, and JSON-RPC error generation.
 
 ```python
 import os
@@ -171,9 +171,10 @@ if __name__ == "__main__":
 
 ---
 
-## 4. Security & Compliance Analysis
+## 4. Operational Notes
 
 ### Proxy Security Profile
-1. **Zero Host Overhead**: The proxy processes inputs entirely in-memory using compiled regex matching. This adds `<1ms` parsing latency, keeping developer environments highly responsive.
-2. **Host Escape Protection**: Even if the client-side IDE agent is completely hijacked and attempts to run hidden background tasks, the gateway intercepts the stdio stream byte-level requests, discarding forbidden execution packets before they reach the shell or local filesystem.
-3. **Log Accountability**: Logs all developer tool interactions securely in the verifiable SHA-256 local database, satisfying compliance audits for developer desktop security boundaries.
+1. **Pre-upstream decision**: Blocked requests are not forwarded to the upstream MCP server.
+2. **Workspace scope**: Filesystem access should be limited by explicit path policy and host-level permissions.
+3. **Audit support**: Tool calls can be logged for replay and review.
+4. **Limit**: The proxy does not replace sandboxing or least-privilege execution for the upstream MCP server.

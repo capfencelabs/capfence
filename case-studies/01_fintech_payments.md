@@ -1,4 +1,4 @@
-# Case Study 01: Fintech & Automated Payments Gating
+# Operational Pattern 01: Payment Threshold Authorization
 
 ## 1. Executive Summary
 
@@ -8,8 +8,8 @@ Financial platforms are deploying autonomous AI agents to handle invoice matchin
 2. **Operational Overdraft**: The model hallucinates payment quantities (e.g., executing a $10,000 refund instead of $100).
 3. **Compliance Breaches**: Unapproved transactions violating internal fiduciary thresholds and AML guidelines.
 
-### The CapFence Solution
-CapFence introduces an independent, deterministic **execution authorization firewall** sitting directly between the agent and the payment gateway API. High-risk actions are gated based on strict local policies, automatically routing transactions above configured thresholds to a local human-in-the-loop approval queue.
+### The CapFence Pattern
+CapFence can sit between the agent workflow and the payment gateway API. In this reference implementation, payment requests are evaluated against local capability policy, and requests above configured thresholds require an explicit approval grant before execution.
 
 ---
 
@@ -44,7 +44,7 @@ allow:
 
 ## 3. Reference Implementation
 
-Here is a complete, self-contained Python application demonstrating automated transfer checks, approval queue escalation, operator override, and transaction logging.
+Here is a self-contained Python application demonstrating transfer checks, approval queue escalation, operator override, and transaction logging.
 
 ```python
 import os
@@ -178,9 +178,9 @@ if __name__ == "__main__":
 
 ---
 
-## 4. Security & Compliance Analysis
+## 4. Operational Notes
 
 ### Deterministic Isolation
-1. **LLM Context Decoupling**: The evaluation of transaction sizes happens purely inside Python memory. Even if the LLM outputs a prompt insisting `The transfer is pre-authorized by the CEO`, the CapFence `ActionRuntime` parses the raw `amount` parameter out of the tool arguments and rejects it deterministically.
-2. **Cryptographic Integrity**: All three scenarios generate structured logs recorded inside the `audit.db` database. Every row is cryptographically chained to its predecessor using SHA-256 hashes, ensuring that any retroactive alteration of the transaction ledger is immediately flagged during system audits (`capfence verify`).
-3. **Fail-Closed Assurance**: If the local database is locked or the system file is corrupted, the runtime locks down automatically, denying any funds transfer.
+1. **Prompt-independent decision**: The evaluation uses structured tool arguments such as `amount`; it does not rely on a model's statement that a transfer is safe.
+2. **Audit support**: Decisions can be recorded in the local audit log for replay and review.
+3. **Fail-closed posture**: Missing policy or runtime errors should block rather than allow the transfer path.

@@ -1,44 +1,36 @@
-# CapFence Case Studies
+# CapFence Operational Patterns
 
-Welcome to the CapFence Case Studies directory. These blueprints illustrate how to enforce deterministic execution boundaries and cryptographic audit trails across five high-risk operational domains.
+These reference patterns illustrate ways to place CapFence at an execution boundary. They are conceptual implementations for local testing and design review, not claims of customer production deployments.
 
-Each case study includes an executive threat analysis, a declarative YAML capability policy, a complete annotated Python implementation, and an operational security analysis.
+Each pattern includes:
 
----
+- an operational risk
+- a capability policy
+- a small Python implementation
+- notes on where CapFence sits in the flow
 
-## 📂 Example Scenarios
+## Patterns
 
-### [1. Preventing unauthorized fund transfers](01_fintech_payments.md)
-A trading or treasury agent attempts to transfer corporate funds beyond its approved daily threshold.
+### [1. Payment threshold authorization](01_fintech_payments.md)
 
-CapFence intercepts the action before execution, requiring an expiring human-in-the-loop pre-authorization.
+A treasury-style agent requests payment execution. CapFence evaluates amount and capability before the payment API would be called.
 
-### [2. Blocking destructive shell execution](02_secure_shell_devops.md)
-An autonomous ops agent attempts to run a dangerous terminal command:
-```bash
-rm -rf /var/lib/postgresql
-```
-CapFence intercepts the raw CLI command string before execution and blocks it using local deterministic deny policies.
+### [2. Shell execution boundary](02_secure_shell_devops.md)
 
-### [3. Sandboxing desktop agent MCP tools](03_mcp_boundary_security.md)
-A local IDE agent hijacked by repository-level prompt injection attempts to read files outside the project directory.
+An ops agent requests shell execution. CapFence evaluates command text and context before a process is spawned.
 
-CapFence gateway proxies the stdio JSON-RPC stream, blocking host traversals and returning standard protocol errors.
+### [3. MCP filesystem boundary](03_mcp_boundary_security.md)
 
-### [4. Guarding database write and schema modifications](04_database_ddl_guardrails.md)
-An SQL-generating analytics agent attempts to drop tables or run unindexed bulk deletes.
+An MCP client requests filesystem access. CapFence proxies the tool call and evaluates path scope before forwarding to the upstream server.
 
-CapFence parses the generated queries pre-execution, blocking DDL/DML operations before they hit the connection pool.
+### [4. Database write and schema-change boundary](04_database_ddl_guardrails.md)
 
-### [5. Enforcing multi-agent trust and lineage](05_multi_agent_trust_lineage.md)
-A compromised public-facing routing agent propagates a prompt-injected payload to a privileged billing agent.
+A text-to-SQL style workflow generates database actions. CapFence maps the request to coarse capabilities such as read, write, or schema change before the query is sent.
 
-CapFence tracks the full node execution lineage, blocking execution if the transaction has been touched by an unverified node.
+### [5. Experimental agent handoff checks](05_multi_agent_trust_lineage.md)
 
----
+A multi-agent workflow passes context between nodes. CapFence evaluates adapter-provided metadata before allowing a privileged action.
 
-## 🛠️ Getting Started Locally
-You can run any of these case studies directly. Every application leverages CapFence's local-first architecture:
-* **Zero Network Latency**: Real-time policy evaluation in `<1ms`.
-* **Zero Cloud Dependencies**: Runs entirely offline in local Python runtimes.
-* **Cryptographic Trust**: Logs all decisions into a local, tamper-evident SHA-256 database.
+## Local use
+
+Run these examples as starting points for your own boundary design. Validate the adapter, policy, audit storage, and failure behavior before using any pattern in a high-risk environment.
