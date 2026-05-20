@@ -16,7 +16,7 @@ policy error → runtime exception → AgentActionBlocked raised → tool not in
 
 AI agents can make hundreds of tool calls across a session. A single gap in enforcement — one call that slips through while the runtime is misconfigured — can have real consequences: a deleted file, a transferred payment, a leaked secret.
 
-Fail-closed guarantees that gaps in policy are visible as errors, not silent passes.
+Fail-closed behavior makes gaps in policy visible as errors rather than silent passes.
 
 ## What triggers a fail-closed block
 

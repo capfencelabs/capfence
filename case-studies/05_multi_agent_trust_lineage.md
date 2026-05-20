@@ -1,15 +1,17 @@
-# Case Study 05: Multi-Agent Collaboration & Trust Lineage
+# Operational Pattern 05: Experimental Agent Handoff Checks
 
 ## 1. Executive Summary
 
 ### The Challenge
-Modern enterprise AI systems are designed as multi-agent collaboration graphs (using LangGraph, CrewAI, or AutoGen). In these systems, a public-facing routing agent receives raw inputs and routes tasks to highly privileged, internal action agents (DevOps, billing, data access). This introduces **propagation vulnerabilities**:
+Some agent systems use multi-agent collaboration graphs. A public-facing routing agent may receive raw inputs and pass work to a more privileged internal action agent. This introduces propagation risks:
 1. **Secondary Prompt Injection**: An attacker injects the public agent, which does not execute the injection itself but propagates the malicious payload to a privileged backend agent which executes it.
 2. **Context Poisoning**: A low-trust agent reads untrusted web data and passes corrupted context to an executive agent, triggering unauthorized tool calls.
 3. **Identity Spoofing**: A compromised node attempts to invoke backend capabilities by pretending to act on behalf of a highly privileged internal system.
 
-### The CapFence Solution
-CapFence introduces **Trust Lineage Enforcement**. Privileged tools do not just authorize the immediate caller; they evaluate the full execution lineage (which agents touched the transaction) and the associated trust scores. Using localized verification, CapFence blocks tool execution if any low-trust or unverified node is found in the event transit chain.
+### The CapFence Pattern
+This reference implementation passes adapter-provided handoff metadata into CapFence policy evaluation. The privileged tool authorizes more than the immediate caller by checking whether the request came through a trusted or untrusted path.
+
+This is experimental. It is not a complete distributed identity, provenance, or trust-lineage system. Treat it as a pattern for carrying execution context into policy.
 
 ---
 
@@ -43,7 +45,7 @@ allow:
 
 ## 3. Reference Implementation
 
-Below is a complete, self-contained Python program demonstrating multi-agent node state transitions, lineage tracking, and capability authorization based on caller identity context.
+Below is a self-contained Python program demonstrating metadata-based handoff checks and capability authorization based on caller context.
 
 ```python
 import os
@@ -139,9 +141,9 @@ if __name__ == "__main__":
 
 ---
 
-## 4. Security & Compliance Analysis
+## 4. Operational Notes
 
-### Lineage Security Profile
-1. **End-to-End Context Tracking**: Traditional gateway firewalls only inspect the final API dispatch. By tracking the complete agent graph lineage (`nodes_traversed`) and passing it in metadata to CapFence, we prevent "man-in-the-middle" agent attacks and backend execution hijacks.
-2. **Deterministic Role Mapping**: Because roles are mapped deterministically inside the Python wrapper according to the node execution path (rather than trusting the model to describe its role), the authorization boundaries are completely immune to prompt injection bypasses.
-3. **Forensic Audit Readiness**: The SHA-256 chained log records the entire traversal lineage, providing complete system-level visibility into exactly which agents were involved in any authorized or blocked transactions.
+1. **Context as policy input**: The adapter supplies handoff metadata instead of asking the model to describe its authority.
+2. **Deterministic mapping**: The wrapper maps known execution paths to policy fields such as `user_role`.
+3. **Audit support**: The metadata can be recorded with the decision for later replay.
+4. **Limit**: This pattern depends on the integrity of the orchestrator and adapter metadata. It does not prove global provenance across untrusted systems.

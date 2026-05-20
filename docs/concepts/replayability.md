@@ -54,7 +54,7 @@ Decision: require_approval
 Reason:   threshold_exceeded
 ```
 
-## Determinism guarantee
+## Determinism property
 
 Given the same payload and the same policy, the gate always produces the same decision. This is the property that makes replay useful: you are not re-running a probabilistic model, you are re-running a deterministic function.
 
