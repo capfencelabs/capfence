@@ -6,19 +6,19 @@ CapFence should fail closed when it cannot make an authorization decision.
 
 | Failure | Expected behavior |
 | --- | --- |
-| Missing policy | deny |
-| Malformed policy | deny |
-| Unknown capability | deny |
-| Approval lookup failure | deny |
-| Audit write failure | deny or surface an explicit operational error |
-| Adapter exception before tool invocation | deny |
+| Missing policy | raises an operational error; caller must treat as blocked |
+| Malformed policy | returns a `deny` verdict |
+| Unknown capability | returns a `deny` verdict |
+| Approval lookup failure | may raise an operational error during execution; caller must treat as blocked |
+| Audit write failure | may raise an operational error during execution; caller must treat as blocked |
+| Adapter exception before tool invocation | raises an operational error; caller must treat as blocked |
 
 ## Why this matters
 
 Agent execution can have external effects. If the authorization layer is uncertain, the safe behavior is to avoid invoking the downstream system.
 
 ```text
-policy error -> deny -> tool not called
+policy error -> deny verdict or raised error treated as blocked -> tool not called
 ```
 
 ## Operator visibility

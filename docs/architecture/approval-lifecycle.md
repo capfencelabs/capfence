@@ -10,7 +10,7 @@ ActionEvent
   -> runtime checks approval store
   -> active matching grant?
        yes -> allow and audit
-       no  -> deny pending approval and audit
+       no  -> require_approval and audit
 ```
 
 ## Grant shape

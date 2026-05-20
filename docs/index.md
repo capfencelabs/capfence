@@ -28,7 +28,7 @@ CapFence is not an observability tool, prompt guardrail, eval framework, orchest
 ## What is implemented today
 
 - Capability-based policy evaluation with explicit `deny`, `require_approval`, and `allow` rules.
-- Fail-closed default behavior for unmatched capabilities and policy/runtime errors.
+- Fail-closed default behavior for unmatched capabilities and for policy/runtime failures, with execution blocked either by a non-authorized result or by an error that must be treated as a block.
 - Local approval state for scoped, expiring grants.
 - Local audit records with hash chaining for tamper-evidence.
 - Replay-oriented CLI and examples for re-evaluating historical decisions against policy.
@@ -78,9 +78,10 @@ runtime = ActionRuntime.from_policy("policies/ops.yaml")
 event = ActionEvent.create(
     actor="hotfix-agent",
     action="delete",
-    resource="filesystem.workspace",
+    resource="filesystem",
     environment="production",
     risk="high",
+    metadata={"scope": "workspace"},
     payload={"command": "rm -rf /var/lib/postgresql"},
 )
 

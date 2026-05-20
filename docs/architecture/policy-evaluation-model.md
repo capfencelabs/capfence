@@ -7,6 +7,8 @@ CapFence evaluates an attempted action as a deterministic policy decision. The r
 An authorization request is represented as an `ActionEvent`:
 
 ```python
+from capfence import ActionEvent
+
 event = ActionEvent.create(
     actor="ops-agent",
     resource="shell",
