@@ -45,7 +45,7 @@ def display_verdict(verdict: str | None) -> str:
     """Convert internal policy engine verdicts to fixture-facing verdict names."""
     if verdict in {None, "default_deny", "block"}:
         return "deny"
-    return verdict
+    return str(verdict)
 
 
 def load_fixture_file(path: str | Path) -> dict[str, Any]:
