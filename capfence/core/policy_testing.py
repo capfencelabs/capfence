@@ -41,6 +41,13 @@ class PolicySuiteResult:
         return sum(1 for result in self.results if not result.passed)
 
 
+def display_verdict(verdict: str | None) -> str:
+    """Convert internal policy engine verdicts to fixture-facing verdict names."""
+    if verdict in {None, "default_deny", "block"}:
+        return "deny"
+    return verdict
+
+
 def load_fixture_file(path: str | Path) -> dict[str, Any]:
     fixture_path = Path(path)
     with open(fixture_path, "r", encoding="utf-8") as handle:
@@ -68,7 +75,7 @@ def explain_policy_event(policy_path: str | Path, event: dict[str, Any]) -> dict
     policy = PolicyLoader().load(policy_path)
     capability, context, payload = normalize_event(event)
     explanation = policy.explain(capability, context, payload)
-    verdict = explanation["verdict"] or "deny"
+    verdict = display_verdict(explanation["verdict"])
     explanation.update(
         {
             "policy_file": str(policy_path),
@@ -93,8 +100,8 @@ def diff_policy_fixtures(
     newly_allowed: list[dict[str, Any]] = []
     for case in cases:
         capability, context, payload = normalize_event(case["event"])
-        before_verdict = before.explain(capability, context, payload)["verdict"] or "deny"
-        after_verdict = after.explain(capability, context, payload)["verdict"] or "deny"
+        before_verdict = display_verdict(before.explain(capability, context, payload)["verdict"])
+        after_verdict = display_verdict(after.explain(capability, context, payload)["verdict"])
         if before_verdict == after_verdict:
             continue
 
@@ -161,7 +168,7 @@ def _run_case(
     policy = loader.load(policy_path)
     capability, context, payload = normalize_event(case["event"])
     explanation = policy.explain(capability, context, payload)
-    actual = explanation["verdict"] or "deny"
+    actual = display_verdict(explanation["verdict"])
     expected = str((case.get("expected") or {}).get("verdict"))
     return PolicyFixtureResult(
         name=str(case.get("name") or "unnamed"),

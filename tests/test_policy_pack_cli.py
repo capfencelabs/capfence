@@ -59,3 +59,33 @@ def test_opa_backend_fails_closed_when_unavailable() -> None:
 
     assert decision.verdict == "deny"
     assert decision.reason.startswith("opa_unavailable_fail_closed")
+
+
+def test_policy_conditions_do_not_fall_back_to_capability_only_allow(tmp_path) -> None:
+    policy_path = tmp_path / "shell.yaml"
+    event_path = tmp_path / "event.json"
+    policy_path.write_text(
+        """
+allow:
+  - capability: shell.exec
+    match_regex: ["^git status$"]
+""",
+        encoding="utf-8",
+    )
+    event_path.write_text(
+        '{"event":{"actor":"ops-agent","action":"exec","resource":"shell","payload":{"command":"rm -rf ./build"}}}',
+        encoding="utf-8",
+    )
+
+    result = CliRunner().invoke(
+        main,
+        [
+            "policy",
+            "explain",
+            str(policy_path),
+            str(event_path),
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert "Final verdict:    deny" in result.output

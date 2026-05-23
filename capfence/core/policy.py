@@ -362,7 +362,7 @@ class Policy:
                 return self._explain_rule(index, rule, rule.action)
         return {
             "policy_id": self.id,
-            "verdict": None,
+            "verdict": "default_deny",
             "section": "default",
             "rule_index": None,
             "matched_rule": None,
