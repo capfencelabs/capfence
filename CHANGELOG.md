@@ -1,5 +1,9 @@
 # Changelog
 
+## Versioning and maturity
+
+CapFence is pre-1.0 public beta infrastructure. Until `1.0`, minor versions may refine public APIs, policy schema details, and integration wrappers. The local YAML policy runtime is the most mature surface; framework adapters, starter policy packs, external policy backends, and supply-chain automation should be validated in the target environment before production use.
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),

@@ -1,0 +1,18 @@
+version: 1
+policy_name: kubernetes-baseline
+description: Baseline Kubernetes and infrastructure policy.
+deny:
+  - capability: k8s.delete
+    match_keywords: ["namespace", "clusterrole", "secret"]
+  - capability: k8s.exec
+    environment: production
+require_approval:
+  - capability: k8s.apply
+    environment: production
+  - capability: terraform.apply
+  - capability: cloud.instance.modify
+allow:
+  - capability: k8s.get
+  - capability: k8s.describe
+  - capability: k8s.apply
+    environment: development

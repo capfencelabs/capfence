@@ -1,0 +1,11 @@
+version: 1
+policy_name: sql-permissive
+description: Developer SQL policy with destructive operations denied.
+deny:
+  - capability: sql.execute
+    match_keywords: ["DROP ", "TRUNCATE ", "CREATE USER", "GRANT "]
+require_approval:
+  - capability: sql.execute
+    match_keywords: ["DELETE ", "UPDATE ", "ALTER "]
+allow:
+  - capability: sql.execute

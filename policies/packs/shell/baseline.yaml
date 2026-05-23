@@ -1,0 +1,12 @@
+version: 1
+policy_name: shell-baseline
+description: Baseline shell execution policy for agent tool boundaries.
+deny:
+  - capability: shell.exec
+    match_keywords: ["rm -rf /", "mkfs", "dd if=", "chmod -R 777", "curl | sh", "wget | sh"]
+require_approval:
+  - capability: shell.exec
+    match_keywords: ["sudo", "apt install", "brew install", "pip install", "npm install -g", "curl ", "wget "]
+allow:
+  - capability: shell.exec
+    match_regex: ["^(ls|pwd|python --version|git status)(\\s|$)", "^cat\\s+(/tmp|./|docs/|README.md)"]

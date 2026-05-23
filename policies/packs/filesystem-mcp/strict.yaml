@@ -1,0 +1,16 @@
+version: 1
+policy_name: filesystem-mcp-strict
+description: Strict filesystem and MCP policy for agents with local workspace access.
+deny:
+  - capability: file.read
+    match_keywords: ["/.ssh/", "/.aws/", "/.config/gcloud/", "/etc/", "/var/run/docker.sock", ".env", "id_rsa", "id_ed25519", "credentials.json", "kubeconfig", "../"]
+  - capability: file.write
+    match_keywords: ["/etc/", "../", ".git/config", "deploy/", "infra/"]
+  - capability: file.delete
+require_approval:
+  - capability: mcp.tools.call
+allow:
+  - capability: file.read
+    path_prefix: "./"
+  - capability: file.write
+    path_prefix: "./tmp/"

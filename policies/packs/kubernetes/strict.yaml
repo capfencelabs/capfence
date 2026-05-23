@@ -1,0 +1,16 @@
+version: 1
+policy_name: kubernetes-strict
+description: Strict infrastructure policy for production clusters and cloud accounts.
+deny:
+  - capability: k8s.delete
+  - capability: k8s.exec
+    environment: production
+  - capability: k8s.apply
+    match_keywords: ["ClusterRole", "Secret", "Ingress"]
+require_approval:
+  - capability: k8s.apply
+  - capability: cloud.instance.modify
+  - capability: terraform.apply
+allow:
+  - capability: k8s.get
+  - capability: k8s.describe

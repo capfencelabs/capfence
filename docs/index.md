@@ -1,8 +1,8 @@
 # CapFence Docs
 
-CapFence is deterministic execution enforcement for AI agents.
+CapFence is deterministic execution authorization for AI agent side effects.
 
-It intercepts agent tool calls before execution, evaluates explicit policy, fail-closes unsafe requests, and records decisions for replay.
+It intercepts agent tool calls before execution, evaluates explicit policy, fail-closes unsafe requests, and records decisions for replay. Models may propose actions. CapFence authorizes side effects.
 
 ```text
 Agent -> Tool Call -> Policy Evaluation -> Allow / Deny / Approval -> Audit + Replay
@@ -58,6 +58,8 @@ if not verdict.authorized:
 - Local audit records with hash chaining for tamper-evidence.
 - Replay-oriented CLI and examples for re-evaluating historical decisions against policy.
 - Lightweight adapters and examples for common agent/tool boundaries, including MCP.
+- Starter policy packs for shell, filesystem/MCP, SQL, payments, and Kubernetes boundaries.
+- Policy fixture testing, explain output, and policy diff commands.
 
 ## What CapFence controls
 
@@ -79,6 +81,10 @@ if not verdict.authorized:
 
 ## What CapFence is not
 
-CapFence is not an AI governance platform, observability product, orchestration framework, prompt guardrail, AI judge, or compliance dashboard.
+CapFence is not an AI governance platform, observability product, orchestration framework, prompt guardrail, AI judge, sandbox, IAM system, secrets manager, or compliance dashboard.
 
 Use it as the deterministic authorization layer at the point where agent output becomes execution.
+
+## Public beta status
+
+CapFence is pre-1.0 public beta infrastructure. The local YAML policy runtime is the most mature surface. Framework adapters, starter policy packs, MCP interception, external policy backends, and release hardening are available for production pilots only after environment-specific validation.

@@ -24,6 +24,12 @@ from capfence.check import scan_directory, scan_file, compute_aggregate_score, T
 from capfence.core.audit import AuditLogger
 from capfence.core.approvals import ApprovalManager
 from capfence.core.policy import PolicyLoader
+from capfence.core.policy_testing import (
+    diff_policy_fixtures,
+    explain_policy_event,
+    load_fixture_file,
+    run_policy_fixture_file,
+)
 from capfence.core.replay import ReplayEngine
 
 __version__ = "0.8.2"
@@ -105,6 +111,94 @@ def check_policy(policy_file: Path) -> None:
     click.echo(f"[POLICY] VALID: {policy_file}")
     click.echo(f"  Rules: {len(policy.rules)}")
     click.echo(f"  Risk levels: {len(policy.risk_levels)}")
+
+
+@main.group(name="policy")
+def policy_group() -> None:
+    """Policy development commands."""
+
+
+@policy_group.command(name="test")
+@click.argument("fixture_file", type=click.Path(exists=True, path_type=Path))
+@click.option("--json", "output_json", is_flag=True, help="Output machine-readable JSON")
+def policy_test(fixture_file: Path, output_json: bool) -> None:
+    """Run policy fixture tests."""
+    suite = run_policy_fixture_file(fixture_file)
+    if output_json:
+        click.echo(json.dumps({
+            "suite": suite.name,
+            "passed": suite.passed,
+            "total": suite.total,
+            "failures": suite.failures,
+            "results": [result.__dict__ for result in suite.results],
+        }, indent=2))
+    else:
+        click.echo(f"[POLICY TEST] {suite.name}: {suite.total - suite.failures}/{suite.total} passed")
+        for result in suite.results:
+            mark = "PASS" if result.passed else "FAIL"
+            click.echo(
+                f"  {mark:<4} {result.name}: expected={result.expected} actual={result.actual} "
+                f"reason={result.reason}"
+            )
+    if not suite.passed:
+        sys.exit(1)
+
+
+@policy_group.command(name="explain")
+@click.argument("policy_file", type=click.Path(exists=True, path_type=Path))
+@click.argument("event_file", type=click.Path(exists=True, path_type=Path))
+@click.option("--json", "output_json", is_flag=True, help="Output machine-readable JSON")
+def policy_explain(policy_file: Path, event_file: Path, output_json: bool) -> None:
+    """Explain how a policy evaluates one event fixture."""
+    event_data = load_fixture_file(event_file)
+    if "event" in event_data:
+        event = event_data["event"]
+    elif event_data.get("cases"):
+        event = event_data["cases"][0]["event"]
+    else:
+        event = event_data
+    explanation = explain_policy_event(policy_file, event)
+    if output_json:
+        click.echo(json.dumps(explanation, indent=2))
+        return
+    click.echo(f"[POLICY EXPLAIN] {policy_file}")
+    click.echo(f"  Capability:       {explanation['capability']}")
+    click.echo(f"  Final verdict:    {explanation['final_verdict']}")
+    click.echo(f"  Section:          {explanation['section']}")
+    click.echo(f"  Rule index:       {explanation['rule_index']}")
+    click.echo(f"  Predicate result: {explanation['predicate_result']}")
+    click.echo(f"  Reason:           {explanation['reason']}")
+
+
+@policy_group.command(name="diff")
+@click.argument("before_policy", type=click.Path(exists=True, path_type=Path))
+@click.argument("after_policy", type=click.Path(exists=True, path_type=Path))
+@click.argument("fixture_file", type=click.Path(exists=True, path_type=Path))
+@click.option("--json", "output_json", is_flag=True, help="Output machine-readable JSON")
+def policy_diff(
+    before_policy: Path,
+    after_policy: Path,
+    fixture_file: Path,
+    output_json: bool,
+) -> None:
+    """Compare two policies against the same event fixture corpus."""
+    diff = diff_policy_fixtures(before_policy, after_policy, fixture_file)
+    if output_json:
+        click.echo(json.dumps(diff, indent=2))
+        return
+
+    click.echo("[POLICY DIFF]")
+    if not diff["transitions"]:
+        click.echo("  No verdict changes.")
+        return
+    for transition, entries in diff["transitions"].items():
+        click.echo(f"  {transition}: {len(entries)}")
+        for entry in entries:
+            click.echo(f"    - {entry['name']} ({entry['capability']})")
+    if diff["newly_allowed"]:
+        click.echo("\n[WARNING] Newly allowed side effects:")
+        for entry in diff["newly_allowed"]:
+            click.echo(f"  - {entry['name']} ({entry['capability']})")
 
 
 def _print_findings(findings: list[ToolFinding], path: Path) -> None:

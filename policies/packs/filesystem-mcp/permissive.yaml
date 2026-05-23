@@ -1,0 +1,14 @@
+version: 1
+policy_name: filesystem-mcp-permissive
+description: Developer filesystem and MCP policy with secret-path denies.
+deny:
+  - capability: file.read
+    match_keywords: ["/.ssh/", "/.aws/", ".env", "id_rsa", "id_ed25519", "credentials.json", "kubeconfig"]
+require_approval:
+  - capability: file.delete
+  - capability: mcp.tools.call
+    tool_name: "admin_*"
+allow:
+  - capability: file.read
+  - capability: file.write
+  - capability: mcp.tools.call

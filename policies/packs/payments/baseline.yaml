@@ -1,0 +1,17 @@
+version: 1
+policy_name: payments-baseline
+description: Baseline payment and money-movement policy.
+deny:
+  - capability: payment.create
+    match_keywords: ["unverified_recipient", "unsupported_currency", "missing_reason"]
+require_approval:
+  - capability: payment.create
+    amount_gt: 100
+  - capability: refund.issue
+    amount_gt: 250
+allow:
+  - capability: refund.issue
+    amount_lte: 250
+  - capability: invoice.send
+  - capability: payment.create
+    amount_lte: 100

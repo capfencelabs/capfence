@@ -1,0 +1,20 @@
+version: 1
+policy_name: filesystem-mcp-baseline
+description: Baseline filesystem and MCP authorization policy.
+deny:
+  - capability: file.read
+    match_keywords: ["/.ssh/", "/.aws/", "/.config/gcloud/", "/etc/", "/var/run/docker.sock", ".env", "id_rsa", "id_ed25519", "credentials.json", "kubeconfig"]
+  - capability: file.delete
+    path_prefix: "/"
+require_approval:
+  - capability: file.write
+    match_keywords: [".git/config", "deploy/", "infra/", "../"]
+  - capability: mcp.tools.call
+    tool_name: "unknown_*"
+allow:
+  - capability: file.read
+    path_prefix: "./"
+  - capability: file.write
+    path_prefix: "./"
+  - capability: mcp.tools.call
+    tool_name: "read_*"

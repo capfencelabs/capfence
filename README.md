@@ -1,8 +1,8 @@
 # CapFence
 
-Deterministic execution enforcement for AI agents.
+Deterministic execution authorization for AI agent side effects.
 
-CapFence intercepts agent tool calls before execution, evaluates explicit policy, fail-closes unsafe requests, and records decisions for replay.
+CapFence intercepts agent tool calls before execution, evaluates explicit policy, fail-closes unsafe requests, and records decisions for replay. Models may propose actions. CapFence authorizes side effects.
 
 Prompts are not security boundaries. CapFence removes the LLM from the authorization path.
 
@@ -116,9 +116,17 @@ Changed:  false
 
 ## Status
 
-CapFence is early OSS infrastructure. Review the implementation, policy model, and examples before placing it on high-risk execution paths.
+CapFence is pre-1.0 public beta infrastructure. The core local YAML policy runtime is intended for production pilots, while framework adapters, policy packs, external policy backends, and release automation should be validated in your environment before high-risk use.
 
 CapFence controls the gated tool path. It does not replace sandboxing, secrets management, network segmentation, downstream IAM, or database-native controls.
+
+| Capability | Maturity |
+| --- | --- |
+| Local YAML policy evaluation | Beta |
+| Audit hash chaining and replay | Beta |
+| LangChain, LangGraph, CrewAI, OpenAI Agents SDK adapters | Beta |
+| MCP, PydanticAI, LlamaIndex, AutoGen adapters | Experimental |
+| Starter policy packs and OPA backend path | Experimental |
 
 - Docs: https://capfence.dev/
 - PyPI: https://pypi.org/project/capfence/

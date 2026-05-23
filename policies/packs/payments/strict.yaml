@@ -1,0 +1,14 @@
+version: 1
+policy_name: payments-strict
+description: Strict payment policy for production financial actions.
+deny:
+  - capability: payment.create
+    match_keywords: ["unverified_recipient", "unsupported_currency", "missing_invoice", "sanctioned_region"]
+  - capability: transfer.initiate
+    match_keywords: ["new_recipient"]
+require_approval:
+  - capability: payment.create
+  - capability: refund.issue
+  - capability: transfer.initiate
+allow:
+  - capability: invoice.send

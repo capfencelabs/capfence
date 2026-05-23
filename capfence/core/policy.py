@@ -325,24 +325,66 @@ class Policy:
         Deny rules have highest precedence, followed by approval requirements,
         risk-level policy, then allow/warn rules.
         """
-        for rule in self.rules:
-            if rule.action in {"deny", "block"} and rule.matches(capability, context, payload):
-                return rule.action
+        explanation = self.explain(capability, context, payload)
+        return explanation["verdict"]
 
-        for rule in self.rules:
+    def explain(
+        self,
+        capability: str,
+        context: dict[str, Any],
+        payload: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Return the matched rule and final policy verdict for an action."""
+        for index, rule in enumerate(self.rules):
+            if rule.action in {"deny", "block"} and rule.matches(capability, context, payload):
+                return self._explain_rule(index, rule, "deny")
+
+        for index, rule in enumerate(self.rules):
             if rule.action == "require_approval" and rule.matches(capability, context, payload):
-                return rule.action
+                return self._explain_rule(index, rule, "require_approval")
 
         risk_level = context.get("risk_level")
         if isinstance(risk_level, str):
             risk_action = self.evaluate_risk_level(risk_level)
             if risk_action in {"deny", "block", "require_approval", "warn"}:
-                return risk_action
+                return {
+                    "policy_id": self.id,
+                    "verdict": "deny" if risk_action == "block" else risk_action,
+                    "section": "risk_levels",
+                    "rule_index": None,
+                    "matched_rule": None,
+                    "predicate_result": True,
+                    "reason": f"risk_level:{risk_level}",
+                }
 
-        for rule in self.rules:
+        for index, rule in enumerate(self.rules):
             if rule.action in {"allow", "warn"} and rule.matches(capability, context, payload):
-                return rule.action
-        return None
+                return self._explain_rule(index, rule, rule.action)
+        return {
+            "policy_id": self.id,
+            "verdict": None,
+            "section": "default",
+            "rule_index": None,
+            "matched_rule": None,
+            "predicate_result": False,
+            "reason": "policy_default_deny",
+        }
+
+    def _explain_rule(self, index: int, rule: Rule, verdict: str) -> dict[str, Any]:
+        section = "deny" if rule.action in {"deny", "block"} else rule.action
+        return {
+            "policy_id": self.id,
+            "verdict": "deny" if verdict == "block" else verdict,
+            "section": section,
+            "rule_index": index,
+            "matched_rule": {
+                "capability": rule.capability,
+                "action": rule.action,
+                "conditions": rule.conditions,
+            },
+            "predicate_result": True,
+            "reason": f"policy_{section}",
+        }
 
     def has_capability_rule(self, capability: str) -> bool:
         """Return True when any rule names this capability or a matching wildcard prefix."""

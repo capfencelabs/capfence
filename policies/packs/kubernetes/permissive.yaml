@@ -1,0 +1,15 @@
+version: 1
+policy_name: kubernetes-permissive
+description: Developer Kubernetes policy for non-production clusters.
+deny:
+  - capability: k8s.delete
+    match_keywords: ["namespace", "clusterrole", "secret"]
+require_approval:
+  - capability: terraform.apply
+  - capability: k8s.apply
+    environment: production
+allow:
+  - capability: k8s.get
+  - capability: k8s.describe
+  - capability: k8s.apply
+  - capability: k8s.exec
