@@ -11,10 +11,10 @@
       
       
       
-        <link rel="prev" href="../approval-workflows/">
+        <link rel="prev" href="../compatibility/">
       
       
-        <link rel="next" href="../demo-cast/">
+        <link rel="next" href="../autogen/">
       
       
         
@@ -25,7 +25,7 @@
     
     
       
-        <title>Database write gating - CapFence Docs</title>
+        <title>External policy backends - CapFence Docs</title>
       
     
     
@@ -66,7 +66,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#database-write-gating" class="md-skip">
+        <a href="#external-policy-backends" class="md-skip">
           Skip to content
         </a>
       
@@ -102,7 +102,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Database write gating
+              External policy backends
             
           </span>
         </div>
@@ -969,20 +969,18 @@
       
   
   
-    
   
   
-  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
         
           
           <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
@@ -1003,7 +1001,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1021,7 +1019,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../approval-workflows/" class="md-nav__link">
+      <a href="../../examples/approval-workflows/" class="md-nav__link">
         
   
   
@@ -1046,37 +1044,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Database write gating
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../examples/database-write-gating/" class="md-nav__link">
         
   
   
@@ -1092,70 +1063,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#policy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Policy
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#wrapped-tools" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Wrapped tools
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#runtime-behavior" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Runtime behavior
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#why-this-matters" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Why this matters
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1168,7 +1075,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../demo-cast/" class="md-nav__link">
+      <a href="../../examples/demo-cast/" class="md-nav__link">
         
   
   
@@ -1196,7 +1103,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../demo-walkthrough/" class="md-nav__link">
+      <a href="../../examples/demo-walkthrough/" class="md-nav__link">
         
   
   
@@ -1224,7 +1131,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../fintech-agent/" class="md-nav__link">
+      <a href="../../examples/fintech-agent/" class="md-nav__link">
         
   
   
@@ -1252,7 +1159,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../mcp-governance/" class="md-nav__link">
+      <a href="../../examples/mcp-governance/" class="md-nav__link">
         
   
   
@@ -1280,7 +1187,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../replay-demo/" class="md-nav__link">
+      <a href="../../examples/replay-demo/" class="md-nav__link">
         
   
   
@@ -1840,18 +1747,20 @@
       
   
   
+    
   
   
+  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" checked>
         
           
           <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
@@ -1872,7 +1781,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_10">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1890,7 +1799,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../integrations/compatibility/" class="md-nav__link">
+      <a href="../compatibility/" class="md-nav__link">
         
   
   
@@ -1915,10 +1824,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../integrations/external-policy-backends/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    External policy backends
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1934,6 +1870,59 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#backend-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backend contract
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#opa-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OPA path
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cedar-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cedar status
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1946,7 +1935,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../integrations/autogen/" class="md-nav__link">
+      <a href="../autogen/" class="md-nav__link">
         
   
   
@@ -1974,7 +1963,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../integrations/crewai/" class="md-nav__link">
+      <a href="../crewai/" class="md-nav__link">
         
   
   
@@ -2002,7 +1991,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../integrations/langchain/" class="md-nav__link">
+      <a href="../langchain/" class="md-nav__link">
         
   
   
@@ -2030,7 +2019,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../integrations/langgraph/" class="md-nav__link">
+      <a href="../langgraph/" class="md-nav__link">
         
   
   
@@ -2058,7 +2047,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../integrations/llamaindex/" class="md-nav__link">
+      <a href="../llamaindex/" class="md-nav__link">
         
   
   
@@ -2086,7 +2075,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../integrations/mcp/" class="md-nav__link">
+      <a href="../mcp/" class="md-nav__link">
         
   
   
@@ -2114,7 +2103,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../integrations/openai-agents-sdk/" class="md-nav__link">
+      <a href="../openai-agents-sdk/" class="md-nav__link">
         
   
   
@@ -2142,7 +2131,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../integrations/pydanticai/" class="md-nav__link">
+      <a href="../pydanticai/" class="md-nav__link">
         
   
   
@@ -2170,7 +2159,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../integrations/custom-frameworks/" class="md-nav__link">
+      <a href="../custom-frameworks/" class="md-nav__link">
         
   
   
@@ -2529,10 +2518,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#policy" class="md-nav__link">
+  <a href="#backend-contract" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Policy
+        Backend contract
       
     </span>
   </a>
@@ -2540,10 +2529,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#wrapped-tools" class="md-nav__link">
+  <a href="#opa-path" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Wrapped tools
+        OPA path
       
     </span>
   </a>
@@ -2551,21 +2540,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#runtime-behavior" class="md-nav__link">
+  <a href="#cedar-status" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Runtime behavior
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#why-this-matters" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Why this matters
+        Cedar status
       
     </span>
   </a>
@@ -2589,55 +2567,42 @@
 
 
 
-<h1 id="database-write-gating">Database Write Gating</h1>
-<p>This example shows how to let an agent read from a database while gating writes, deletes, and schema changes.</p>
-<h2 id="policy">Policy</h2>
-<pre><code class="language-yaml"># policies/database_agent.yaml
-
-deny:
-  - capability: database.drop_table
-  - capability: database.delete
-    environment: production
-
-require_approval:
-  - capability: database.write
-    environment: production
-  - capability: database.migration
-
-allow:
-  - capability: database.read
-  - capability: database.write
-    environment: staging
+<h1 id="external-policy-backends">External Policy Backends</h1>
+<p>CapFence keeps the local YAML backend as the default policy engine. Advanced users can integrate centralized policy systems through <code>capfence.core.policy_backends</code>.</p>
+<h2 id="backend-contract">Backend contract</h2>
+<p>Input:</p>
+<ul>
+<li>Normalized capability string.</li>
+<li>Context such as actor, environment, tenant, risk level, and tool name.</li>
+<li>Payload with the final tool arguments.</li>
+</ul>
+<p>Output:</p>
+<ul>
+<li><code>verdict</code>: <code>allow</code>, <code>deny</code>, or <code>require_approval</code>.</li>
+<li><code>reason</code>: operator-readable reason.</li>
+<li><code>matched_policy</code>: optional metadata for audit and explain output.</li>
+</ul>
+<h2 id="opa-path">OPA path</h2>
+<p><code>OPAPolicyBackend</code> posts to an OPA HTTP decision endpoint with this input shape:</p>
+<pre><code class="language-json">{
+  &quot;input&quot;: {
+    &quot;capability&quot;: &quot;shell.exec&quot;,
+    &quot;context&quot;: {&quot;environment&quot;: &quot;production&quot;},
+    &quot;payload&quot;: {&quot;command&quot;: &quot;sudo systemctl restart nginx&quot;}
+  }
+}
 </code></pre>
-<h2 id="wrapped-tools">Wrapped tools</h2>
-<pre><code class="language-python">from capfence import CapFenceTool
-
-safe_query = CapFenceTool(
-    tool=ReadOnlyQueryTool(),
-    agent_id=&quot;analytics-agent&quot;,
-    capability=&quot;database.read&quot;,
-    policy_path=&quot;policies/database_agent.yaml&quot;,
-)
-
-safe_write = CapFenceTool(
-    tool=DatabaseWriteTool(),
-    agent_id=&quot;analytics-agent&quot;,
-    capability=&quot;database.write&quot;,
-    policy_path=&quot;policies/database_agent.yaml&quot;,
-)
+<p>Expected response:</p>
+<pre><code class="language-json">{
+  &quot;result&quot;: {
+    &quot;verdict&quot;: &quot;require_approval&quot;,
+    &quot;reason&quot;: &quot;production shell privilege escalation&quot;
+  }
+}
 </code></pre>
-<h2 id="runtime-behavior">Runtime behavior</h2>
-<pre><code class="language-text">SELECT * FROM invoices LIMIT 10
-→ allowed
-
-UPDATE invoices SET status = 'paid' WHERE id = 'inv_123'
-→ requires approval in production
-
-DROP TABLE invoices
-→ denied before execution
-</code></pre>
-<h2 id="why-this-matters">Why this matters</h2>
-<p>Database tools are often exposed to agents as general-purpose query interfaces. CapFence makes the execution boundary explicit: reads can be allowed, writes can require approval, and destructive actions can be denied deterministically.</p>
+<p>OPA timeouts, connection failures, invalid JSON, and invalid decision shapes fail closed as <code>deny</code>.</p>
+<h2 id="cedar-status">Cedar status</h2>
+<p>Cedar support is deferred pending a data-model fit check. CapFence events map naturally to actions and context, but resource modeling varies by tool boundary and requires a clearer entity model before first-class support.</p>
 
 
 
