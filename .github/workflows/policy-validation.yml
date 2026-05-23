@@ -1,0 +1,24 @@
+name: Policy validation
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  policy-fixtures:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install package
+        run: python -m pip install -e .
+      - name: Validate bundled policy files
+        run: |
+          for policy in policies/packs/*/*.yaml; do
+            capfence check-policy "$policy"
+          done
+      - name: Run starter pack fixtures
+        run: capfence policy test tests/fixtures/policy-packs/starter_pack_cases.yaml

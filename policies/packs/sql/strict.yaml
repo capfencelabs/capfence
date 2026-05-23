@@ -1,0 +1,11 @@
+version: 1
+policy_name: sql-strict
+description: Strict SQL policy for production data stores.
+deny:
+  - capability: sql.execute
+    match_keywords: ["DROP", "TRUNCATE", "DELETE", "UPDATE", "ALTER", "CREATE USER", "GRANT", "INSERT", "MERGE"]
+require_approval:
+  - capability: sql.execute
+allow:
+  - capability: sql.execute
+    match_regex: ["^SELECT\\s+.+\\s+FROM\\s+analytics\\.[a-zA-Z0-9_]+\\s+WHERE\\s+.+\\s+LIMIT\\s+[0-9]+"]

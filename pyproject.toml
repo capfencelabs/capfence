@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "capfence"
 version = "0.8.2"
-description = "Runtime governance for AI agents — deterministic fail-closed enforcement. Wraps any agent tool and blocks dangerous calls before execution. Zero LLM calls, zero cloud dependencies, works offline."
+description = "Deterministic execution authorization for AI agent side effects. CapFence gates tool calls before execution, fail-closes unsafe requests, and records decisions for replay."
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.10"
@@ -94,6 +94,7 @@ packages = ["capfence"]
 
 [tool.hatch.build.targets.wheel.force-include]
 "capfence/py.typed" = "capfence/py.typed"
+"policies/packs" = "policies/packs"
 
 [tool.hatch.build.targets.sdist]
 include = [
@@ -101,6 +102,7 @@ include = [
     "tests",
     "examples",
     "docs",
+    "policies",
     "benchmarks",
     "README.md",
     "LICENSE",

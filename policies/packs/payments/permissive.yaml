@@ -1,0 +1,16 @@
+version: 1
+policy_name: payments-permissive
+description: Developer payment policy for sandbox tenants.
+deny:
+  - capability: payment.create
+    match_keywords: ["unsupported_currency", "sanctioned_region"]
+require_approval:
+  - capability: payment.create
+    amount_gt: 1000
+  - capability: transfer.initiate
+    amount_gt: 500
+allow:
+  - capability: payment.create
+  - capability: refund.issue
+  - capability: transfer.initiate
+  - capability: invoice.send

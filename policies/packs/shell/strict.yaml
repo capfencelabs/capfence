@@ -1,0 +1,12 @@
+version: 1
+policy_name: shell-strict
+description: Strict shell execution policy for production and CI agents.
+deny:
+  - capability: shell.exec
+    match_keywords: ["rm -rf", "mkfs", "dd if=", "chmod -R", "| sh", "curl | sh", "wget | sh", ":(){", ">/dev/sd"]
+require_approval:
+  - capability: shell.exec
+    match_keywords: ["sudo", "apt ", "brew ", "pip install", "npm install", "curl", "wget", "ssh", "scp", "kubectl", "terraform"]
+allow:
+  - capability: shell.exec
+    match_regex: ["^(ls|pwd|git status|git diff --stat|python --version)(\\s|$)"]

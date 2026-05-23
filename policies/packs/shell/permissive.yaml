@@ -1,0 +1,11 @@
+version: 1
+policy_name: shell-permissive
+description: Developer shell policy that blocks destructive patterns and allows common diagnostics.
+deny:
+  - capability: shell.exec
+    match_keywords: ["rm -rf /", "mkfs", "dd if=", "chmod -R 777", "curl | sh", "wget | sh"]
+require_approval:
+  - capability: shell.exec
+    match_keywords: ["sudo", "terraform apply", "kubectl delete", "npm install -g"]
+allow:
+  - capability: shell.exec

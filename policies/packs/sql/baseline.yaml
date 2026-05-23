@@ -1,0 +1,12 @@
+version: 1
+policy_name: sql-baseline
+description: Baseline SQL policy for database and warehouse agents.
+deny:
+  - capability: sql.execute
+    match_keywords: ["DROP ", "TRUNCATE ", "DELETE ", "UPDATE ", "ALTER ", "CREATE USER", "GRANT "]
+require_approval:
+  - capability: sql.execute
+    match_keywords: ["SELECT *", "EXPORT", "COPY ", "pii"]
+allow:
+  - capability: sql.execute
+    match_regex: ["^SELECT\\s+.+\\s+FROM\\s+(analytics|reporting)\\."]

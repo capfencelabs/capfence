@@ -2,12 +2,14 @@ site_name: CapFence Docs
 site_description: Documentation for the CapFence project
 nav:
   - Home: index.md
+  - Product Positioning: product-positioning.md
   - Getting Started:
     - Installation: getting-started/installation.md
     - Quickstart: getting-started/quickstart.md
     - First policy: getting-started/first-policy.md
     - First blocked action: getting-started/first-blocked-action.md
   - Architecture:
+    - Security architecture: security/security-architecture.md
     - Audit chain design: architecture/audit-chain-design.md
     - Enforcement flow: architecture/enforcement-flow.md
     - Internal components: architecture/internal-components.md
@@ -37,6 +39,7 @@ nav:
     - Observe mode rollout: guides/observe-mode-rollout.md
     - Protect payment agents: guides/protect-payment-agents.md
     - Protect shell tools: guides/protect-shell-tools.md
+    - Starter policy packs: guides/policy-packs.md
     - Require human approval: guides/require-human-approval.md
     - Replay an incident: guides/replay-an-incident.md
     - Secure MCP servers: guides/secure-mcp-servers.md
@@ -49,6 +52,7 @@ nav:
     - Require SaaS admin approval: recipes/saas-admin-approval.md
   - Integrations:
     - Compatibility matrix: integrations/compatibility.md
+    - External policy backends: integrations/external-policy-backends.md
     - AutoGen: integrations/autogen.md
     - Crewai: integrations/crewai.md
     - Langchain: integrations/langchain.md
@@ -65,6 +69,8 @@ nav:
     - Gate API: reference/gate-api.md
     - Flowtracer API: reference/flowtracer-api.md
     - Audit log format: reference/audit-log-format.md
+  - Release:
+    - Checklist: release/checklist.md
 theme:
   name: material
   language: en

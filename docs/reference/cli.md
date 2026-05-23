@@ -47,6 +47,40 @@ capfence check-policy POLICY_FILE
 
 ---
 
+## `capfence policy test`
+
+Run named policy fixture suites with expected `allow`, `deny`, or `require_approval` verdicts.
+
+```bash
+capfence policy test tests/fixtures/policy-packs/starter_pack_cases.yaml
+capfence policy test tests/fixtures/policy-packs/starter_pack_cases.yaml --json
+```
+
+---
+
+## `capfence policy explain`
+
+Explain the matched policy section, rule, predicate result, and final verdict for an event fixture.
+
+```bash
+capfence policy explain policies/packs/shell/baseline.yaml event.yaml
+capfence policy explain policies/packs/shell/baseline.yaml event.yaml --json
+```
+
+---
+
+## `capfence policy diff`
+
+Compare two policies against the same fixture corpus and group verdict transitions.
+
+```bash
+capfence policy diff policies/packs/shell/strict.yaml policies/packs/shell/permissive.yaml tests/fixtures/policy-packs/starter_pack_cases.yaml
+```
+
+The command highlights newly allowed side effects.
+
+---
+
 ## `capfence verify`
 
 Verify the integrity of a hash-chained audit log.

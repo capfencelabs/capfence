@@ -1,10 +1,10 @@
 # CapFence
 
-> **Execution authorization infrastructure for autonomous systems.**
+Deterministic execution authorization for AI agent side effects.
 
-AI agents are non-deterministic. Real-world execution must not be.
+CapFence intercepts agent tool calls before execution, evaluates explicit policy, fail-closes unsafe requests, and records decisions for replay. Models may propose actions. CapFence authorizes side effects.
 
----
+Prompts are not security boundaries. CapFence removes the LLM from the authorization path.
 
 <p align="center">
   <a href="https://pypi.org/project/capfence/"><img src="https://img.shields.io/pypi/v/capfence?color=blue" alt="PyPI version"></a>
@@ -13,216 +13,121 @@ AI agents are non-deterministic. Real-world execution must not be.
   <a href="https://github.com/capfencelabs/capfence/actions/workflows/ci.yml"><img src="https://github.com/capfencelabs/capfence/actions/workflows/ci.yml/badge.svg" alt="CI Status"></a>
 </p>
 
-CapFence sits between autonomous systems and privileged execution targets (APIs, databases, filesystems, and gateways). It evaluates agent actions against declarative, capability-based policies—allowing, blocking, or queuing actions for approval.
-
-It operates as a **policy enforcement layer and verifiable audit log**, bringing the control of IAM and transaction gateways to autonomous agent runtimes.
-
 ```text
-Agent SDK ──> CapFence Runtime ──> Target System
-                   │
-                   ├── [Allow]    ──> Safe Execution
-                   ├── [Deny]     ──> Blocked
-                   └── [Approval] ──> Temporary / Expiring Grant
+Agent -> Tool Call -> CapFence Policy -> Allow / Deny / Approval -> Audit + Replay
 ```
 
----
+## What Happens At Execution Time
 
-## Why CapFence
+1. An agent requests a tool call.
+2. CapFence receives the capability, actor, payload, and environment.
+3. Policy returns `allow`, `deny`, or `require_approval`.
+4. Unsafe requests are blocked before the downstream system is invoked.
+5. The decision is recorded for audit and deterministic replay.
 
-When autonomous agents call tools that modify cloud infrastructure, query databases, or execute payments, **prompts are not security boundaries.** A prompt can be bypassed, manipulated, or drift under model updates.
+## Install
 
-CapFence introduces an independent enforcement boundary:
-* **Decoupled Access Control:** Policy logic is isolated from the LLM and evaluated locally using a fast capability engine.
-* **Fail-Closed by Default:** If policy validation or audit logging fails, the action is blocked.
-* **Tamper-Evident Audit Trails:** Every decision is committed to a hash-chained, verifiable audit trail to prevent retroactive log alterations.
-
----
-
-## Example Scenarios
-
-### Preventing unauthorized fund transfers
-A treasury agent attempts to transfer corporate funds beyond its approved daily threshold.
-
-CapFence intercepts the action before execution, requiring an expiring human-in-the-loop pre-authorization.
-
-### Blocking destructive shell execution
-An autonomous ops agent attempts to run:
 ```bash
-rm -rf /var/lib/postgresql
+pip install capfence
 ```
-CapFence intercepts the raw CLI command string before execution and blocks it using local deterministic deny policies.
 
-### Sandboxing desktop agent MCP tools
-A local IDE agent hijacked by repository-level prompt injection attempts to read files outside the project workspace.
+## First Blocked Action
 
-CapFence gateway proxies the stdio JSON-RPC stream, blocking host traversals and returning standard protocol errors.
-
-### Guarding database writes and schema changes
-An SQL-generating analytics agent attempts to drop tables or run unindexed bulk deletes.
-
-CapFence parses the generated queries pre-execution, blocking DDL/DML operations before they hit the connection pool.
-
-### Enforcing multi-agent trust and lineage
-A compromised public-facing routing agent propagates a prompt-injected payload to a privileged billing agent.
-
-CapFence tracks the full node execution lineage, blocking execution if the transaction has been touched by an unverified node.
-
----
-
-## 10-Second Example
-
-### 1. Define Capability Policies (`policies/ops.yaml`)
-Establish strict, resource-action-scope access limits. Unmatched capabilities default to deny.
+Define a policy:
 
 ```yaml
-policy_name: Production Security Policy
-version: 2.0.0
+deny:
+  - capability: shell.exec.production
+    contains: "rm -rf"
 
 allow:
-  - filesystem.read.workspace
-
-require_approval:
-  - payment.transfer.*
-  - deployment.execute.production
-
-deny:
-  - filesystem.delete.workspace
-  - shell.execute.*
+  - capability: shell.exec.readonly
 ```
 
-### 2. Enforce at the Runtime Boundary
-Initialize CapFence and evaluate actions before execution:
+Evaluate before execution:
 
 ```python
-from capfence import ActionRuntime, ActionEvent
+from capfence import ActionEvent, ActionRuntime
 
-# 1. Initialize the runtime directly from a policy file
-runtime = ActionRuntime.from_policy("policies/ops.yaml")
+runtime = ActionRuntime.from_policy("policies/shell.yaml")
 
-# 2. Represent the action as a governed event
 event = ActionEvent.create(
-    actor="deployment-agent",
-    action="execute",
-    resource="deployment",
-    environment="production"
+    actor="ops-agent",
+    resource="shell",
+    action="exec",
+    environment="production",
+    payload={"command": "rm -rf /var/lib/postgresql"},
 )
 
-# 3. Enforce the decision
 verdict = runtime.execute(event)
 
 if not verdict.authorized:
-    raise PermissionError(f"Action blocked by CapFence: {verdict.reason}")
+    raise PermissionError(f"Blocked before execution: {verdict.reason}")
 ```
 
----
+Expected result:
 
-## Policy Simulation & Incident Replay
-
-The `ReplayEngine` allows you to dry-run policy changes and reconstruct past execution traces.
-
-```python
-from capfence import ReplayEngine
-
-# Replay historical traces against a new candidate policy to validate safety
-engine = ReplayEngine()
-summary = engine.simulate_policy(
-    trace_path="traces/incident_log.jsonl",
-    policy_path="policies/ops_v2.yaml"
-)
-
-print(f"Total Replayed: {summary.total_events} | Blocked: {summary.blocked}")
+```text
+decision: DENY
+reason: policy_deny
+tool_invoked: false
 ```
 
-* **Incident Reconstruction:** Re-evaluate exactly what would have occurred under a historical event trace.
-* **Policy Validation:** Prevent regressions by testing candidate policy changes against real transaction logs before deployment.
+Replay the decision:
 
----
-
-## Command Line Interface
-
-CapFence integrates directly into standard CI/CD and operations workflows.
-
-### Grant Temporary Pre-Authorizations
-Grant temporary, expiring capabilities to an active agent:
 ```bash
-# Grant 10-minute push access to a hotfix agent
-capfence grant --actor hotfix-agent --capability github.push.main --duration 600
+capfence replay audit.jsonl --policy policies/shell.yaml
 ```
 
-### Dry-Run Trace Simulations
-Replay execution logs against a candidate policy:
-```bash
-capfence replay traces/agent_trace.jsonl --policy policies/ops_v2.yaml
+Replay output:
+
+```text
+Recorded: shell.exec.production
+Original: DENY
+Replayed: DENY
+Changed:  false
 ```
 
-### Verify Audit Log Integrity
-Verify that audit database entries have not been modified:
-```bash
-capfence verify --audit-log audit.db
-```
+## Use CapFence For
 
-### Codebase Scanning
-Scan Python projects to ensure all tools are gated by CapFence:
-```bash
-capfence check ./src --fail-on-ungated
-```
+- `shell.exec` boundaries before a process is spawned.
+- MCP tool authorization before the upstream server receives a request.
+- Filesystem scope enforcement before secrets or repo-external paths are read.
+- Database write and schema-change controls before queries execute.
+- Payment or API action thresholds before external state changes.
 
----
+## CapFence Is Not
 
-## Model Context Protocol (MCP) Governance
+- An AI governance platform.
+- An observability product.
+- An orchestration framework.
+- A prompt guardrail.
+- An AI judge.
+- A compliance dashboard.
 
-CapFence natively implements **Model Context Protocol (MCP)** execution controls, providing both a transparent stdio proxy gateway and an in-process session adapter to intercept and authorize tool invocations before they reach underlying systems.
+## Core Docs
 
-### 1. Transparent Proxy Gateway (`MCPGatewayServer`)
-Run a secure stdio proxy between any MCP client (such as Claude Desktop or Cursor) and an upstream tool server process. If a tool call violates capability policy, the gateway intercepts the request and responds with a standard JSON-RPC error.
+- [Runtime authorization](docs/concepts/runtime-authorization.md)
+- [Policy model](docs/concepts/policy-model.md)
+- [Fail-closed enforcement](docs/concepts/fail-closed-enforcement.md)
+- [Replayability](docs/concepts/replayability.md)
+- [Threat model](docs/architecture/threat-model.md)
+- [MCP interception model](docs/architecture/mcp-interception-model.md)
 
-```python
-from capfence import MCPGatewayServer
+## Status
 
-# Initialize proxy wrapping any upstream server command
-gateway = MCPGatewayServer(
-    upstream_command=["python", "-m", "mcp_server_filesystem", "/tmp"],
-    policy_path="policies/ops.yaml",
-    agent_id="mcp-file-agent",
-)
+CapFence is pre-1.0 public beta infrastructure. The core local YAML policy runtime is intended for production pilots, while framework adapters, policy packs, external policy backends, and release automation should be validated in your environment before high-risk use.
 
-# Start stdio proxying (blocks and intercepts tool calls dynamically)
-gateway.run()
-```
+CapFence controls the gated tool path. It does not replace sandboxing, secrets management, network segmentation, downstream IAM, or database-native controls.
 
-### 2. In-Process Client Session Adapter (`CapFenceMCPSession`)
-Wrap any active `mcp.ClientSession` instance in-process. CapFence evaluates every `call_tool` request against the active capability runtime. If rejected, it raises `AgentActionBlocked` without forwarding to the server.
+| Capability | Maturity |
+| --- | --- |
+| Local YAML policy evaluation | Beta |
+| Audit hash chaining and replay | Beta |
+| LangChain, LangGraph, CrewAI, OpenAI Agents SDK adapters | Beta |
+| MCP, PydanticAI, LlamaIndex, AutoGen adapters | Experimental |
+| Starter policy packs and OPA backend path | Experimental |
 
-```python
-from capfence import CapFenceMCPSession
-
-# Wrap any active MCP client session dynamically
-gated_session = CapFenceMCPSession(
-    underlying_session=mcp_client_session,
-    policy_path="policies/ops.yaml",
-    agent_id="mcp-agent-1"
-)
-
-# Calls are intercepted and audited seamlessly before execution
-response = await gated_session.call_tool("filesystem_write", {"path": "/tmp/test", "content": "data"})
-```
-
----
-
-## Operational Scope
-
-CapFence enforces runtime policy boundaries. It does not replace:
-* **Process Sandboxing:** Always run agents inside isolated runtimes (Docker, gVisor).
-* **Least-Privilege Infrastructure:** Cloud IAM policies and database access credentials must remain strictly locked down.
-* **Network Isolation:** Restrict network egress to prevent unauthorized public connections.
-
----
-
-## Project Info
-* **Documentation:** https://capfencelabs.github.io/capfence/
-* **PyPI:** https://pypi.org/project/capfence/
-* **Repository:** https://github.com/capfencelabs/capfence
-
----
-
-MIT License | Built by [CapFence Labs](https://github.com/capfencelabs)
+- Docs: https://capfence.dev/
+- PyPI: https://pypi.org/project/capfence/
+- Repository: https://github.com/capfencelabs/capfence
