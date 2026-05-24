@@ -21,6 +21,7 @@ nav:
     - Replayability: concepts/replayability.md
     - Runtime authorization: concepts/runtime-authorization.md
     - Trust propagation: concepts/trust-propagation.md
+    - Why not sandboxing, OPA, or prompt guardrails?: concepts/why-not-sandboxing-opa-guardrails.md
   - Compliance:
     - EU AI Act: compliance/eu-ai-act.md
     - Governance & Reporting: compliance/governance-reporting.md

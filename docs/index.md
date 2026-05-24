@@ -78,6 +78,7 @@ if not verdict.authorized:
 - [Replayability](concepts/replayability.md)
 - [Threat model](architecture/threat-model.md)
 - [MCP interception model](architecture/mcp-interception-model.md)
+- [Why not sandboxing, OPA, or prompt guardrails?](concepts/why-not-sandboxing-opa-guardrails.md)
 
 ## What CapFence is not
 
