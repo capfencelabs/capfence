@@ -32,7 +32,7 @@ from capfence.core.policy_testing import (
 )
 from capfence.core.replay import ReplayEngine
 
-__version__ = "0.8.2"
+__version__ = "0.8.3"
 
 
 @click.group()
