@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "capfence"
-version = "0.8.2"
+version = "0.8.3"
 description = "Deterministic execution authorization for AI agent side effects. CapFence gates tool calls before execution, fail-closes unsafe requests, and records decisions for replay."
 readme = "README.md"
 license = { text = "MIT" }

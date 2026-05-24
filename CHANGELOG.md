@@ -11,6 +11,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.3] - 2026-05-24
+
+### Added
+- Policy development CLI commands: `capfence policy test`, `capfence policy explain`, and `capfence policy diff`.
+- Starter policy packs for shell, filesystem/MCP, SQL, payments, and Kubernetes boundaries.
+- Policy fixture runner and explain helpers for repeatable policy testing.
+- Optional policy backend interfaces with local YAML and OPA HTTP backend scaffolding.
+- Security architecture, product positioning, external policy backend, policy pack, and release checklist documentation.
+- CI policy fixture validation and release provenance workflow examples.
+
+### Changed
+- Public maturity language now consistently describes CapFence as pre-1.0 public beta infrastructure.
+- Package artifacts now include bundled starter policy packs.
+- Policy explain output now reports explicit `default_deny` internally while CLI fixtures display it as `deny`.
+
+### Fixed
+- Conditional policy rules no longer fall back to capability-only allow matching when no condition matches.
+- Shell baseline pack no longer permits broad `cat ./...` access that could expose workspace secrets.
+
 ## [0.7.0] - 2026-05-15
 
 ### Changed
