@@ -1,0 +1,6 @@
+requested: payments.refund
+amount: 2500 USD
+merchant_id: unknown
+decision: DENY
+reason: amount exceeds maximum refund limit and merchant is not approved
+tool_invoked: false

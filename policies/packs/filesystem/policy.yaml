@@ -1,0 +1,18 @@
+version: 1
+policy_name: filesystem-side-effects
+description: Starter authorization policy for workspace-scoped filesystem access.
+
+deny:
+  - capability: filesystem.read
+    match_keywords: ["../", "~/.ssh", "/etc/passwd", ".env", "id_rsa"]
+  - capability: filesystem.write
+    match_keywords: ["../", "~/.ssh", "/etc/passwd", ".env", "id_rsa"]
+  - capability: filesystem.delete
+
+allow:
+  - capability: filesystem.read
+    path_prefix: "./workspace/"
+  - capability: filesystem.write
+    path_prefix: "./workspace/"
+  - capability: filesystem.list
+    path_prefix: "./workspace/"

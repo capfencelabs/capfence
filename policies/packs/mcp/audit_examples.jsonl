@@ -1,0 +1,2 @@
+{"actor":"ide-agent","tool":"mcp.filesystem.read","payload":{"path":"~/.ssh/id_rsa"},"decision":"deny","reason":"secret_file_path","upstream_mcp_invoked":false}
+{"actor":"ide-agent","tool":"mcp.filesystem.read","payload":{"path":"./workspace/report.md"},"decision":"allow","reason":"workspace_path","upstream_mcp_invoked":true}

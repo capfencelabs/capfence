@@ -1,0 +1,1 @@
+{"audit_id":"aud_shell_001","actor":"ops-agent","tool":"shell.exec","action":"execute","resource":"host:prod-db-01","environment":"production","decision":"deny","reason":"destructive_or_secret_exfiltration_risk","tool_invoked":false,"payload":{"command":"rm -rf /var/lib/postgresql"}}

@@ -1,0 +1,10 @@
+{
+  "actor": "ops-agent",
+  "tool": "shell.exec",
+  "action": "execute",
+  "resource": "host:prod-db-01",
+  "environment": "production",
+  "payload": {
+    "command": "rm -rf /var/lib/postgresql"
+  }
+}

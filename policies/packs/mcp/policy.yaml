@@ -1,0 +1,20 @@
+version: 1
+policy_name: mcp-side-effects
+description: Starter authorization policy for MCP filesystem and tool calls.
+
+deny:
+  - capability: mcp.filesystem.read
+    match_keywords: ["../", "~/.ssh", "/etc/passwd", ".env", "id_rsa"]
+  - capability: mcp.filesystem.write
+    match_keywords: ["../", "~/.ssh", "/etc/passwd", ".env", "id_rsa"]
+  - capability: mcp.filesystem.delete
+  - capability: mcp.shell.exec
+    match_keywords: ["rm -rf", "curl ", "| bash"]
+
+allow:
+  - capability: mcp.filesystem.read
+    path_prefix: "./workspace/"
+  - capability: mcp.filesystem.write
+    path_prefix: "./workspace/"
+  - capability: mcp.filesystem.list
+    path_prefix: "./workspace/"

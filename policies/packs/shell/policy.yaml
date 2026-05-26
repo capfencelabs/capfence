@@ -1,0 +1,15 @@
+version: 1
+policy_name: shell-side-effects
+description: Starter authorization policy for shell side effects.
+
+deny:
+  - capability: shell.exec
+    match_keywords: ["rm -rf", "mkfs", "dd if=", ".env", "id_rsa", "credentials"]
+
+require_approval:
+  - capability: shell.exec
+    match_keywords: ["sudo", "curl ", "wget ", "pip install", "npm install -g"]
+
+allow:
+  - capability: shell.exec
+    match_regex: ["^(ls|pwd|git status)(\\s|$)", "^cat\\s+(README.md|docs/[^;&|`$]+)$"]

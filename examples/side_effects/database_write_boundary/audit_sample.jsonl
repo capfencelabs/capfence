@@ -1,0 +1,1 @@
+{"audit_id":"aud_db_001","actor":"analytics-agent","tool":"database.query","action":"execute","resource":"db:customers","environment":"production","decision":"deny","reason":"destructive_schema_change_in_production","tool_invoked":false,"payload":{"query":"DROP TABLE customers;"}}

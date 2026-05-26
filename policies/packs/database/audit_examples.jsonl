@@ -1,0 +1,2 @@
+{"actor":"analytics-agent","tool":"database.query","environment":"production","payload":{"query":"DROP TABLE customers;"},"decision":"deny","reason":"destructive_schema_change","tool_invoked":false}
+{"actor":"analytics-agent","tool":"database.query","environment":"production","payload":{"query":"SELECT name FROM customers WHERE id = 1 LIMIT 1"},"decision":"allow","reason":"bounded_read","tool_invoked":true}

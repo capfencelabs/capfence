@@ -1,0 +1,5 @@
+requested: database.query
+query: DROP TABLE customers;
+decision: DENY
+reason: destructive_schema_change_in_production
+tool_invoked: false

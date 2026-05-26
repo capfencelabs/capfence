@@ -1,0 +1,21 @@
+version: 1
+policy_name: production-shell-boundary
+description: Blocks destructive and secret-exfiltrating shell commands in production.
+
+deny:
+  - capability: shell.exec
+    environment: production
+    match_keywords:
+      - "rm -rf"
+      - "curl "
+      - "| bash"
+      - ".aws/credentials"
+      - ".ssh/id_rsa"
+
+allow:
+  - capability: shell.exec
+    environment: production
+    match_regex:
+      - "^ls\\s"
+      - "^cat\\s+/var/log/"
+      - "^systemctl\\s+status\\s"

@@ -1,14 +1,14 @@
 # CapFence Docs
 
-CapFence is deterministic execution authorization for AI agent side effects.
+CapFence is the authorization gateway between AI agents and real-world side effects.
 
-It intercepts agent tool calls before execution, evaluates explicit policy, fail-closes unsafe requests, and records decisions for replay. Models may propose actions. CapFence authorizes side effects.
+Models may propose actions. CapFence decides whether those actions are allowed before execution.
 
-```text
-Agent -> Tool Call -> Policy Evaluation -> Allow / Deny / Approval -> Audit + Replay
+```txt
+Agent -> Proposed action -> CapFence -> Gated executor -> Tool
 ```
 
-Prompts are not security boundaries. CapFence removes the LLM from the authorization path.
+Denied actions do not reach the downstream tool.
 
 ## Start here
 
@@ -72,8 +72,12 @@ if not verdict.authorized:
 ## What to read
 
 - [First blocked action](getting-started/first-blocked-action.md)
+- [Agent authority model](concepts/agent-authority-model.md)
+- [Action authorization](concepts/action-authorization.md)
 - [Runtime authorization](concepts/runtime-authorization.md)
 - [Policy model](concepts/policy-model.md)
+- [Decision receipts](audit/decision-receipts.md)
+- [Credential placement](security/credential-placement.md)
 - [Fail-closed enforcement](concepts/fail-closed-enforcement.md)
 - [Replayability](concepts/replayability.md)
 - [Threat model](architecture/threat-model.md)

@@ -1,0 +1,1 @@
+DESTRUCTIVE_QUERY = "DROP TABLE customers;"

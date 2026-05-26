@@ -1,0 +1,2 @@
+{"actor":"ide-agent","tool":"filesystem.read","payload":{"path":"~/.ssh/id_rsa"},"decision":"deny","reason":"secret_file_path","tool_invoked":false}
+{"actor":"ide-agent","tool":"filesystem.write","payload":{"path":"./workspace/output.json"},"decision":"allow","reason":"workspace_path","tool_invoked":true}

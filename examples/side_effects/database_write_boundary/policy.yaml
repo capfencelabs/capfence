@@ -1,0 +1,22 @@
+version: 1
+policy_name: database-write-boundary
+description: Blocks destructive production SQL and requires approval for writes.
+
+deny:
+  - capability: database.query
+    environment: production
+    match_regex:
+      - "\\b(DROP|TRUNCATE|ALTER)\\b"
+      - "^\\s*SELECT\\s+\\*"
+
+require_approval:
+  - capability: database.query
+    environment: production
+    match_regex:
+      - "\\b(UPDATE|DELETE|INSERT)\\b"
+
+allow:
+  - capability: database.query
+    environment: production
+    match_regex:
+      - "^\\s*SELECT\\s+.+\\s+WHERE\\s+.+\\s+LIMIT\\s+\\d+"
