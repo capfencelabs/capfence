@@ -6,7 +6,7 @@ and immutable audit logging for high-risk operations.
 
 from __future__ import annotations
 
-__version__ = "0.8.3"
+__version__ = "0.8.4"
 
 # Core Enforcement Primitives
 from capfence.core.runtime import ActionEvent, ActionRuntime, ExecutionVerdict

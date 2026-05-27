@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "capfence"
-version = "0.8.3"
+version = "0.8.4"
 description = "Authorization gateway for AI agent side effects. CapFence lets agents propose tool calls, then enforces deterministic allow, deny, or approval decisions before shell, database, filesystem, payment, API, or MCP execution."
 readme = "README.md"
 license = { text = "MIT" }
