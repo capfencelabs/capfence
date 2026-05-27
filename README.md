@@ -6,6 +6,8 @@ Models may propose actions. CapFence decides whether those actions are allowed b
 
 Use CapFence when agents can touch shell commands, databases, filesystems, payment APIs, internal APIs, SaaS admin tools, or MCP servers.
 
+Use CapFence for AI agent authorization, agent tool-call authorization, MCP tool authorization, pre-execution policy checks, and security controls for agents that can cause real-world side effects.
+
 <p align="center">
   <a href="https://pypi.org/project/capfence/"><img src="https://img.shields.io/pypi/v/capfence?color=blue" alt="PyPI version"></a>
   <a href="https://pypi.org/project/capfence/"><img src="https://img.shields.io/pypi/pyversions/capfence" alt="Python versions"></a>
@@ -32,11 +34,35 @@ rm -rf /var/lib/postgresql
 CapFence returns:
 
 ```txt
-Decision: DENY
+Decision: deny
 Reason: destructive production filesystem operation
 Tool invoked: false
 Replay: capfence replay audit_sample.jsonl --policy policy.yaml
 ```
+
+The command is blocked before the process is spawned.
+
+## Approval Required Action
+
+A support agent proposes:
+
+```python
+refund_customer(customer_id="cus_123", amount=5000, reason="billing issue")
+```
+
+The agent may be allowed to request refunds, but not every refund should execute automatically.
+
+CapFence can evaluate the actor, tool, action, resource, amount, environment, and context before execution.
+
+Example policy outcome:
+
+```txt
+Decision: require_approval
+Reason: refund amount exceeds automatic approval threshold
+Tool invoked: false
+```
+
+CapFence does not only ask whether an agent can call a tool. It asks whether this specific action, with these arguments, should be allowed now.
 
 ## Install
 
@@ -81,7 +107,7 @@ if not verdict.authorized:
 Expected result:
 
 ```text
-decision: DENY
+decision: deny
 reason: policy_deny
 tool_invoked: false
 ```
@@ -131,6 +157,31 @@ The operational question is:
 
 CapFence is built for that boundary.
 
+## What CapFence Checks
+
+CapFence authorization decisions can include:
+
+- actor: which agent or user is requesting the action
+- capability: what permission boundary is being exercised
+- tool: which tool, API, MCP server, or executor is being called
+- action: what operation is being performed
+- resource: what object, system, or environment is affected
+- payload: what arguments or parameters are being passed
+- environment: development, staging, or production
+- policy: which allow, deny, or approval rule applies
+- audit state: what decision was made and how it can be replayed
+
+This makes CapFence different from simple tool allowlists. The risk is often not only the tool name. The risk is the arguments and context of the tool call.
+
+For example:
+
+```txt
+refund_customer(amount=50)      -> allow
+refund_customer(amount=5000)    -> require_approval or deny
+```
+
+Both calls use the same tool. They should not necessarily receive the same authorization decision.
+
 ## How CapFence Is Different
 
 | Category | What it controls | Weakness | CapFence difference |
@@ -144,11 +195,17 @@ CapFence is built for that boundary.
 
 ## Use CapFence For
 
-- `shell.exec` boundaries before a process is spawned.
-- MCP tool authorization before the upstream server receives a request.
-- Filesystem scope enforcement before secrets or repo-external paths are read.
-- Database write and schema-change controls before queries execute.
-- Payment or API action thresholds before external state changes.
+- AI agent authorization before tool execution
+- agent tool-call authorization for risky actions
+- pre-execution authorization for AI agents
+- MCP tool authorization before upstream servers receive requests
+- human approval workflows for sensitive agent actions
+- tool-call policy enforcement across agents and executors
+- shell command authorization before a process is spawned
+- filesystem scope enforcement before secrets or repo-external paths are read
+- database write and schema-change controls before queries execute
+- payment, refund, CRM, email, SaaS admin, and internal API thresholds before external state changes
+- audit replay for policy decisions and blocked actions
 
 ## CapFence Is Not
 
@@ -158,6 +215,11 @@ CapFence is built for that boundary.
 - A prompt guardrail.
 - An AI judge.
 - A compliance dashboard.
+- A replacement for downstream IAM, sandboxing, network controls, or database permissions.
+
+CapFence focuses on one specific boundary:
+
+> Should this agent action be allowed before execution?
 
 ## Core Docs
 
