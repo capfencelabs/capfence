@@ -2,6 +2,7 @@
 
 import os
 import tempfile
+import time
 
 from capfence.core.keys import (
     generate_keypair,
@@ -12,6 +13,8 @@ from capfence.core.keys import (
     _private_key_path,
     _public_key_path,
 )
+from capfence import ActionEvent, ExecutionVerdict
+from capfence.core.audit import AuditLogger
 
 
 class TestKeypairLifecycle:
@@ -71,3 +74,39 @@ class TestSignVerify:
             fields = {"agent_id": "a", "decision": "pass", "timestamp": 1.0}
             sig = sign_entry(fields, priv1)
             assert verify_entry(fields, sig, pub2) is False
+
+    def test_invalid_signature_encoding_fails(self):
+        fields = {"agent_id": "a", "decision": "pass", "timestamp": 1.0}
+        assert verify_entry(fields, "not base64", "not base64") is False
+
+
+class TestSignedAuditVerification:
+    def test_signed_audit_log_verifies_and_detects_tampering(self, monkeypatch):
+        with tempfile.TemporaryDirectory() as tmp:
+            monkeypatch.setenv("HOME", tmp)
+            audit = AuditLogger(db_path=":memory:", sign_entries=True)
+            event = ActionEvent.create(
+                actor="agent",
+                action="read",
+                resource="filesystem",
+                environment="production",
+                risk="low",
+            )
+            audit.record_event(
+                ExecutionVerdict(
+                    authorized=True,
+                    decision="allow",
+                    reason="policy_allow",
+                    event=event,
+                    timestamp=time.time(),
+                )
+            )
+
+            valid, errors = audit.verify()
+            assert valid is True
+            assert errors == []
+
+            audit._db.execute("UPDATE audit_events SET signature = ? WHERE id = 1", ("tampered",))
+            valid_after, errors_after = audit.verify()
+            assert valid_after is False
+            assert any("signature verification failed" in error for error in errors_after)

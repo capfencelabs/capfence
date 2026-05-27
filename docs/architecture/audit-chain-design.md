@@ -33,7 +33,7 @@ Changing an old row changes its hash. Because the next row stores the previous h
 
 ## Signing
 
-When signing is enabled, entries can be signed with Ed25519. Hash chaining detects mutation; signatures help prove the entry was produced by a holder of the signing key.
+When signing is enabled, entries can be signed with Ed25519 if `capfence[crypto]` is installed. Hash chaining detects mutation; signatures help prove the entry was produced by a holder of the signing key. Without the optional crypto dependency, CapFence uses a compatibility fallback for local testing only.
 
 ## Verification
 
@@ -42,4 +42,3 @@ capfence verify --audit-log audit.db
 ```
 
 Verification recomputes hashes and checks the chain from the first entry to the latest entry.
-

@@ -12,7 +12,7 @@ from typing import Any, TYPE_CHECKING
 
 
 from capfence.core.chain import compute_entry_hash, verify_chain_from_rows
-from capfence.core.keys import ensure_keypair, sign_entry
+from capfence.core.keys import ensure_keypair, load_keypair, sign_entry, verify_entry
 from capfence.core.db import SQLiteDBEngine
 
 if TYPE_CHECKING:
@@ -230,9 +230,60 @@ class AuditLogger:
             )
 
     def verify(self) -> tuple[bool, list[str]]:
-        """Verify hash-chain integrity of the entire audit log."""
+        """Verify hash-chain integrity and any stored entry signatures."""
         rows = self.get_events_chronological(limit=1000000)
-        return verify_chain_from_rows(rows)
+        chain_valid, errors = verify_chain_from_rows(rows)
+
+        signed_rows = [row for row in rows if row.get("signature")]
+        if not signed_rows:
+            return chain_valid, errors
+
+        keypair = load_keypair()
+        if keypair is None:
+            errors.append("Signed audit entries exist, but no audit public key is available.")
+            return False, errors
+
+        public_key, _private_key = keypair
+        for row in signed_rows:
+            fields = _signature_fields_from_row(row)
+            if not verify_entry(fields, str(row["signature"]), public_key):
+                errors.append(f"Entry {row.get('id')}: signature verification failed.")
+
+        return chain_valid and not errors, errors
+
+
+def _signature_fields_from_row(row: dict[str, Any]) -> dict[str, Any]:
+    """Rebuild the canonical field set used when a signed row was recorded."""
+    fields: dict[str, Any] = {
+        "agent_id": row.get("agent_id"),
+        "task_context": row.get("task_context"),
+        "risk_category": row.get("risk_category"),
+        "decision": row.get("decision"),
+        "risk_score": row.get("risk_score"),
+        "threshold": row.get("threshold"),
+        "payload_hash": row.get("payload_hash"),
+        "reason": row.get("reason"),
+        "latency_ms": row.get("latency_ms"),
+        "timestamp": row.get("timestamp"),
+    }
+
+    extended_fields = {
+        "actor": row.get("actor"),
+        "action": row.get("action"),
+        "resource": row.get("resource"),
+        "environment": row.get("environment"),
+        "capability": row.get("capability"),
+        "approval_state": row.get("approval_state"),
+        "policy_decision": row.get("policy_decision"),
+        "execution_result": row.get("execution_result"),
+        "metadata_json": row.get("metadata_json"),
+    }
+    if any(value is not None for value in extended_fields.values()):
+        fields.update(extended_fields)
+
+    fields["prev_hash"] = row.get("prev_hash", "")
+    fields["entry_hash"] = row.get("entry_hash", "")
+    return fields
 
 
 # Alias ImmutableAuditTrail as AuditLogger

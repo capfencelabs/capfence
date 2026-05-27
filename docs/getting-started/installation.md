@@ -17,6 +17,9 @@ pip install "capfence[langchain]"
 # CrewAI support
 pip install "capfence[crewai]"
 
+# Ed25519 audit signatures
+pip install "capfence[crypto]"
+
 ```
 
 ## Verify the installation

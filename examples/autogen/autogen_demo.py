@@ -1,5 +1,7 @@
-"""Minimal AutoGen Integration Demo."""
-from capfence import ActionEvent, ActionRuntime, ApprovalEngine, AuditLogger, CapabilitySystem
+"""Minimal AutoGen integration demo."""
+from capfence import ActionRuntime, ApprovalEngine, AuditLogger, CapabilitySystem
+from capfence.errors import AgentActionBlocked
+from capfence.framework.autogen import CapFenceAutoGenTool
 
 caps = CapabilitySystem()
 caps.load_policy({"deny": ["shell.execute"]})
@@ -13,17 +15,16 @@ def mock_shell_tool(command: str) -> str:
     """Mock AutoGen tool."""
     return "Executed"
 
-# In a real AutoGen setup, you would use wrap_tool
-# For this demo, we simulate direct gating:
-print("Attempting to run a dangerous command...")
-event = ActionEvent.create(
-    actor="autogen-agent",
-    action="execute",
-    resource="shell",
-    risk="critical",
-    payload={"command": "exec rm -rf /"},
+safe_shell = CapFenceAutoGenTool(
+    tool=mock_shell_tool,
+    name="shell",
+    agent_id="autogen-agent",
+    risk_category="critical",
+    gate=runtime,
 )
-result = runtime.execute(event)
 
-if not result.authorized:
-    print(f"BLOCKED: {result.reason}")
+print("Attempting to run a dangerous command...")
+try:
+    safe_shell("exec rm -rf /")
+except AgentActionBlocked as e:
+    print(f"BLOCKED: {e.detail}")

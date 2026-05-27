@@ -6,7 +6,7 @@ and immutable audit logging for high-risk operations.
 
 from __future__ import annotations
 
-__version__ = "0.8.4"
+__version__ = "0.9.0"
 
 # Core Enforcement Primitives
 from capfence.core.runtime import ActionEvent, ActionRuntime, ExecutionVerdict
@@ -35,6 +35,10 @@ from capfence.core.scorer import BaseScorer, KeywordScorer, RegexASTScorer, Adap
 from capfence.framework.langchain import CapFenceTool
 from capfence.framework.langgraph import CapFenceToolNode
 from capfence.framework.openai_agents import CapFenceOpenAITool
+from capfence.framework.crewai import CapFenceCrewAITool
+from capfence.framework.autogen import CapFenceAutoGenTool
+from capfence.framework.llamaindex import CapFenceLlamaIndexTool
+from capfence.framework.pydanticai import CapFencePydanticTool
 from capfence.mcp.gateway import MCPGatewayServer
 from capfence.mcp.adapter import CapFenceMCPSession
 
@@ -81,6 +85,10 @@ __all__ = [
     "CapFenceTool",
     "CapFenceToolNode",
     "CapFenceOpenAITool",
+    "CapFenceCrewAITool",
+    "CapFenceAutoGenTool",
+    "CapFenceLlamaIndexTool",
+    "CapFencePydanticTool",
     "MCPGatewayServer",
     "CapFenceMCPSession",
 ]

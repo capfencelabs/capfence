@@ -186,10 +186,13 @@ def verify_entry(fields: dict[str, Any], signature_b64: str, public_key_b64: str
     Returns:
         True if signature is valid, False otherwise.
     """
-    canonical = json.dumps(fields, sort_keys=True, separators=(",", ":"), ensure_ascii=False, default=str)
-    message = canonical.encode("utf-8")
-    sig_bytes = base64.b64decode(signature_b64)
-    pub_bytes = base64.b64decode(public_key_b64)
+    try:
+        canonical = json.dumps(fields, sort_keys=True, separators=(",", ":"), ensure_ascii=False, default=str)
+        message = canonical.encode("utf-8")
+        sig_bytes = base64.b64decode(signature_b64)
+        pub_bytes = base64.b64decode(public_key_b64)
+    except Exception:
+        return False
 
     if _HAS_CRYPTOGRAPHY:
         if sig_bytes.startswith(b"FALLBACK:"):
@@ -203,6 +206,6 @@ def verify_entry(fields: dict[str, Any], signature_b64: str, public_key_b64: str
     else:
         # Fallback verification using constant-time comparison
         if sig_bytes.startswith(b"FALLBACK:"):
-            expected = hashlib.sha256(base64.b64decode(public_key_b64) + message).digest()
+            expected = hashlib.sha256(pub_bytes + message).digest()
             return hmac.compare_digest(sig_bytes[len(b"FALLBACK:"):], expected)
         return False

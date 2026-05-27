@@ -35,7 +35,7 @@ flowchart LR
 
 1. **Deterministic Enforcement**: Evaluate the exact JSON-RPC payload (`params.arguments`) against your policy before it reaches the MCP server.
 2. **Fail-Closed Blockage**: If an MCP tool call attempts to access a protected resource, the Gateway intercepts the call and returns a standardized JSON-RPC Error (`-32000`) instead of executing.
-3. **Audit Trail**: Every MCP interaction is cryptographically recorded in the local hash-chained SQLite log for compliance reporting.
+3. **Audit Trail**: Every MCP interaction is recorded in the local hash-chained SQLite log for compliance reporting, with optional entry signatures when signing is enabled.
 
 ## Example Usage
 
@@ -43,7 +43,7 @@ Run the CapFence gateway as a wrapper around an existing MCP server (like the fi
 
 ```python
 from capfence.mcp.gateway import MCPGatewayServer
-from capfence.core.gate import Gate
+from capfence import ActionRuntime
 
 gateway = MCPGatewayServer(
     # The actual MCP server command

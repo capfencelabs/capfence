@@ -47,11 +47,10 @@ For multi-machine environments, point all nodes at a shared network path for the
 
 ```python
 from capfence.core.audit import AuditLogger
-from capfence.core.gate import Gate
+from capfence import ActionRuntime
 
-gate = Gate(
-    audit_logger=AuditLogger(db_path="/shared/nfs/capfence/audit.db")
-)
+runtime = ActionRuntime.from_policy("/etc/capfence/policy.yaml")
+runtime.audit_trail = AuditLogger(db_path="/shared/nfs/capfence/audit.db")
 ```
 
 ## Log export for offline analysis

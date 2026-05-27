@@ -20,6 +20,7 @@ from pathlib import Path
 
 import click
 
+from capfence import __version__
 from capfence.check import scan_directory, scan_file, compute_aggregate_score, ToolFinding
 from capfence.core.audit import AuditLogger
 from capfence.core.approvals import ApprovalManager
@@ -32,9 +33,6 @@ from capfence.core.policy_testing import (
 )
 from capfence.core.replay import ReplayEngine
 
-__version__ = "0.8.4"
-
-
 @click.group()
 @click.version_option(version=__version__, prog_name="capfence")
 def main() -> None:
@@ -45,7 +43,7 @@ def main() -> None:
 @main.command()
 @click.argument("path", type=click.Path(exists=True, path_type=Path), default=".")
 @click.option("--framework", "-f", type=str, default=None,
-              help="Filter by framework (langchain, crewai, autogen)")
+              help="Filter by framework (langchain, crewai, autogen, pydanticai, llamaindex)")
 @click.option("--fail-on-ungated", is_flag=True,
               help="Exit with non-zero code if ungated high-risk tools found")
 @click.option("--strict", is_flag=True,
@@ -752,7 +750,7 @@ def eu_ai_act(src_path: Path, output: Path, audit_log: Path | None) -> None:
                 Article 12: Record Keeping
                 <span class="status-badge status-{{ article_12_status|lower }}">{{ article_12_status }}</span>
             </h2>
-            <p>Requires high-risk AI systems to automatically log execution events to enable traceability and auditing. CapFence maintains a cryptographically signed, SHA-256 hash-chained immutable audit trail.</p>
+            <p>Requires high-risk AI systems to automatically log execution events to enable traceability and auditing. CapFence maintains a SHA-256 hash-chained audit trail and verifies entry signatures when signing is enabled.</p>
             {% if article_12_status == "PASS" %}
             <div class="metric-grid">
                 <div class="metric-card">

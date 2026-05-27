@@ -14,6 +14,7 @@
 !docs/**/*.md
 !docs-dev/*.md
 !docs-dev/**/*.md
+!.github/**/*.md
 !case-studies/*.md
 !case-studies/**/*.md
 !policies/packs/**/*.md

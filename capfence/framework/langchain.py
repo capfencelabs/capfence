@@ -34,6 +34,7 @@ class CapFenceTool(_GuardedToolMixin):
         self._risk_category = risk_category
         self._capability = capability
         self._policy_path = policy_path
+        self._framework_name = "langchain"
 
         if gate is None:
             if policy_path:

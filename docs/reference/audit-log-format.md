@@ -46,7 +46,9 @@ If an old row is modified, deleted, or reordered, verification fails.
 
 ## Signatures
 
-When `AuditLogger(sign_entries=True)` is used, audit entries are signed with Ed25519 and the signature is stored in the `signature` column.
+When `AuditLogger(sign_entries=True)` is used, audit entries are signed and the signature is stored in the `signature` column. Install `capfence[crypto]` to use Ed25519 via `cryptography`; without that optional dependency CapFence uses a compatibility fallback that is not Ed25519-equivalent and should not be used as a production signature scheme.
+
+`AuditLogger.verify()` always verifies the SHA-256 hash chain. For rows with a stored signature, it also verifies the signature using the local audit public key and fails closed if the key is unavailable or the signature is invalid.
 
 ## Querying directly
 
