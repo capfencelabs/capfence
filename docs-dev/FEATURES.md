@@ -1,142 +1,101 @@
 # CapFence Feature Reference
 
-This document lists every feature in CapFence v0.4.0, grouped by category. For usage examples, see [`README.md`](../README.md) and [`docs/CLI.md`](CLI.md).
+This document lists the current repository feature surface. For command syntax,
+see [`docs-dev/CLI.md`](CLI.md) and [`docs/reference/cli.md`](../docs/reference/cli.md).
 
----
+## Runtime Authorization
 
-## 1. Tamper-Evident Audit
+`ActionRuntime` evaluates `ActionEvent` objects against deterministic YAML
+policies before a side effect reaches the downstream tool. Policy outcomes are
+`allow`, `deny`, `require_approval`, `warn`, or fail-closed default deny.
 
-### Hash-chained audit log
-Every gate decision is recorded in an append-only SQLite log. Each entry contains a SHA-256 hash of the previous entry's hash, creating a cryptographic chain. Modifying any row invalidates all subsequent entries. Implemented in [`capfence/core/chain.py`](../capfence/core/chain.py) and [`capfence/core/audit.py`](../capfence/core/audit.py).
+Implemented in:
 
-### Ed25519 signing
-Optional cryptographic signing of each audit entry. Generate an Ed25519 keypair via [`capfence/core/keys.py`](../capfence/core/keys.py), enable `sign_entries=True` in `AuditLogger`, and verify authenticity with `capfence verify`. Falls back to HMAC-SHA256 when the `cryptography` package is not installed.
+- [`capfence/core/runtime.py`](../capfence/core/runtime.py)
+- [`capfence/core/capabilities.py`](../capfence/core/capabilities.py)
+- [`capfence/core/policy.py`](../capfence/core/policy.py)
 
-### Audit log verification
-`capfence verify` reads the SQLite database and checks every link in the hash chain. Reports the first broken entry, missing keys, or signature mismatches. See [`capfence/cli.py`](../capfence/cli.py) and [`capfence/core/chain.py`](../capfence/core/chain.py).
+## Audit Chain and Signing
 
----
+Every runtime decision can be recorded in SQLite with a SHA-256 hash link to the
+previous entry. Modifying a row breaks the chain.
 
-## 2. Vertical Taxonomies
+`AuditLogger(sign_entries=True)` also stores entry signatures. Install
+`capfence[crypto]` for Ed25519 signatures via `cryptography`; the no-crypto
+fallback is compatibility-only and is not Ed25519-equivalent. `capfence verify`
+checks the hash chain and verifies stored signatures when present.
 
-### General taxonomy
-Covers shell execution, file operations, network calls, data export, authentication, and permission changes. Default taxonomy for most workloads. Defined in [`capfence/taxonomies/general.json`](../capfence/taxonomies/general.json).
+Implemented in:
 
-### Financial taxonomy
-Covers balance inquiry, transaction history, payment initiation, withdrawal, account modification, high-value transfer, and Stripe operations (payment, refund, payout, subscription, issuing card, customer management, dispute). Defined in [`capfence/taxonomies/financial.json`](../capfence/taxonomies/financial.json).
+- [`capfence/core/audit.py`](../capfence/core/audit.py)
+- [`capfence/core/chain.py`](../capfence/core/chain.py)
+- [`capfence/core/keys.py`](../capfence/core/keys.py)
 
-### Plaid taxonomy
-Fintech-specific categories for Plaid API operations: auth, balance, transactions, identity, income, transfer, link token, item management, liabilities, and investments. Defined in [`capfence/taxonomies/financial_plaid.json`](../capfence/taxonomies/financial_plaid.json).
+## Policy Development
 
-### Legal taxonomy
-Covers privilege waiver, regulatory filings, and client data access. Defined in [`capfence/taxonomies/legal.json`](../capfence/taxonomies/legal.json).
+CapFence supports local YAML policies, policy inheritance, fixture tests,
+policy explanations, and policy diffs.
 
-### Interactive taxonomy builder
-`capfence build-taxonomy` prompts for industry, payment methods, and compliance frameworks, then generates a tailored JSON taxonomy. Implemented in [`capfence/assessment/builder.py`](../capfence/assessment/builder.py).
+Commands:
 
-### Taxonomy loader with caching
-`TaxonomyLoader.load()` reads embedded starter packs or user-provided JSON files. Caches loaded taxonomies at the class level and returns deep copies to prevent shared mutable state. Implemented in [`capfence/core/taxonomy.py`](../capfence/core/taxonomy.py).
+- `capfence check-policy`
+- `capfence policy test`
+- `capfence policy explain`
+- `capfence policy diff`
 
----
+Implemented in:
 
-## 3. Framework Coverage
+- [`capfence/core/policy.py`](../capfence/core/policy.py)
+- [`capfence/core/policy_testing.py`](../capfence/core/policy_testing.py)
+- [`capfence/cli.py`](../capfence/cli.py)
 
-### LangChain adapter
-`CapFenceTool` wraps any LangChain `BaseTool` with deterministic gate enforcement. Same interface, automatic blocking. Supports both class-based and function-based tools via decorator. Implemented in [`capfence/framework/langchain.py`](../capfence/framework/langchain.py).
+## Framework Adapters
 
-### CrewAI adapter
-`CapFenceCrewAITool` wraps CrewAI `BaseTool` subclasses. Intercepts `run()` calls, evaluates through the gate, and raises `AgentActionBlocked` on violation. Implemented in [`capfence/framework/crewai.py`](../capfence/framework/crewai.py).
+The package ships importable wrappers for:
 
-### LangGraph adapter
-`CapFenceToolNode` replaces LangGraph `ToolNode` with automatic gate enforcement on every tool invocation. Maps tool names to risk categories and handles state transitions. Implemented in [`capfence/framework/langgraph.py`](../capfence/framework/langgraph.py).
+- LangChain: `CapFenceTool`
+- LangGraph: `CapFenceToolNode`
+- OpenAI Agents SDK: `CapFenceOpenAITool`
+- CrewAI: `CapFenceCrewAITool`
+- AutoGen: `CapFenceAutoGenTool`
+- LlamaIndex: `CapFenceLlamaIndexTool`
+- PydanticAI: `CapFencePydanticTool`
+- MCP stdio gateway: `MCPGatewayServer`
+- MCP in-process session: `CapFenceMCPSession`
 
-### OpenAI Agents SDK adapter
-`CapFenceOpenAITool` wraps OpenAI Agents SDK tools. Provides `on_invoke_tool()` for the Agents SDK runtime, with automatic gate evaluation and blocking. Implemented in [`capfence/framework/openai_agents.py`](../capfence/framework/openai_agents.py).
+The wrappers are duck-typed where possible so the base CapFence install does not
+force every framework dependency.
 
-### MCP gateway server
-`MCPGatewayServer` is a stdio proxy that intercepts MCP tool calls through the CapFence Gate. Parses JSON-RPC messages with Content-Length protocol, extracts tool payloads, and blocks dangerous calls before forwarding to the upstream MCP server. Implemented in [`capfence/mcp/gateway.py`](../capfence/mcp/gateway.py).
+## Static Scanner
 
-### MCP in-process adapter
-`CapFenceMCPSession` wraps an existing MCP client session with CapFence gating for async tool calls. Transparent passthrough for non-tool methods. Implemented in [`capfence/mcp/adapter.py`](../capfence/mcp/adapter.py).
+`capfence check` parses Python source with the AST module, identifies common
+agent tool definitions, and flags tools that are not wrapped with CapFence.
+It supports strict CI failure modes and JSON output.
 
----
+Implemented in [`capfence/check.py`](../capfence/check.py).
 
-## 4. Compliance Reporting
+## Replay and Evidence
 
-### HTML assessment reports
-Jinja2-based professional reports with executive summaries, risk breakdowns, remediation plans, and tool inventories. Generated by `capfence assess --output report.html`. Implemented in [`capfence/assessment/reporter.py`](../capfence/assessment/reporter.py).
+`capfence replay` replays JSON/JSONL traces for deterministic incident review or
+candidate-policy simulation.
 
-### SOX/PCI-DSS/GDPR compliance mappings
-Assessment reports include mappings between discovered tools and relevant compliance frameworks. Useful for audit questionnaires. Implemented in [`capfence/assessment/scanner.py`](../capfence/assessment/scanner.py).
+`capfence eu-ai-act` produces a technical evidence report from static scan
+results and an optional audit log. It is governance evidence, not a legal
+compliance determination.
 
-### OWASP Agentic Top 10 coverage matrix
-Static mapping of CapFence controls to OWASP Agentic AI Top 10 risks. Run `capfence owasp` to generate an HTML report showing full, partial, or no coverage for each risk. Implemented in [`capfence/assessment/owasp.py`](../capfence/assessment/owasp.py).
+Implemented in:
 
-### EU AI Act Annex IV evidence pack
-Generates structured JSON and HTML evidence packs for regulatory submission. Covers risk management, cybersecurity, data governance, and technical documentation sections of Annex IV. Implemented in [`capfence/assessment/eu_ai_act.py`](../capfence/assessment/eu_ai_act.py).
+- [`capfence/core/replay.py`](../capfence/core/replay.py)
+- [`capfence/cli.py`](../capfence/cli.py)
 
----
+## Taxonomies and Scoring
 
-## 5. Offline-First Operation
+CapFence includes bundled risk taxonomies and deterministic scorers for keyword
+and regex/AST-based payload inspection. These are support utilities for
+classification and reporting, not LLM-based judges.
 
-### Zero external calls
-The core gate, scorer, state store, and audit log require no network access. No LLM APIs, no cloud services, no telemetry unless explicitly enabled.
+Implemented in:
 
-### Air-gap ready
-Single `pip install capfence` deploys everything needed for runtime governance. SQLite is the only persistence layer. Works inside isolated VPCs and on-prem deployments.
-
-### Optional telemetry (opt-in, hashed metadata only)
-`TelemetryClient` queues decision records and exports hashed metadata asynchronously. Disabled by default; enable via `CAPFENCE_TELEMETRY=1`. No raw payloads leave the system. Implemented in [`capfence/telemetry/client.py`](../capfence/telemetry/client.py).
-
----
-
-## 6. CI/CD Integration
-
-### Static scanner
-`capfence check` parses Python source with the AST module, identifies tool classes and functions, and flags ungated ones. Supports cross-file wrapper detection. See [`capfence/check.py`](../capfence/check.py).
-
-### `--fail-on-ungated` flag
-Exits with non-zero code if high-risk tools are found without CapFence wrappers. Drop into any CI pipeline to block deployments containing unsafe agents.
-
-### Trace simulator
-`capfence simulate` replays JSONL agent execution traces through the gate. Compare static vs. adaptive scoring side-by-side to detect behavioral drift. Implemented in [`capfence/assessment/simulator.py`](../capfence/assessment/simulator.py).
-
----
-
-## 7. Core Engine
-
-### Deterministic fail-closed gate
-`Gate.evaluate()` uses a finite state machine with one accepting state: pass. Everything else is a terminal failure. No probabilistic decisions. Implemented in [`capfence/core/gate.py`](../capfence/core/gate.py) and [`capfence/core/fsm.py`](../capfence/core/fsm.py).
-
-### Pluggable scoring
-Three built-in scorers:
-- `KeywordScorer` — fast, deterministic keyword matching (default)
-- `RegexASTScorer` — whole-word regex + Python AST dangerous construct detection
-- `AdaptiveScorer` — extends keyword scoring with behavioral state (K/V metrics)
-
-Custom scorers implement `BaseScorer`. Implemented in [`capfence/core/scorer.py`](../capfence/core/scorer.py).
-
-### Behavioral state tracking
-SQLite-backed rolling history and velocity tracking. Computes K (historical accuracy) and V (request velocity) per agent. Used by `AdaptiveScorer` to adjust risk thresholds dynamically. Implemented in [`capfence/core/state.py`](../capfence/core/state.py).
-
-### Deterministic payload hashing
-`compute_payload_hash()` produces SHA-256 hex digests from canonical JSON serialization. Used for audit log integrity and telemetry deduplication. Implemented in [`capfence/core/hash.py`](../capfence/core/hash.py).
-
----
-
-## 8. Security Hardening
-
-### Constant-time signature verification
-Fallback signature verification uses `hmac.compare_digest()` to prevent timing attacks. Implemented in [`capfence/core/keys.py`](../capfence/core/keys.py).
-
-### Atomic key file writes
-Private keys are written with `os.open()` using `O_CREAT | O_WRONLY` and mode `0o600`, eliminating the race window between `write_text()` and `os.chmod()`. Implemented in [`capfence/core/keys.py`](../capfence/core/keys.py).
-
-### Taxonomy cache poisoning protection
-`TaxonomyLoader.load()` returns `copy.deepcopy(data)` from cache, preventing callers from mutating shared state. `Gate.evaluate()` deep-copies taxonomy entries before mutation. Implemented in [`capfence/core/taxonomy.py`](../capfence/core/taxonomy.py) and [`capfence/core/gate.py`](../capfence/core/gate.py).
-
-### MCP message size limits
-`MCPGatewayServer` enforces `MAX_MESSAGE_SIZE` (10MB) on Content-Length headers, preventing memory exhaustion from malformed or malicious messages. Implemented in [`capfence/mcp/gateway.py`](../capfence/mcp/gateway.py).
-
-### Path traversal prevention
-`EvidencePack.write_html()` and `write_json()` reject paths containing `..` components. Implemented in [`capfence/assessment/eu_ai_act.py`](../capfence/assessment/eu_ai_act.py).
+- [`capfence/core/taxonomy.py`](../capfence/core/taxonomy.py)
+- [`capfence/core/scorer.py`](../capfence/core/scorer.py)
+- [`capfence/taxonomies`](../capfence/taxonomies)

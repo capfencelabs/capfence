@@ -11,6 +11,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-05-27
+
+### Added
+- Lightweight framework adapters for CrewAI, AutoGen, LlamaIndex, and PydanticAI.
+- Import smoke and behavior tests for the expanded adapter surface.
+- `capfence[crypto]` extra for Ed25519 audit signatures via `cryptography`.
+- Local Makefile targets for test, lint, typecheck, build, docs, release-check, and cleanup.
+- Repository hardening build plan under `docs-dev/`.
+
+### Changed
+- Signed audit log verification now checks stored signatures when present and fails closed if the audit public key is missing or a signature is invalid.
+- LangChain wrapper metadata now explicitly records the `langchain` framework marker.
+- CLI version output now reads from package `__version__`.
+- AutoGen example now uses the shipped CapFence wrapper.
+- Package and website docs now align with current CLI commands, adapter support, and audit-signing behavior.
+
+### Fixed
+- Invalid signature encodings now fail verification cleanly instead of raising.
+- Public docs no longer advertise removed internal commands as current CLI features.
+
 ## [0.8.4] - 2026-05-27
 
 ### Added

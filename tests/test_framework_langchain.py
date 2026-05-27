@@ -82,7 +82,7 @@ class TestCapFenceTool:
         assert exc_info.value.gate_result is not None
         assert exc_info.value.gate_result.metadata is not None
         assert "latency_ms" in exc_info.value.gate_result.metadata
-
+        assert exc_info.value.gate_result.event.metadata["framework"] == "langchain"
 
 class TestGuardDecorator:
     def test_decorator_blocks(self, runtime_gate):

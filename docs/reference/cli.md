@@ -22,7 +22,7 @@ Options:
 | Flag | Description |
 |---|---|
 | `PATH` | File or directory to scan. Defaults to `.` |
-| `-f, --framework TEXT` | Filter by framework, such as `langchain`, `crewai`, or `autogen`. |
+| `-f, --framework TEXT` | Filter by framework, such as `langchain`, `crewai`, `autogen`, `pydanticai`, or `llamaindex`. |
 | `--fail-on-ungated` | Exit non-zero if high-risk ungated tools are found. |
 | `--strict` | Exit non-zero if any ungated tools are found. |
 | `--report-json` | Print findings as JSON. |
@@ -83,7 +83,9 @@ The command highlights newly allowed side effects.
 
 ## `capfence verify`
 
-Verify the integrity of a hash-chained audit log.
+Verify the integrity of a hash-chained audit log. If signed rows are present,
+the command also verifies stored signatures and fails closed when the local
+audit public key is unavailable or invalid.
 
 ```bash
 capfence verify --audit-log audit.db
@@ -211,49 +213,28 @@ Options are the same as `approve`.
 
 ---
 
-## `capfence owasp`
-
-Generate an OWASP Agentic Top 10 coverage matrix.
-
-```bash
-capfence owasp --output owasp.html
-```
-
----
-
 ## `capfence eu-ai-act`
 
-Generate an EU AI Act Annex IV evidence pack from a codebase assessment.
+Generate an EU AI Act technical evidence report from static scan results and,
+optionally, an audit log.
 
 ```bash
-capfence eu-ai-act ./src --output eu-ai-act.html --json-output eu-ai-act.json
+capfence eu-ai-act ./src --output eu-ai-act.html
+capfence eu-ai-act ./src --audit-log audit.db --output eu-ai-act.html
 ```
 
 Options:
 
 | Flag | Description |
 |---|---|
-| `PATH` | Codebase path to assess. Required. |
-| `-t, --taxonomy TEXT` | Taxonomy to use. Defaults to `general`. |
-| `-o, --output PATH` | Write HTML evidence pack. |
-| `--json-output PATH` | Write JSON evidence pack. |
-| `--system-name TEXT` | System name for the evidence pack. |
+| `SRC_PATH` | Codebase path to assess. Required. |
+| `-o, --output PATH` | Write HTML evidence report. |
+| `-a, --audit-log PATH` | Optional SQLite audit log for Article 12 evidence. |
 
 ---
 
-## `capfence tune`
+## Removed Internal Commands
 
-Analyze recent audit decisions and suggest threshold adjustments.
-
-```bash
-capfence tune --audit-log audit.db --window 200
-```
-
-Options:
-
-| Flag | Description |
-|---|---|
-| `-a, --audit-log PATH` | SQLite audit log. Required. |
-| `--agent-id TEXT` | Limit analysis to one agent. |
-| `--window INTEGER` | Number of recent decisions to analyze. Defaults to `200`. |
-| `--false-positive-budget FLOAT` | Acceptable false-positive rate. Defaults to `0.05`. |
+Older internal planning docs referenced `capfence assess`, `capfence simulate`,
+`capfence owasp`, and `capfence tune`. Those commands are not part of the
+current public CLI.

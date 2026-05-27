@@ -74,7 +74,10 @@ Every audit log entry is SHA-256 hashed over its content + the previous entry's 
 
 ### 6. EU AI Act / OWASP Agentic Top 10 compliance evidence
 
-`capfence eu-ai-act` and `capfence owasp` generate machine-readable evidence artifacts. These are **evidence generators**, not detectors — they document what controls are present, not whether an attack is occurring.
+`capfence eu-ai-act`, `capfence check`, policy fixture results, replay output,
+and audit verification can be used as machine-readable evidence artifacts.
+These are **evidence generators**, not detectors — they document what controls
+are present, not whether an attack is occurring.
 
 ---
 
@@ -86,7 +89,9 @@ These are gaps by design, by technical limitation, or because the threat require
 
 A payload like `{"recipient": "attacker_account_123", "qty": 50000}` for a high-value transfer tool contains no taxonomy keywords. The keyword scorer returns 0.0, below any threshold, and the call passes. This is the core false-negative scenario for keyword-based scoring.
 
-**Mitigation:** Tune taxonomy keywords to cover your specific API's field names. Use `capfence tune --audit-log` to identify gaps. Enable `observe` mode on new categories before enforcing.
+**Mitigation:** Tune policy conditions and taxonomy keywords to cover your
+specific API's field names. Validate changes with policy fixtures and replay
+before enforcing.
 
 **Out-of-scope for CapFence:** Semantic understanding requires an LLM-based evaluator (e.g., a secondary guard LLM). CapFence is intentionally LLM-free to guarantee determinism and zero-latency.
 
@@ -155,10 +160,10 @@ CapFence is one layer in a defense-in-depth stack. For regulated workloads (EU A
 When CapFence blocks a legitimate tool call:
 
 1. **Check the audit log** — `capfence verify --audit-log audit.db` to confirm the log is intact.
-2. **Inspect the blocked call** — `capfence tune --audit-log audit.db` shows block rates and suggests threshold adjustments.
-3. **Use observe mode for tuning** — Set `Gate(mode="observe")`, run the workload, check `metadata["would_have_blocked"]` on results. Adjust taxonomy thresholds without blocking production.
-4. **Apply a bypass if urgent** — Use `gate.bypass(agent_id, reason="approved by oncall #1234")` as a context manager. The bypass is recorded in the audit log with the reason string. Do not use `mode="observe"` as a permanent bypass — it disables enforcement entirely.
-5. **Tune the taxonomy** — Apply the suggested threshold changes from `capfence tune`. Validate with `capfence simulate --trace-file <trace> --compare` before rolling out.
+2. **Inspect the blocked call** — Use `capfence logs --audit-log audit.db --json` and the blocked request payload from your application logs.
+3. **Validate a policy change** — Add or update policy fixture cases, then run `capfence policy test`.
+4. **Replay historical traffic** — Run `capfence replay <trace.jsonl> --policy <candidate-policy.yaml>` before rolling out.
+5. **Roll out carefully** — Use approval requirements for ambiguous high-impact actions until the policy behavior is well understood.
 
 ---
 

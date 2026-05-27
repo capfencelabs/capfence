@@ -3,7 +3,7 @@
 CapFence includes reporting helpers for mapping runtime enforcement controls to the OWASP Agentic AI Top 10.
 
 ```bash
-capfence owasp
+capfence check . --strict
 ```
 
 ## Control themes
@@ -19,7 +19,7 @@ CapFence helps address agentic risks through:
 
 ## Output
 
-The OWASP report summarizes which risks are covered, partially covered, planned, or not applicable.
+Use `capfence check`, policy fixtures, replay output, and audit verification as
+technical evidence when mapping controls to OWASP Agentic AI risks.
 
 Use the report as governance evidence, not as a replacement for a full application security review.
-

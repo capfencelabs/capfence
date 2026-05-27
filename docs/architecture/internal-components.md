@@ -25,7 +25,7 @@ The policy engine evaluates explicit policy-as-code rules such as `allow`, `deny
 
 ## Audit logger
 
-The audit logger records decisions in SQLite with hash chaining and optional Ed25519 signatures.
+The audit logger records decisions in SQLite with hash chaining and optional signatures. Ed25519 signatures require the `capfence[crypto]` extra.
 
 ## Adapters
 
@@ -41,4 +41,3 @@ Adapters let CapFence sit in front of common agent tool systems:
 ## Assessment and reporting
 
 The scanner, simulator, and reporting modules support CI checks, replay, compliance reports, and governance evidence generation.
-

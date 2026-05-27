@@ -70,7 +70,7 @@ Every call to `gate.evaluate()` produces an audit entry regardless of the decisi
 The hash chain proves **integrity** (entries have not been altered), not **authenticity** (entries were created by CapFence). An attacker with file access can delete the entire database.
 
 For authenticity guarantees, combine the audit log with:
-- Ed25519 signing of each entry
+- Optional Ed25519 signing of each entry when `capfence[crypto]` is installed
 - Offline key storage
 - Backup to immutable storage (S3 Object Lock, WORM tape)
 

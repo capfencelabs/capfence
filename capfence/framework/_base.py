@@ -1,6 +1,6 @@
 """Shared helpers for framework adapters.
 
-The single-tool adapters (LangChain, CrewAI) all do the same three things:
+The single-tool adapters all do the same three things:
 build a payload dict from heterogeneous tool input, run a sync gate check,
 or run an async gate check. This mixin centralises that logic so each
 adapter only implements the framework-specific run/arun glue.
@@ -25,6 +25,7 @@ class _GuardedToolMixin:
     _risk_category: str | None
     _capability: str | None
     _policy_path: str | None
+    _framework_name: str
     name: str
 
     @staticmethod
@@ -49,7 +50,7 @@ class _GuardedToolMixin:
             capability=capability,
             tool_name=self.name,
             risk_level=self._risk_category or "medium",
-            framework="langchain",
+            framework=getattr(self, "_framework_name", "generic"),
         )
 
         verdict = self._gate.execute(event)
@@ -75,7 +76,7 @@ class _GuardedToolMixin:
             capability=capability,
             tool_name=self.name,
             risk_level=self._risk_category or "medium",
-            framework="langchain",
+            framework=getattr(self, "_framework_name", "generic"),
         )
 
         verdict = self._gate.execute(event)
