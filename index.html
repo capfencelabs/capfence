@@ -604,6 +604,34 @@
   
   
     <li class="md-nav__item">
+      <a href="security/credential-placement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Credential placement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="architecture/audit-chain-design/" class="md-nav__link">
         
   
@@ -770,6 +798,62 @@
   
   
     <li class="md-nav__item">
+      <a href="concepts/agent-authority-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent authority model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="concepts/action-authorization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action authorization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="concepts/audit-chain/" class="md-nav__link">
         
   
@@ -918,6 +1002,34 @@
     
   
     Trust propagation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="concepts/why-not-sandboxing-opa-guardrails/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Why not sandboxing, OPA, or prompt guardrails?
   
 
     
@@ -2431,6 +2543,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="audit/decision-receipts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Decision receipts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2630,11 +2770,11 @@
 
 
 <h1 id="capfence-docs">CapFence Docs</h1>
-<p>CapFence is deterministic execution authorization for AI agent side effects.</p>
-<p>It intercepts agent tool calls before execution, evaluates explicit policy, fail-closes unsafe requests, and records decisions for replay. Models may propose actions. CapFence authorizes side effects.</p>
-<pre><code class="language-text">Agent -&gt; Tool Call -&gt; Policy Evaluation -&gt; Allow / Deny / Approval -&gt; Audit + Replay
+<p>CapFence is the authorization gateway between AI agents and real-world side effects.</p>
+<p>Models may propose actions. CapFence decides whether those actions are allowed before execution.</p>
+<pre><code class="language-txt">Agent -&gt; Proposed action -&gt; CapFence -&gt; Gated executor -&gt; Tool
 </code></pre>
-<p>Prompts are not security boundaries. CapFence removes the LLM from the authorization path.</p>
+<p>Denied actions do not reach the downstream tool.</p>
 <h2 id="start-here">Start here</h2>
 <ol>
 <li>Install CapFence.</li>
@@ -2691,12 +2831,17 @@ if not verdict.authorized:
 <h2 id="what-to-read">What to read</h2>
 <ul>
 <li><a href="getting-started/first-blocked-action/">First blocked action</a></li>
+<li><a href="concepts/agent-authority-model/">Agent authority model</a></li>
+<li><a href="concepts/action-authorization/">Action authorization</a></li>
 <li><a href="concepts/runtime-authorization/">Runtime authorization</a></li>
 <li><a href="concepts/policy-model/">Policy model</a></li>
+<li><a href="audit/decision-receipts/">Decision receipts</a></li>
+<li><a href="security/credential-placement/">Credential placement</a></li>
 <li><a href="concepts/fail-closed-enforcement/">Fail-closed enforcement</a></li>
 <li><a href="concepts/replayability/">Replayability</a></li>
 <li><a href="architecture/threat-model/">Threat model</a></li>
 <li><a href="architecture/mcp-interception-model/">MCP interception model</a></li>
+<li><a href="concepts/why-not-sandboxing-opa-guardrails/">Why not sandboxing, OPA, or prompt guardrails?</a></li>
 </ul>
 <h2 id="what-capfence-is-not">What CapFence is not</h2>
 <p>CapFence is not an AI governance platform, observability product, orchestration framework, prompt guardrail, AI judge, sandbox, IAM system, secrets manager, or compliance dashboard.</p>

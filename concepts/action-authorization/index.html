@@ -11,10 +11,10 @@
       
       
       
-        <link rel="prev" href="../openai-agents-sdk/">
+        <link rel="prev" href="../agent-authority-model/">
       
       
-        <link rel="next" href="../custom-frameworks/">
+        <link rel="next" href="../audit-chain/">
       
       
         
@@ -25,7 +25,7 @@
     
     
       
-        <title>PydanticAI - CapFence Docs</title>
+        <title>Action authorization - CapFence Docs</title>
       
     
     
@@ -66,7 +66,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#pydanticai-integration" class="md-skip">
+        <a href="#action-authorization" class="md-skip">
           Skip to content
         </a>
       
@@ -102,7 +102,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              PydanticAI
+              Action authorization
             
           </span>
         </div>
@@ -637,18 +637,20 @@
       
   
   
+    
   
   
+  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
         
           
           <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
@@ -669,7 +671,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
@@ -687,7 +689,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/agent-authority-model/" class="md-nav__link">
+      <a href="../agent-authority-model/" class="md-nav__link">
         
   
   
@@ -712,10 +714,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../concepts/action-authorization/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action authorization
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -731,6 +760,48 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#authorization-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authorization Boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -743,7 +814,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/audit-chain/" class="md-nav__link">
+      <a href="../audit-chain/" class="md-nav__link">
         
   
   
@@ -771,7 +842,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/fail-closed-enforcement/" class="md-nav__link">
+      <a href="../fail-closed-enforcement/" class="md-nav__link">
         
   
   
@@ -799,7 +870,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/policy-model/" class="md-nav__link">
+      <a href="../policy-model/" class="md-nav__link">
         
   
   
@@ -827,7 +898,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/replayability/" class="md-nav__link">
+      <a href="../replayability/" class="md-nav__link">
         
   
   
@@ -855,7 +926,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/runtime-authorization/" class="md-nav__link">
+      <a href="../runtime-authorization/" class="md-nav__link">
         
   
   
@@ -883,7 +954,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/trust-propagation/" class="md-nav__link">
+      <a href="../trust-propagation/" class="md-nav__link">
         
   
   
@@ -911,7 +982,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/why-not-sandboxing-opa-guardrails/" class="md-nav__link">
+      <a href="../why-not-sandboxing-opa-guardrails/" class="md-nav__link">
         
   
   
@@ -1859,20 +1930,18 @@
       
   
   
-    
   
   
-  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
         
           
           <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
@@ -1893,7 +1962,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_10">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1911,7 +1980,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../compatibility/" class="md-nav__link">
+      <a href="../../integrations/compatibility/" class="md-nav__link">
         
   
   
@@ -1939,7 +2008,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../external-policy-backends/" class="md-nav__link">
+      <a href="../../integrations/external-policy-backends/" class="md-nav__link">
         
   
   
@@ -1967,7 +2036,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../autogen/" class="md-nav__link">
+      <a href="../../integrations/autogen/" class="md-nav__link">
         
   
   
@@ -1995,7 +2064,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../crewai/" class="md-nav__link">
+      <a href="../../integrations/crewai/" class="md-nav__link">
         
   
   
@@ -2023,7 +2092,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../langchain/" class="md-nav__link">
+      <a href="../../integrations/langchain/" class="md-nav__link">
         
   
   
@@ -2051,7 +2120,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../langgraph/" class="md-nav__link">
+      <a href="../../integrations/langgraph/" class="md-nav__link">
         
   
   
@@ -2079,7 +2148,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../llamaindex/" class="md-nav__link">
+      <a href="../../integrations/llamaindex/" class="md-nav__link">
         
   
   
@@ -2107,7 +2176,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../mcp/" class="md-nav__link">
+      <a href="../../integrations/mcp/" class="md-nav__link">
         
   
   
@@ -2135,7 +2204,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../openai-agents-sdk/" class="md-nav__link">
+      <a href="../../integrations/openai-agents-sdk/" class="md-nav__link">
         
   
   
@@ -2160,37 +2229,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    PydanticAI
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../integrations/pydanticai/" class="md-nav__link">
         
   
   
@@ -2206,70 +2248,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#installation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Installation
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#wrapping-a-tool" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Wrapping a tool
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#async-usage" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Async usage
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#handling-blocked-calls" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Handling blocked calls
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -2282,7 +2260,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../custom-frameworks/" class="md-nav__link">
+      <a href="../../integrations/custom-frameworks/" class="md-nav__link">
         
   
   
@@ -2669,10 +2647,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#installation" class="md-nav__link">
+  <a href="#example" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Installation
+        Example
       
     </span>
   </a>
@@ -2680,32 +2658,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#wrapping-a-tool" class="md-nav__link">
+  <a href="#authorization-boundary" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Wrapping a tool
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#async-usage" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Async usage
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#handling-blocked-calls" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Handling blocked calls
+        Authorization Boundary
       
     </span>
   </a>
@@ -2729,29 +2685,51 @@
 
 
 
-<h1 id="pydanticai-integration">PydanticAI Integration</h1>
-<p>CapFence wraps PydanticAI tools or callables with a deterministic gate check before execution.</p>
-<h2 id="installation">Installation</h2>
-<pre><code class="language-bash">pip install capfence
+<h1 id="action-authorization">Action Authorization</h1>
+<p>CapFence evaluates proposed actions, not model text.</p>
+<p>An action contains:</p>
+<ul>
+<li>actor</li>
+<li>tool or capability</li>
+<li>action</li>
+<li>resource</li>
+<li>payload</li>
+<li>environment</li>
+<li>policy version</li>
+<li>request id</li>
+<li>idempotency key, when applicable</li>
+</ul>
+<p>A decision is one of:</p>
+<ul>
+<li>allow</li>
+<li>deny</li>
+<li>require_approval</li>
+</ul>
+<p>Denied actions must not reach the downstream tool.</p>
+<h2 id="example">Example</h2>
+<pre><code class="language-json">{
+  &quot;actor&quot;: &quot;ops-agent&quot;,
+  &quot;tool&quot;: &quot;shell.exec&quot;,
+  &quot;action&quot;: &quot;execute&quot;,
+  &quot;resource&quot;: &quot;host:prod-db-01&quot;,
+  &quot;environment&quot;: &quot;production&quot;,
+  &quot;payload&quot;: {
+    &quot;command&quot;: &quot;rm -rf /var/lib/postgresql&quot;
+  }
+}
 </code></pre>
-<h2 id="wrapping-a-tool">Wrapping a tool</h2>
-<pre><code class="language-python">from capfence.framework.pydanticai import CapFencePydanticTool
-
-async def fetch_account(account_id: str) -&gt; dict:
-    return {&quot;account_id&quot;: account_id, &quot;status&quot;: &quot;active&quot;}
-
-safe_fetch = CapFencePydanticTool(
-    tool=fetch_account,
-    agent_id=&quot;pydantic-agent&quot;,
-    capability=&quot;account.read&quot;,
-    policy_path=&quot;policies/fintech.yaml&quot;,
-)
+<p>Decision:</p>
+<pre><code class="language-json">{
+  &quot;decision&quot;: &quot;deny&quot;,
+  &quot;reason&quot;: &quot;destructive command outside approved recovery policy&quot;,
+  &quot;tool_invoked&quot;: false
+}
 </code></pre>
-<h2 id="async-usage">Async usage</h2>
-<pre><code class="language-python">result = await safe_fetch.acall(&quot;acct_123&quot;)
+<h2 id="authorization-boundary">Authorization Boundary</h2>
+<p>The authorization boundary is the point where model output becomes a tool invocation.</p>
+<pre><code class="language-txt">Agent -&gt; Proposed action -&gt; CapFence -&gt; Gated executor -&gt; Tool
 </code></pre>
-<h2 id="handling-blocked-calls">Handling blocked calls</h2>
-<p>Blocked calls raise <code>AgentActionBlocked</code>.</p>
+<p>CapFence is effective when every side-effectful execution path flows through that boundary.</p>
 
 
 
