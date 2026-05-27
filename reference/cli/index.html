@@ -2465,17 +2465,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#capfence-owasp" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        capfence owasp
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#capfence-eu-ai-act" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2487,10 +2476,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#capfence-tune" class="md-nav__link">
+  <a href="#removed-internal-commands" class="md-nav__link">
     <span class="md-ellipsis">
       
-        capfence tune
+        Removed Internal Commands
       
     </span>
   </a>
@@ -2922,17 +2911,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#capfence-owasp" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        capfence owasp
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#capfence-eu-ai-act" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2944,10 +2922,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#capfence-tune" class="md-nav__link">
+  <a href="#removed-internal-commands" class="md-nav__link">
     <span class="md-ellipsis">
       
-        capfence tune
+        Removed Internal Commands
       
     </span>
   </a>
@@ -2996,7 +2974,7 @@ capfence --version
 </tr>
 <tr>
 <td><code>-f, --framework TEXT</code></td>
-<td>Filter by framework, such as <code>langchain</code>, <code>crewai</code>, or <code>autogen</code>.</td>
+<td>Filter by framework, such as <code>langchain</code>, <code>crewai</code>, <code>autogen</code>, <code>pydanticai</code>, or <code>llamaindex</code>.</td>
 </tr>
 <tr>
 <td><code>--fail-on-ungated</code></td>
@@ -3042,7 +3020,9 @@ capfence policy explain policies/packs/shell/baseline.yaml event.yaml --json
 <p>The command highlights newly allowed side effects.</p>
 <hr />
 <h2 id="capfence-verify"><code>capfence verify</code></h2>
-<p>Verify the integrity of a hash-chained audit log.</p>
+<p>Verify the integrity of a hash-chained audit log. If signed rows are present,
+the command also verifies stored signatures and fails closed when the local
+audit public key is unavailable or invalid.</p>
 <pre><code class="language-bash">capfence verify --audit-log audit.db
 </code></pre>
 <p>Options:</p>
@@ -3219,14 +3199,11 @@ capfence replay trace.jsonl --policy policies/candidate.yaml
 </code></pre>
 <p>Options are the same as <code>approve</code>.</p>
 <hr />
-<h2 id="capfence-owasp"><code>capfence owasp</code></h2>
-<p>Generate an OWASP Agentic Top 10 coverage matrix.</p>
-<pre><code class="language-bash">capfence owasp --output owasp.html
-</code></pre>
-<hr />
 <h2 id="capfence-eu-ai-act"><code>capfence eu-ai-act</code></h2>
-<p>Generate an EU AI Act Annex IV evidence pack from a codebase assessment.</p>
-<pre><code class="language-bash">capfence eu-ai-act ./src --output eu-ai-act.html --json-output eu-ai-act.json
+<p>Generate an EU AI Act technical evidence report from static scan results and,
+optionally, an audit log.</p>
+<pre><code class="language-bash">capfence eu-ai-act ./src --output eu-ai-act.html
+capfence eu-ai-act ./src --audit-log audit.db --output eu-ai-act.html
 </code></pre>
 <p>Options:</p>
 <table>
@@ -3238,59 +3215,24 @@ capfence replay trace.jsonl --policy policies/candidate.yaml
 </thead>
 <tbody>
 <tr>
-<td><code>PATH</code></td>
+<td><code>SRC_PATH</code></td>
 <td>Codebase path to assess. Required.</td>
 </tr>
 <tr>
-<td><code>-t, --taxonomy TEXT</code></td>
-<td>Taxonomy to use. Defaults to <code>general</code>.</td>
-</tr>
-<tr>
 <td><code>-o, --output PATH</code></td>
-<td>Write HTML evidence pack.</td>
+<td>Write HTML evidence report.</td>
 </tr>
 <tr>
-<td><code>--json-output PATH</code></td>
-<td>Write JSON evidence pack.</td>
-</tr>
-<tr>
-<td><code>--system-name TEXT</code></td>
-<td>System name for the evidence pack.</td>
+<td><code>-a, --audit-log PATH</code></td>
+<td>Optional SQLite audit log for Article 12 evidence.</td>
 </tr>
 </tbody>
 </table>
 <hr />
-<h2 id="capfence-tune"><code>capfence tune</code></h2>
-<p>Analyze recent audit decisions and suggest threshold adjustments.</p>
-<pre><code class="language-bash">capfence tune --audit-log audit.db --window 200
-</code></pre>
-<p>Options:</p>
-<table>
-<thead>
-<tr>
-<th>Flag</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>-a, --audit-log PATH</code></td>
-<td>SQLite audit log. Required.</td>
-</tr>
-<tr>
-<td><code>--agent-id TEXT</code></td>
-<td>Limit analysis to one agent.</td>
-</tr>
-<tr>
-<td><code>--window INTEGER</code></td>
-<td>Number of recent decisions to analyze. Defaults to <code>200</code>.</td>
-</tr>
-<tr>
-<td><code>--false-positive-budget FLOAT</code></td>
-<td>Acceptable false-positive rate. Defaults to <code>0.05</code>.</td>
-</tr>
-</tbody>
-</table>
+<h2 id="removed-internal-commands">Removed Internal Commands</h2>
+<p>Older internal planning docs referenced <code>capfence assess</code>, <code>capfence simulate</code>,
+<code>capfence owasp</code>, and <code>capfence tune</code>. Those commands are not part of the
+current public CLI.</p>
 
 
 

@@ -2769,7 +2769,7 @@ Core Gate Engine
 <h2 id="policy-engine">Policy engine</h2>
 <p>The policy engine evaluates explicit policy-as-code rules such as <code>allow</code>, <code>deny</code>, and <code>require_approval</code>.</p>
 <h2 id="audit-logger">Audit logger</h2>
-<p>The audit logger records decisions in SQLite with hash chaining and optional Ed25519 signatures.</p>
+<p>The audit logger records decisions in SQLite with hash chaining and optional signatures. Ed25519 signatures require the <code>capfence[crypto]</code> extra.</p>
 <h2 id="adapters">Adapters</h2>
 <p>Adapters let CapFence sit in front of common agent tool systems:</p>
 <ul>

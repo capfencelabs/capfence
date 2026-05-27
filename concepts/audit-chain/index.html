@@ -2898,7 +2898,7 @@
 <h2 id="limitations">Limitations</h2>
 <p>The hash chain proves <strong>integrity</strong> (entries have not been altered), not <strong>authenticity</strong> (entries were created by CapFence). An attacker with file access can delete the entire database.</p>
 <p>For authenticity guarantees, combine the audit log with:
-- Ed25519 signing of each entry
+- Optional Ed25519 signing of each entry when <code>capfence[crypto]</code> is installed
 - Offline key storage
 - Backup to immutable storage (S3 Object Lock, WORM tape)</p>
 <h2 id="related-concepts">Related concepts</h2>

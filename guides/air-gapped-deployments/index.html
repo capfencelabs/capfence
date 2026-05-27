@@ -2870,11 +2870,10 @@ pip install --no-index --find-links ./packages capfence
 <p>The approval queue is stored in local SQLite. Reviewers run <code>capfence pending-approvals</code> and <code>capfence approve &lt;id&gt;</code> on the same machine (or a machine with access to the shared SQLite file).</p>
 <p>For multi-machine environments, point all nodes at a shared network path for the audit database:</p>
 <pre><code class="language-python">from capfence.core.audit import AuditLogger
-from capfence.core.gate import Gate
+from capfence import ActionRuntime
 
-gate = Gate(
-    audit_logger=AuditLogger(db_path=&quot;/shared/nfs/capfence/audit.db&quot;)
-)
+runtime = ActionRuntime.from_policy(&quot;/etc/capfence/policy.yaml&quot;)
+runtime.audit_trail = AuditLogger(db_path=&quot;/shared/nfs/capfence/audit.db&quot;)
 </code></pre>
 <h2 id="log-export-for-offline-analysis">Log export for offline analysis</h2>
 <p>View audit logs as JSON for analysis on a separate system:</p>

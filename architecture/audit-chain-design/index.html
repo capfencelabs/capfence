@@ -2754,7 +2754,7 @@
 </code></pre>
 <p>Changing an old row changes its hash. Because the next row stores the previous hash, tampering breaks the chain.</p>
 <h2 id="signing">Signing</h2>
-<p>When signing is enabled, entries can be signed with Ed25519. Hash chaining detects mutation; signatures help prove the entry was produced by a holder of the signing key.</p>
+<p>When signing is enabled, entries can be signed with Ed25519 if <code>capfence[crypto]</code> is installed. Hash chaining detects mutation; signatures help prove the entry was produced by a holder of the signing key. Without the optional crypto dependency, CapFence uses a compatibility fallback for local testing only.</p>
 <h2 id="verification">Verification</h2>
 <pre><code class="language-bash">capfence verify --audit-log audit.db
 </code></pre>

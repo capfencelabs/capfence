@@ -2687,7 +2687,7 @@
 
 <h1 id="owasp-agentic-top-10">OWASP Agentic Top 10</h1>
 <p>CapFence includes reporting helpers for mapping runtime enforcement controls to the OWASP Agentic AI Top 10.</p>
-<pre><code class="language-bash">capfence owasp
+<pre><code class="language-bash">capfence check . --strict
 </code></pre>
 <h2 id="control-themes">Control themes</h2>
 <p>CapFence helps address agentic risks through:</p>
@@ -2700,7 +2700,8 @@
 <li>approval workflows for sensitive operations</li>
 </ul>
 <h2 id="output">Output</h2>
-<p>The OWASP report summarizes which risks are covered, partially covered, planned, or not applicable.</p>
+<p>Use <code>capfence check</code>, policy fixtures, replay output, and audit verification as
+technical evidence when mapping controls to OWASP Agentic AI risks.</p>
 <p>Use the report as governance evidence, not as a replacement for a full application security review.</p>
 
 
