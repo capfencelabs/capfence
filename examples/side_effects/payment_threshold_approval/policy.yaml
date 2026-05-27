@@ -1,0 +1,17 @@
+version: 1
+policy_name: payment-threshold-approval
+description: Starter authorization policy for agent-initiated refunds.
+
+deny:
+  - capability: payments.refund
+    amount_gt: 500
+  - capability: payments.refund
+    contains: "unknown"
+
+require_approval:
+  - capability: payments.refund
+    amount_gt: 100
+
+allow:
+  - capability: payments.refund
+    amount_lte: 100

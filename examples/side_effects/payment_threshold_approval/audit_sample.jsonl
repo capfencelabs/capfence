@@ -1,0 +1,1 @@
+{"audit_id":"aud_payment_001","actor":"support-agent","tool":"payments.refund","action":"create_refund","resource":"payment:pay_123","environment":"production","decision":"deny","reason":"amount exceeds maximum refund limit and merchant is not approved","tool_invoked":false,"payload":{"amount":2500,"currency":"USD","merchant_id":"unknown","idempotency_key":"refund_001"}}

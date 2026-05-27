@@ -1,10 +1,10 @@
 # CapFence
 
-Deterministic execution authorization for AI agent side effects.
+CapFence is the authorization gateway between AI agents and real-world side effects.
 
-CapFence intercepts agent tool calls before execution, evaluates explicit policy, fail-closes unsafe requests, and records decisions for replay. Models may propose actions. CapFence authorizes side effects.
+Models may propose actions. CapFence decides whether those actions are allowed before execution.
 
-Prompts are not security boundaries. CapFence removes the LLM from the authorization path.
+Use CapFence when agents can touch shell commands, databases, filesystems, payment APIs, internal APIs, SaaS admin tools, or MCP servers.
 
 <p align="center">
   <a href="https://pypi.org/project/capfence/"><img src="https://img.shields.io/pypi/v/capfence?color=blue" alt="PyPI version"></a>
@@ -13,17 +13,30 @@ Prompts are not security boundaries. CapFence removes the LLM from the authoriza
   <a href="https://github.com/capfencelabs/capfence/actions/workflows/ci.yml"><img src="https://github.com/capfencelabs/capfence/actions/workflows/ci.yml/badge.svg" alt="CI Status"></a>
 </p>
 
-```text
-Agent -> Tool Call -> CapFence Policy -> Allow / Deny / Approval -> Audit + Replay
+```txt
+Agent -> Proposed action -> CapFence -> Gated executor -> Tool
 ```
 
-## What Happens At Execution Time
+Denied actions do not reach the downstream tool.
 
-1. An agent requests a tool call.
-2. CapFence receives the capability, actor, payload, and environment.
-3. Policy returns `allow`, `deny`, or `require_approval`.
-4. Unsafe requests are blocked before the downstream system is invoked.
-5. The decision is recorded for audit and deterministic replay.
+Prompts are not security boundaries. CapFence removes the LLM from the authorization path.
+
+## First Blocked Action
+
+An ops agent proposes:
+
+```bash
+rm -rf /var/lib/postgresql
+```
+
+CapFence returns:
+
+```txt
+Decision: DENY
+Reason: destructive production filesystem operation
+Tool invoked: false
+Replay: capfence replay audit_sample.jsonl --policy policy.yaml
+```
 
 ## Install
 
@@ -31,7 +44,7 @@ Agent -> Tool Call -> CapFence Policy -> Allow / Deny / Approval -> Audit + Repl
 pip install capfence
 ```
 
-## First Blocked Action
+## Try It Locally
 
 Define a policy:
 
@@ -88,6 +101,47 @@ Replayed: DENY
 Changed:  false
 ```
 
+## Security Model
+
+CapFence protects the gated tool path.
+
+Recommended architecture:
+
+```txt
+Agent -> Proposed action -> CapFence -> Gated executor -> Tool
+```
+
+The agent should not hold raw downstream credentials. The executor owns credentials and invokes the tool only after CapFence returns `allow`.
+
+CapFence is not effective if the agent can call downstream tools directly with raw credentials.
+
+CapFence does not replace sandboxing, secrets management, network controls, IAM, or database-native permissions.
+
+## Why Authorization, Not Guardrails?
+
+Prompt guardrails influence what the model says. CapFence controls what the agent is allowed to do.
+
+The security question is not only:
+
+> Did the model intend something safe?
+
+The operational question is:
+
+> Is this actor authorized to perform this side effect on this resource in this environment?
+
+CapFence is built for that boundary.
+
+## How CapFence Is Different
+
+| Category | What it controls | Weakness | CapFence difference |
+| --- | --- | --- | --- |
+| Prompt guardrails | Model text | Soft boundary | CapFence controls execution |
+| LLM judges | Generated content | Probabilistic | CapFence uses deterministic policy |
+| Observability | Past behavior | After the fact | CapFence blocks before execution |
+| Sandboxes | Process/environment | Not business authorization | CapFence evaluates action semantics |
+| IAM | Service identity | Too coarse for agent intent | CapFence authorizes each proposed action |
+| Runtime contracts | Agent behavior patterns | Broad or abstract | CapFence focuses on concrete side effects |
+
 ## Use CapFence For
 
 - `shell.exec` boundaries before a process is spawned.
@@ -107,8 +161,12 @@ Changed:  false
 
 ## Core Docs
 
+- [Agent authority model](docs/concepts/agent-authority-model.md)
+- [Action authorization](docs/concepts/action-authorization.md)
 - [Runtime authorization](docs/concepts/runtime-authorization.md)
 - [Policy model](docs/concepts/policy-model.md)
+- [Decision receipts](docs/audit/decision-receipts.md)
+- [Credential placement](docs/security/credential-placement.md)
 - [Fail-closed enforcement](docs/concepts/fail-closed-enforcement.md)
 - [Replayability](docs/concepts/replayability.md)
 - [Threat model](docs/architecture/threat-model.md)

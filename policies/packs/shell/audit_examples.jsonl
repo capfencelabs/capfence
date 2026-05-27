@@ -1,0 +1,2 @@
+{"actor":"ops-agent","tool":"shell.exec","environment":"production","payload":{"command":"rm -rf /var/lib/postgresql"},"decision":"deny","reason":"destructive_shell_command","tool_invoked":false}
+{"actor":"ops-agent","tool":"shell.exec","environment":"development","payload":{"command":"git status"},"decision":"allow","reason":"read_only_diagnostic","tool_invoked":true}

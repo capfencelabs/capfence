@@ -11,6 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.4] - 2026-05-27
+
+### Added
+- Agent authority model, action authorization, credential placement, and decision receipt documentation.
+- Runnable side-effect demos for production shell, payment threshold approval, database write boundaries, and MCP filesystem boundaries.
+- Starter policy-pack artifacts for shell, filesystem, database, payments, and MCP authorization boundaries.
+
+### Changed
+- README, docs homepage, and package metadata now position CapFence as the authorization gateway for AI agent side effects.
+- PyPI keywords now emphasize authorization, authz, policy, MCP, side effects, fail-closed behavior, and tool calling.
+
 ## [0.8.3] - 2026-05-24
 
 ### Added

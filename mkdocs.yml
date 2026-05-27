@@ -10,17 +10,21 @@ nav:
     - First blocked action: getting-started/first-blocked-action.md
   - Architecture:
     - Security architecture: security/security-architecture.md
+    - Credential placement: security/credential-placement.md
     - Audit chain design: architecture/audit-chain-design.md
     - Enforcement flow: architecture/enforcement-flow.md
     - Internal components: architecture/internal-components.md
     - Threat model: architecture/threat-model.md
   - Concepts:
+    - Agent authority model: concepts/agent-authority-model.md
+    - Action authorization: concepts/action-authorization.md
     - Audit chain: concepts/audit-chain.md
     - Fail-closed enforcement: concepts/fail-closed-enforcement.md
     - Policy model: concepts/policy-model.md
     - Replayability: concepts/replayability.md
     - Runtime authorization: concepts/runtime-authorization.md
     - Trust propagation: concepts/trust-propagation.md
+    - Why not sandboxing, OPA, or prompt guardrails?: concepts/why-not-sandboxing-opa-guardrails.md
   - Compliance:
     - EU AI Act: compliance/eu-ai-act.md
     - Governance & Reporting: compliance/governance-reporting.md
@@ -69,6 +73,7 @@ nav:
     - Gate API: reference/gate-api.md
     - Flowtracer API: reference/flowtracer-api.md
     - Audit log format: reference/audit-log-format.md
+    - Decision receipts: audit/decision-receipts.md
   - Release:
     - Checklist: release/checklist.md
 theme:

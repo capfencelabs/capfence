@@ -1,0 +1,26 @@
+version: 1
+policy_name: mcp-filesystem-boundary
+description: Allows workspace-local MCP filesystem access and denies obvious secret or system paths.
+
+deny:
+  - capability: mcp.filesystem.read
+    match_keywords:
+      - "../"
+      - "~/.ssh"
+      - "/etc/passwd"
+      - ".env"
+  - capability: mcp.filesystem.write
+    match_keywords:
+      - "../"
+      - "~/.ssh"
+      - "/etc/passwd"
+      - ".env"
+  - capability: mcp.filesystem.delete
+
+allow:
+  - capability: mcp.filesystem.read
+    path_prefix: "./workspace/"
+  - capability: mcp.filesystem.write
+    path_prefix: "./workspace/"
+  - capability: mcp.filesystem.list
+    path_prefix: "./workspace/"

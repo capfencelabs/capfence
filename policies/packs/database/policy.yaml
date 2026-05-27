@@ -1,0 +1,18 @@
+version: 1
+policy_name: database-side-effects
+description: Starter authorization policy for database reads, writes, and schema mutations.
+
+deny:
+  - capability: database.query
+    environment: production
+    match_regex: ["\\b(DROP|TRUNCATE|ALTER)\\b", "^\\s*SELECT\\s+\\*"]
+
+require_approval:
+  - capability: database.query
+    environment: production
+    match_regex: ["\\b(UPDATE|DELETE|INSERT)\\b"]
+
+allow:
+  - capability: database.query
+    environment: production
+    match_regex: ["^\\s*SELECT\\s+.+\\s+WHERE\\s+.+\\s+LIMIT\\s+\\d+"]

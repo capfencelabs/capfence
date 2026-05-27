@@ -32,5 +32,9 @@ jobs:
         uses: actions/attest-build-provenance@v2
         with:
           subject-path: "dist/*"
+      - name: Upload distributions to GitHub Release
+        run: gh release upload ${{ github.event.release.tag_name }} dist/* --clobber
+        env:
+          GH_TOKEN: ${{ github.token }}
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1

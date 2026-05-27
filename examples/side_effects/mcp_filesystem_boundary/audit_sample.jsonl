@@ -1,0 +1,1 @@
+{"audit_id":"aud_mcp_fs_001","actor":"ide-agent","tool":"mcp.filesystem.read","action":"read","resource":"~/.ssh/id_rsa","environment":"development","decision":"deny","reason":"path_outside_workspace_or_secret_file","upstream_mcp_invoked":false,"payload":{"path":"~/.ssh/id_rsa"}}

@@ -1,0 +1,5 @@
+requested: mcp.filesystem.read
+path: ~/.ssh/id_rsa
+decision: DENY
+reason: path_outside_workspace_or_secret_file
+upstream_mcp_invoked: false

@@ -1,0 +1,15 @@
+CapFence production shell boundary demo
+
+Agent requested:
+  tool: shell.exec
+  environment: production
+  command: rm -rf /var/lib/postgresql
+
+CapFence decision:
+  decision: DENY
+  reason: destructive_or_secret_exfiltration_risk
+  tool_invoked: false
+
+Audit:
+  written: audit_sample.jsonl
+  replay: capfence replay audit_sample.jsonl --policy policy.yaml

@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "capfence"
-version = "0.8.3"
-description = "Deterministic execution authorization for AI agent side effects. CapFence gates tool calls before execution, fail-closes unsafe requests, and records decisions for replay."
+version = "0.8.4"
+description = "Authorization gateway for AI agent side effects. CapFence lets agents propose tool calls, then enforces deterministic allow, deny, or approval decisions before shell, database, filesystem, payment, API, or MCP execution."
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.10"
@@ -13,19 +13,16 @@ authors = [
     { name = "Anshuman Kumar" }
 ]
 keywords = [
-    "ai",
+    "authorization",
+    "authz",
+    "ai-agents",
     "agents",
-    "governance",
-    "safety",
     "security",
-    "langchain",
-    "crewai",
-    "llm",
-    "runtime",
-    "enforcement",
+    "policy",
     "audit",
-    "compliance",
-    "guardrails",
+    "mcp",
+    "side-effects",
+    "fail-closed",
     "tool-calling",
 ]
 classifiers = [

@@ -16,6 +16,7 @@
 !docs-dev/**/*.md
 !case-studies/*.md
 !case-studies/**/*.md
+!policies/packs/**/*.md
 
 # Block potential future local review artifacts
 docs/CODE_REVIEW_*.md

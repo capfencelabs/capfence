@@ -1,0 +1,2 @@
+{"actor":"support-agent","tool":"payments.refund","payload":{"amount":2500,"currency":"USD","merchant_id":"unknown","idempotency_key":"refund_001"},"decision":"deny","reason":"amount_or_merchant_policy","tool_invoked":false}
+{"actor":"support-agent","tool":"payments.refund","payload":{"amount":75,"currency":"USD","merchant_id":"merchant_approved","idempotency_key":"refund_002"},"decision":"allow","reason":"small_refund_threshold","tool_invoked":true}
